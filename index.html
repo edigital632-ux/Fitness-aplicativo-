@@ -6,37 +6,50 @@
     <title>FitPlan Pro AI</title>
     <style>
         :root { 
-            --primary: #2563eb; 
-            --primary-dark: #1d4ed8; 
-            --accent: #10b981; 
-            --background: #f1f5f9; 
+            --primary: #1e40af; 
+            --primary-light: #3b82f6;
+            --accent: #059669; 
+            --background: #f8fafc; 
             --surface: #ffffff; 
             --text: #0f172a; 
-            --text-light: #64748b;
+            --text-light: #475569;
+            --border: #e2e8f0;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-        body { background-color: var(--background); color: var(--text); padding: 15px; scroll-behavior: smooth; }
-        .container { max-width: 600px; margin: 0 auto; background: var(--surface); padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        header h1 { color: var(--primary); font-size: 26px; font-weight: 800; }
-        header p { color: var(--text-light); font-size: 13px; }
-        .form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
-        label { margin-bottom: 4px; font-weight: 600; font-size: 13px; }
-        input, select, textarea { padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 15px; width: 100%; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
-        textarea { resize: vertical; height: 70px; font-size: 14px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--background); color: var(--text); padding: 20px 15px; }
         
-        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .btn-submit:hover { background: var(--primary-dark); }
+        .container { max-width: 600px; margin: 0 auto; background: var(--surface); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
         
-        .loading-box { display: none; text-align: center; margin: 20px 0; }
-        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary); animation: spin 0.8s linear infinite; margin: 0 auto 10px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        header { text-align: center; margin-bottom: 25px; }
+        header h1 { color: var(--primary); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        header p { color: var(--text-light); font-size: 14px; margin-top: 4px; }
         
-        .output-box { display: none; margin-top: 20px; padding: 20px; background: #fafafa; border-left: 5px solid var(--accent); border-radius: 8px; }
-        .output-box h2 { color: var(--accent); font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 16px; }
+        label { margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, textarea { padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; width: 100%; outline: none; transition: all 0.2s; background: #fdfdfd; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-light); background: #fff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        textarea { resize: vertical; height: 80px; font-size: 14px; }
         
-        .ai-content { font-size: 15px; color: #334155; white-space: pre-wrap; line-height: 1.6; }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 12px; cursor: pointer; margin-top: 10px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2); }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30, 64, 175, 0.3); }
+        .btn-submit:active { transform: translateY(1px); }
+        
+        /* Layout de Abas Profissionais (Tabs) */
+        .tabs-container { display: none; margin-top: 30px; animation: fadeIn 0.4s ease; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 15px; font-weight: 700; color: var(--text-light); cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+        .tab-btn.active { color: var(--primary); background: rgba(59, 130, 246, 0.08); }
+        
+        .tab-content { display: none; background: #fff; border-radius: 12px; }
+        .tab-content.active { display: block; }
+
+        /* Cursor piscante igual do ChatGPT */
+        .typing::after { content: '▌'; animation: blink 0.6s infinite; color: var(--primary-light); font-weight: bold; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Estilização interna da ficha da IA */
+        .ai-formatted { font-size: 15px; color: #334155; white-space: pre-wrap; line-height: 1.7; padding: 10px 5px; }
     </style>
 </head>
 <body>
@@ -44,7 +57,7 @@
 <div class="container">
     <header>
         <h1>FitPlan Pro AI</h1>
-        <p>Plataforma Inteligente de Treino e Dieta Corporativa</p>
+        <p>Sistema Inteligente de Prescrição Corporativa</p>
     </header>
 
     <div>
@@ -76,36 +89,72 @@
             </div>
         </div>
 
-        <div class="form-group" style="margin-top: 12px;">
+        <div class="form-group">
             <label>Objetivo</label>
             <select id="objective">
-                <option value="Hipertrofia (Ganho de massa muscular)">Hipertrofia (Ganho de Massa)</option>
-                <option value="Emagrecimento (Definição e perda de gordura)">Emagrecimento (Perda de Gordura)</option>
-                <option value="Resistência e Condicionamento Físico">Condicionamento Geral</option>
+                <option value="Hipertrofia">Hipertrofia (Ganho de Massa)</option>
+                <option value="Emagrecimento">Emagrecimento (Perda de Gordura)</option>
+                <option value="Condicionamento">Condicionamento Geral</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Observações ou Pedidos Especiais à IA (Opcional)</label>
-            <textarea id="customRequest" placeholder="Ex: Tenho dor no joelho, sou vegetariano, prefiro treinar 4 dias..."></textarea>
+            <label>Restrições ou Preferências (Opcional)</label>
+            <textarea id="customRequest" placeholder="Ex: Tenho problema no joelho, sou vegetariano, prefiro treinar em casa..."></textarea>
         </div>
 
-        <button type="button" class="btn-submit" onclick="generatePlanWithAI()">🚀 Consultar IA e Gerar Plano</button>
+        <button type="button" class="btn-submit" id="btnAction" onclick="generatePlanPro()">🚀 Gerar Planejamento de Alta Performance</button>
     </div>
 
-    <div class="loading-box" id="loadingSection">
-        <div class="spinner"></div>
-        <p style="font-size: 14px; color: var(--primary); font-weight: 500;">A IA está montando sua estratégia personalizada...</p>
-    </div>
-
-    <div class="output-box" id="outputSection">
-        <h2>📋 Planejamento Personalizado</h2>
-        <div id="aiResponse" class="ai-content"></div>
+    <div class="tabs-container" id="resultSection">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dietaTab', this)">🥗 Plano Alimentar</button>
+            <button class="tab-btn" onclick="switchTab('treinoTab', this)">💪 Ficha de Treino</button>
+        </div>
+        
+        <div id="dietaTab" class="tab-content active">
+            <div id="dietaOutput" class="ai-formatted"></div>
+        </div>
+        
+        <div id="treinoTab" class="tab-content">
+            <div id="treinoOutput" class="ai-formatted"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    async function generatePlanWithAI() {
+    // Gerenciador de Abas do App Comercial
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // Função de efeito de digitação assíncrona (Simulação de Streaming do ChatGPT)
+    function typeEffect(text, elementId, callback) {
+        const element = document.getElementById(elementId);
+        element.innerHTML = "";
+        element.classList.add('typing');
+        
+        let words = text.split(" ");
+        let i = 0;
+        
+        function type() {
+            if (i < words.length) {
+                element.innerHTML += words[i] + " ";
+                i++;
+                // Ajuste de velocidade da digitação (25ms por palavra cria o fluxo perfeito)
+                setTimeout(type, 25); 
+            } else {
+                element.classList.remove('typing');
+                if(callback) callback();
+            }
+        }
+        type();
+    }
+
+    async function generatePlanPro() {
         const name = document.getElementById('userName').value.trim() || "Aluno";
         const gender = document.getElementById('gender').value;
         const age = document.getElementById('age').value;
@@ -113,42 +162,50 @@
         const height = document.getElementById('height').value;
         const objective = document.getElementById('objective').value;
         const customRequest = document.getElementById('customRequest').value.trim();
+        const btn = document.getElementById('btnAction');
 
         if (!age || !weight || !height) {
-            alert('Por favor, preencha a idade, peso e altura!');
+            alert('Por favor, preencha os dados biométricos obrigatórios.');
             return;
         }
 
-        document.getElementById('outputSection').style.display = 'none';
-        document.getElementById('loadingSection').style.display = 'block';
+        // Desabilita o botão e muda o estado visual para bloquear cliques seguidos
+        btn.disabled = true;
+        btn.innerText = "⚡ Inteligência Artificial Processando...";
+        document.getElementById('resultSection').style.display = 'none';
 
-        // Montando a instrução injetando o nome e o pedido especial digitado pelo usuário
-        let promptMessage = `Atue como um Personal Trainer e Nutricionista Esportivo focado em atendimento VIP. Monte um planejamento completo para o aluno chamado ${name}. 
-        Perfil do aluno: Sexo: ${gender}, Idade: ${age} anos, Peso: ${weight}kg, Altura: ${height}cm, Objetivo: ${objective}.`;
+        // Dividimos os comandos para que a IA entregue a Dieta e o Treino em blocos separados para a nossa interface profissional
+        const promptDieta = `Atue como um Nutricionista Esportivo de alta performance. Monte exclusivamente um Plano Alimentar completo refeição por refeição focado no aluno ${name}. Perfil: Sexo ${gender}, ${age} anos, ${weight}kg, ${height}cm, Objetivo: ${objective}. Observações extras do aluno: "${customRequest}". Regra crucial: Não use nenhum caractere especial como asteriscos (*) ou hashtags (#), use apenas linhas limpas. Comece o texto com uma saudação executiva dando as boas-vindas ao aluno.`;
         
-        if (customRequest) {
-            promptMessage += `\nATENÇÃO - O aluno ${name} fez o seguinte pedido especial que você DEVE obedecer rigorosamente: "${customRequest}".`;
-        }
-
-        promptMessage += `\n\nComece o texto saudando o aluno pelo nome de forma motivadora. Depois, escreva o Plano Alimentar estruturado refeição por refeição. Por fim, escreva a Ficha de Treino detalhada dividida em Treino A, Treino B e Treino C. Não use caracteres especiais como asteriscos (*) ou hashtags (#), use apenas quebras de linha normais para organizar o texto.`;
-
-        const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=openai&cache=false`;
+        const promptTreino = `Atue como um Personal Trainer de alta performance. Monte exclusivamente uma Ficha de Treino focada no aluno ${name}. Perfil: Sexo ${gender}, ${age} anos, ${weight}kg, ${height}cm, Objetivo: ${objective}. Observações extras: "${customRequest}". Monte a rotina estruturada de maneira limpa em Treino A, Treino B e Treino C com exercícios, séries e repetições. Regra crucial: Não use nenhum caractere especial como asteriscos (*) ou hashtags (#), use apenas linhas normais e limpas.`;
 
         try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("Erro de resposta");
-            const textResponse = await response.text();
+            // Executa as duas consultas de inteligência em paralelo para economizar tempo
+            const [resDieta, resTreino] = await Promise.all([
+                fetch(`https://text.pollinations.ai/${encodeURIComponent(promptDieta)}?model=openai&cache=false`),
+                fetch(`https://text.pollinations.ai/${encodeURIComponent(promptTreino)}?model=openai&cache=false`)
+            ]);
 
-            document.getElementById('aiResponse').innerText = textResponse.trim();
-            document.getElementById('outputSection').style.display = 'block';
-            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+            if (!resDieta.ok || !resTreino.ok) throw new Error();
+
+            const textDieta = await resDieta.text();
+            const textTreino = await resTreino.text();
+
+            // Mostra a área de resultados e inicia o efeito streaming na primeira aba (Dieta)
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            
+            typeEffect(textDieta.trim(), 'dietaOutput', () => {
+                // Quando terminar a dieta, preenche o treino em background mantendo a experiência fluida
+                document.getElementById('treinoOutput').innerText = textTreino.trim();
+            });
 
         } catch (error) {
-            console.error(error);
-            document.getElementById('aiResponse').innerHTML = "<p style='color:red;'>⚠️ Erro ao gerar dados. Tente novamente.</p>";
-            document.getElementById('outputSection').style.display = 'block';
+            alert("Ocorreu uma instabilidade na rede neural. Por favor, tente novamente.");
         } finally {
-            document.getElementById('loadingSection').style.display = 'none';
+            // Devolve o botão ao estado original de usabilidade
+            btn.disabled = false;
+            btn.innerText = "🚀 Gerar Planejamento de Alta Performance";
         }
     }
 </script>
