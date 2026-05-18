@@ -46,11 +46,12 @@
         .item-title { font-weight: 800; font-size: 17px; color: white; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .item-subtitle { font-size: 13px; color: var(--primary-neon); font-weight: 600; margin-bottom: 12px; }
         
-        .gif-container { width: 100%; height: 240px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #000; border: 1px solid var(--border-glow); position: relative; }
-        .gif-video { width: 100%; height: 100%; object-fit: cover; }
+        /* Container do GIF Animado que substituiu o player de vídeo */
+        .gif-container { width: 100%; height: 240px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #1e293b; border: 1px solid var(--border-glow); position: relative; }
+        .gif-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
         .evolution-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-glow); }
-        .evolution-row input { padding: 10px; font-size: 15px; text-align: center; width: 85px; background: var(--surface-dark); }
+        .evolution-row input { padding: 10px; font-size: 15px; text-align: center; width: 85px; background: var(--surface-dark); color: #fff; border: 1px solid var(--border-glow); border-radius: 8px; }
         .btn-check { background: var(--accent-green); color: white; border: none; padding: 12px 18px; font-size: 13px; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; text-transform: uppercase; transition: background 0.2s; }
         .btn-check:hover { background: #059669; }
         
@@ -168,32 +169,30 @@
             card.appendChild(detalhes);
 
             let exercicioLimpo = linha.toLowerCase();
-            let videoUrl = "";
+            let gifUrl = "";
 
+            // Banco de GIFs limpos e rápidos em formato de imagem estável (.gif)
             if (exercicioLimpo.includes("supino") || exercicioLimpo.includes("peito")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-chest-with-barbell-press-on-bench-41614-large.mp4";
+                gifUrl = "https://i.pinimg.com/originals/e2/5c/4b/e25c4b149b1424b333be0599a0db246b.gif"; // Execução Supino Reto Animado
             } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("perna") || exercicioLimpo.includes("stiff")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-doing-squats-with-a-barbell-in-the-gym-41620-large.mp4";
+                gifUrl = "https://i.pinimg.com/originals/cf/0f/55/cf0f55097bc8ff436e2f5b5f257127e2.gif"; // Execução Agachamento Animado
             } else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps") || exercicioLimpo.includes("triceps") || exercicioLimpo.includes("braço") || exercicioLimpo.includes("halter")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-his-biceps-with-dumbbells-41611-large.mp4";
+                gifUrl = "https://i.pinimg.com/originals/6d/46/87/6d4687be696cd9360938f3818e3be163.gif"; // Execução Biceps Animado
             } else if (exercicioLimpo.includes("puxada") || exercicioLimpo.includes("costas") || exercicioLimpo.includes("remada")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-working-out-his-back-on-lat-pulldown-machine-41617-large.mp4";
+                gifUrl = "https://i.pinimg.com/originals/bd/6d/9c/bd6d9c61266b7a9569b9195d52eb32b5.gif"; // Execução Costas Animado
             } else {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-performing-heavy-deadlifts-in-the-gym-41622-large.mp4";
+                gifUrl = "https://i.pinimg.com/originals/d6/11/49/d6114995ebc289069d2c206015b74686.gif"; // Execução Geral Fitness
             }
 
             let gifContainer = document.createElement('div');
             gifContainer.className = 'gif-container';
 
-            let video = document.createElement('video');
-            video.className = 'gif-video';
-            video.src = videoUrl;
-            video.autoplay = true;
-            video.loop = true;
-            video.muted = true;
-            video.playsInline = true;
+            let imgElement = document.createElement('img');
+            imgElement.className = 'gif-img';
+            imgElement.src = gifUrl;
+            imgElement.alt = "Demonstração do movimento técnico";
 
-            gifContainer.appendChild(video);
+            gifContainer.appendChild(imgElement);
             card.appendChild(gifContainer);
 
             let inputId = `carga_treino_${cardCount}`;
@@ -213,9 +212,9 @@
         let output = document.getElementById('dietaOutput');
         output.innerHTML = "";
 
-        let linhas = textoDieta.split('\n');
+        let lines = textoDieta.split('\n');
         
-        linhas.forEach(linha => {
+        lines.forEach(linha => {
             if(linha.trim().length === 0) return;
             
             let linhaMinuscula = linha.toLowerCase();
@@ -277,7 +276,6 @@
             const response = await fetch(url);
             const fullText = await response.text();
 
-            // Modificado para usar um divisor universal ultra seguro que a IA não erra
             let dietaText = "";
             let treinoText = "";
 
