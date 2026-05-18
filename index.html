@@ -123,7 +123,7 @@
 </div>
 
 <script>
-    // Gerenciador de Abas do App Comercial
+    // Gerenciador de Abas do App
     function switchTab(tabId, btn) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -131,7 +131,7 @@
         btn.classList.add('active');
     }
 
-    // Função de efeito de digitação assíncrona (Simulação de Streaming do ChatGPT)
+    // Função de efeito de digitação assíncrona (Efeito ChatGPT)
     function typeEffect(text, elementId, callback) {
         const element = document.getElementById(elementId);
         element.innerHTML = "";
@@ -144,8 +144,7 @@
             if (i < words.length) {
                 element.innerHTML += words[i] + " ";
                 i++;
-                // Ajuste de velocidade da digitação (25ms por palavra cria o fluxo perfeito)
-                setTimeout(type, 25); 
+                setTimeout(type, 20); 
             } else {
                 element.classList.remove('typing');
                 if(callback) callback();
@@ -169,41 +168,51 @@
             return;
         }
 
-        // Desabilita o botão e muda o estado visual para bloquear cliques seguidos
         btn.disabled = true;
         btn.innerText = "⚡ Inteligência Artificial Processando...";
         document.getElementById('resultSection').style.display = 'none';
 
-        // Dividimos os comandos para que a IA entregue a Dieta e o Treino em blocos separados para a nossa interface profissional
-        const promptDieta = `Atue como um Nutricionista Esportivo de alta performance. Monte exclusivamente um Plano Alimentar completo refeição por refeição focado no aluno ${name}. Perfil: Sexo ${gender}, ${age} anos, ${weight}kg, ${height}cm, Objetivo: ${objective}. Observações extras do aluno: "${customRequest}". Regra crucial: Não use nenhum caractere especial como asteriscos (*) ou hashtags (#), use apenas linhas limpas. Comece o texto com uma saudação executiva dando as boas-vindas ao aluno.`;
+        // Prompt unificado de alta velocidade. Adicionamos marcadores ocultos para o JavaScript saber onde cortar o texto
+        let promptMessage = `Atue como um Personal Trainer e Nutricionista Esportivo focado em atendimento VIP. Monte um planejamento completo para o aluno chamado ${name}. 
+        Perfil do aluno: Sexo ${gender}, ${age} anos, ${weight}kg, ${height}cm, Objetivo: ${objective}.`;
         
-        const promptTreino = `Atue como um Personal Trainer de alta performance. Monte exclusivamente uma Ficha de Treino focada no aluno ${name}. Perfil: Sexo ${gender}, ${age} anos, ${weight}kg, ${height}cm, Objetivo: ${objective}. Observações extras: "${customRequest}". Monte a rotina estruturada de maneira limpa em Treino A, Treino B e Treino C com exercícios, séries e repetições. Regra crucial: Não use nenhum caractere especial como asteriscos (*) ou hashtags (#), use apenas linhas normais e limpas.`;
+        if (customRequest) {
+            promptMessage += `\nObservação do aluno para seguir rigorosamente: "${customRequest}".`;
+        }
+
+        promptMessage += `\n\nSiga estritamente essa estrutura de resposta:
+        [DIETA]
+        Comece com uma saudação motivadora para o aluno. Em seguida, monte o Plano Alimentar estruturado refeição por refeição de forma limpa.
+        
+        [TREINO]
+        Monte a Ficha de Treino detalhada dividida em Treino A, Treino B e Treino C com os exercícios e séries.
+        
+        Regra crucial: Não use nenhum caractere especial do tipo asteriscos (*) ou hashtags (#), use apenas linhas limpas e bem organizadas.`;
+
+        // Usando o modelo 'mistral' que é infinitamente mais veloz e estável para requisições únicas
+        const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=mistral&cache=false`;
 
         try {
-            // Executa as duas consultas de inteligência em paralelo para economizar tempo
-            const [resDieta, resTreino] = await Promise.all([
-                fetch(`https://text.pollinations.ai/${encodeURIComponent(promptDieta)}?model=openai&cache=false`),
-                fetch(`https://text.pollinations.ai/${encodeURIComponent(promptTreino)}?model=openai&cache=false`)
-            ]);
+            const response = await fetch(url);
+            if (!response.ok) throw new Error();
+            const fullText = await response.text();
 
-            if (!resDieta.ok || !resTreino.ok) throw new Error();
+            // O JavaScript separa os blocos de Dieta e Treino de forma cirúrgica com base nas tags do prompt
+            let parts = fullText.split('[TREINO]');
+            let dietaText = parts[0].replace('[DIETA]', '').trim();
+            let treinoText = parts[1] ? parts[1].trim() : "Ficha de Treino gerada com sucesso. Clique na aba correspondente para visualizar.";
 
-            const textDieta = await resDieta.text();
-            const textTreino = await resTreino.text();
-
-            // Mostra a área de resultados e inicia o efeito streaming na primeira aba (Dieta)
             document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
             
-            typeEffect(textDieta.trim(), 'dietaOutput', () => {
-                // Quando terminar a dieta, preenche o treino em background mantendo a experiência fluida
-                document.getElementById('treinoOutput').innerText = textTreino.trim();
+            // Inicia o efeito do ChatGPT apenas na aba que está visível (Dieta) e preenche a outra instantaneamente
+            typeEffect(dietaText, 'dietaOutput', () => {
+                document.getElementById('treinoOutput').innerText = treinoText;
             });
 
         } catch (error) {
-            alert("Ocorreu uma instabilidade na rede neural. Por favor, tente novamente.");
+            alert("Ocorreu uma instabilidade rápida na rede. Por favor, clique novamente no botão.");
         } finally {
-            // Devolve o botão ao estado original de usabilidade
             btn.disabled = false;
             btn.innerText = "🚀 Gerar Planejamento de Alta Performance";
         }
