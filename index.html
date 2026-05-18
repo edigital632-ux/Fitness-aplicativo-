@@ -41,17 +41,14 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Cards Estilo Aplicativo de Academia Premium */
         .item-card { background: #111827; border: 1px solid var(--border-glow); border-radius: 16px; padding: 18px; margin-bottom: 18px; position: relative; overflow: hidden; transition: border-color 0.2s; }
         .item-card:hover { border-color: var(--primary-neon); }
         .item-title { font-weight: 800; font-size: 17px; color: white; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .item-subtitle { font-size: 13px; color: var(--primary-neon); font-weight: 600; margin-bottom: 12px; }
         
-        /* Container Otimizado para os Vídeos em Loop (Estilo GIF) */
         .gif-container { width: 100%; height: 240px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #000; border: 1px solid var(--border-glow); position: relative; }
         .gif-video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Painel de Controle de Carga e Progresso */
         .evolution-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-glow); }
         .evolution-row input { padding: 10px; font-size: 15px; text-align: center; width: 85px; background: var(--surface-dark); }
         .btn-check { background: var(--accent-green); color: white; border: none; padding: 12px 18px; font-size: 13px; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; text-transform: uppercase; transition: background 0.2s; }
@@ -124,7 +121,6 @@
 </div>
 
 <script>
-    // 🔴 ALTERE AQUI PARA O NOME DA ACADEMIA QUE COMPRAR O SEU APP
     const NOME_ACADEMIA_CLIENTE = "Iron Fitness Club"; 
 
     let historicoEvolucaoCargas = [];
@@ -147,7 +143,6 @@
         alert(`Sucesso! Carga de ${cargaDigitada}kg salva para o exercício ${exercicioNome}.`);
     }
 
-    // Processador de Ficha de Academia com Animações Premium em Loop (Estilo GIF)
     function parseTreinoComMidia(textoTreino) {
         const container = document.getElementById('treinoOutput');
         container.innerHTML = "";
@@ -156,7 +151,7 @@
         let cardCount = 0;
 
         linhas.forEach((linha) => {
-            if(linha.toLowerCase().includes("parte 2") || linha.toLowerCase().includes("[treino]")) return;
+            if(linha.toLowerCase().includes("parte 2") || linha.toLowerCase().includes("treino")) return;
 
             cardCount++;
             let card = document.createElement('div');
@@ -175,10 +170,9 @@
             let exercicioLimpo = linha.toLowerCase();
             let videoUrl = "";
 
-            // Banco de Execuções Animadas Livres de Alta Velocidade (Mapeamento Cirúrgico)
             if (exercicioLimpo.includes("supino") || exercicioLimpo.includes("peito")) {
                 videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-chest-with-barbell-press-on-bench-41614-large.mp4";
-            } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("pessa") || exercicioLimpo.includes("stiff")) {
+            } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("perna") || exercicioLimpo.includes("stiff")) {
                 videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-doing-squats-with-a-barbell-in-the-gym-41620-large.mp4";
             } else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps") || exercicioLimpo.includes("triceps") || exercicioLimpo.includes("braço") || exercicioLimpo.includes("halter")) {
                 videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-his-biceps-with-dumbbells-41611-large.mp4";
@@ -188,7 +182,6 @@
                 videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-performing-heavy-deadlifts-in-the-gym-41622-large.mp4";
             }
 
-            // Cria o container do GIF/Video com carregamento assíncrono profissional
             let gifContainer = document.createElement('div');
             gifContainer.className = 'gif-container';
 
@@ -225,7 +218,7 @@
         linhas.forEach(linha => {
             if(linha.trim().length === 0) return;
             
-            let linhaMinuscula = Array.isArray(linha) ? "" : linha.toLowerCase();
+            let linhaMinuscula = linha.toLowerCase();
             let imgUrl = "";
 
             if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("mexidos")) imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80";
@@ -271,10 +264,10 @@
             promptMessage += `\nPROGRESSÃO DETECTADA: O aluno já concluiu exercícios com as cargas: ${informacoesEvolucao}. Reajuste as metas!`;
         }
 
-        promptMessage += `\n\nDivida a resposta exatamente com as duas tags abaixo:
-        [DIETA]
-        Monte um plano alimentar focado em alimentos limpos (Frango, Ovos, Banana, Arroz).
-        [TREINO]
+        promptMessage += `\n\nDivida a resposta exatamente com os dois marcadores abaixo:
+        ---DIETA---
+        Monte um plano alimentar focado em alimentos simples (Frango, Ovos, Banana, Arroz).
+        ---TREINO---
         Escreva uma lista com exatamente 4 principais exercícios físicos da academia (Exemplo: Supino Reto, Agachamento Livre, Rosca Direta, Puxada Costas), colocando cada um em uma única linha direta acompanhado de suas séries, sem numeração e sem símbolos.
         Regra: Não use nenhum asterisco (*) ou hashtag (#).`;
 
@@ -284,9 +277,23 @@
             const response = await fetch(url);
             const fullText = await response.text();
 
-            let parts = fullText.split('[TREINO]');
-            let dietaText = parts[0].replace('[DIETA]', '').trim();
-            let treinoText = parts[1] ? parts[1].trim() : "";
+            // Modificado para usar um divisor universal ultra seguro que a IA não erra
+            let dietaText = "";
+            let treinoText = "";
+
+            if (fullText.includes("---TREINO---")) {
+                let parts = fullText.split("---TREINO---");
+                dietaText = parts[0].replace("---DIETA---", "").trim();
+                treinoText = parts[1].trim();
+            } else if (fullText.toUpperCase().includes("[TREINO]")) {
+                let token = fullText.includes("[TREINO]") ? "[TREINO]" : "[treino]";
+                let parts = fullText.split(token);
+                dietaText = parts[0].replace("[DIETA]", "").replace("[dieta]", "").trim();
+                treinoText = parts[1].trim();
+            } else {
+                dietaText = fullText;
+                treinoText = "Supino Reto\nAgachamento Livre\nRosca Direta\nPuxada Costas";
+            }
 
             document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
