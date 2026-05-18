@@ -30,6 +30,10 @@
         input, select, textarea { padding: 14px; border: 1.5px solid var(--border-glow); border-radius: 12px; font-size: 15px; width: 100%; outline: none; background: #111827; color: white; transition: all 0.2s; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary-neon); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
         
+        /* Estilo do Chat Interativo */
+        .chat-area { background: #111827; border: 1px solid var(--border-glow); border-radius: 16px; padding: 15px; margin-top: 15px; min-height: 80px; max-height: 200px; overflow-y: auto; font-size: 14px; color: #e2e8f0; line-height: 1.5; display: none; }
+        .chat-label-response { color: var(--accent-green); font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
+
         .btn-submit { width: 100%; background: var(--primary-gradient); color: white; border: none; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 14px; cursor: pointer; margin-top: 10px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-submit:active { transform: scale(0.98); }
         
@@ -46,7 +50,7 @@
         .item-title { font-weight: 800; font-size: 17px; color: white; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .item-subtitle { font-size: 13px; color: var(--primary-neon); font-weight: 600; margin-bottom: 12px; }
         
-        /* Botão de Redirecionamento para o Vídeo do Exercício */
+        /* Botão para abrir o GIF de Execução Externo */
         .btn-video { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #1e293b; color: var(--primary-neon); border: 1px solid var(--primary-neon); padding: 12px; font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; text-decoration: none; text-transform: uppercase; margin: 8px 0 14px 0; transition: all 0.2s; }
         .btn-video:hover { background: var(--primary-gradient); color: white; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); border-color: transparent; }
         
@@ -55,7 +59,6 @@
         .btn-check { background: var(--accent-green); color: white; border: none; padding: 12px 18px; font-size: 13px; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; text-transform: uppercase; transition: background 0.2s; }
         .btn-check:hover { background: #059669; }
         
-        /* Container Refatorado da Dieta Fiel */
         .food-item { display: flex; align-items: center; gap: 15px; background: #111827; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--border-glow); }
         .food-img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border-glow); flex-shrink: 0; }
         .food-text { font-size: 14px; color: #f1f5f9; font-weight: 600; line-height: 1.5; }
@@ -101,7 +104,17 @@
             </select>
         </div>
 
-        <button type="button" class="btn-submit" id="btnAction" onclick="generateWhiteLabelPlan()">🚀 Consultar Meu Personal Trainer AI</button>
+        <div class="form-group">
+            <label>Mensagem para o Personal Trainer (O que comeu / Como quer o treino)</label>
+            <textarea id="userChatInput" rows="3" placeholder="Ex: Hoje quero focar em pernas e comi um bolo de chocolate à tarde, ajuste meu plano..."></textarea>
+        </div>
+
+        <button type="button" class="btn-submit" id="btnAction" onclick="generateWhiteLabelPlan()">🚀 Enviar e Consultar Personal AI</button>
+
+        <div class="chat-area" id="chatResponseArea">
+            <div class="chat-label-response">💬 Resposta do Personal Trainer:</div>
+            <div id="chatResponseText"></div>
+        </div>
     </div>
 
     <div class="tabs-container" id="resultSection">
@@ -143,7 +156,7 @@
         alert(`Sucesso! Carga de ${cargaDigitada}kg salva.`);
     }
 
-    // 1. Redirecionamento Inteligente para Vídeo de Execução no YouTube
+    // Redirecionamento para busca externa de GIFs animados de execução de exercícios
     function parseTreinoComMidia(textoTreino) {
         const container = document.getElementById('treinoOutput');
         container.innerHTML = "";
@@ -152,7 +165,7 @@
         let cardCount = 0;
 
         linhas.forEach((linha) => {
-            if(linha.toLowerCase().includes("parte 2") || linha.toLowerCase().includes("treino")) return;
+            if(linha.toLowerCase().includes("parte 2") || linha.toLowerCase().includes("treino") || linha.toLowerCase().includes("---")) return;
 
             cardCount++;
             let card = document.createElement('div');
@@ -170,15 +183,15 @@
             detalhes.innerText = linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : "4 séries de 10-12 repetições";
             card.appendChild(detalhes);
 
-            // Cria o link externo seguro de busca de execução do exercício
-            let videoQuery = encodeURIComponent(nomeExercicio + " execução correta academia");
-            let youtubeUrl = `https://www.youtube.com/results?search_query=${videoQuery}`;
+            // Redirecionamento focado exclusivamente em arquivos GIF externos ao clicar
+            let gifQuery = encodeURIComponent(nomeExercicio + " exercise gif animation");
+            let externalGifUrl = `https://www.google.com/search?tbm=isch&q=${gifQuery}+site:giphy.com+OR+site:tenor.com`;
 
             let videoLink = document.createElement('a');
             videoLink.className = 'btn-video';
-            videoLink.href = youtubeUrl;
+            videoLink.href = externalGifUrl;
             videoLink.target = '_blank';
-            videoLink.innerHTML = `🎬 Assistir Execução no YouTube`;
+            videoLink.innerHTML = `🖼️ Ver GIF de Execução`;
             card.appendChild(videoLink);
 
             let inputId = `carga_treino_${cardCount}`;
@@ -194,7 +207,7 @@
         });
     }
 
-    // 2. Renderizador da Dieta Mantendo o Alimento Exato da IA
+    // Renderizador fiel de alimentos estruturados pela Inteligência Artificial
     function parseDietaComImagens(textoDieta) {
         let output = document.getElementById('dietaOutput');
         output.innerHTML = "";
@@ -202,10 +215,11 @@
         let lines = textoDieta.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         
         lines.forEach(linha => {
+            if(linha.toLowerCase().includes("---")) return;
+            
             let linhaMinuscula = linha.toLowerCase();
-            let imgUrl = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80"; // Imagem padrão saudável
+            let imgUrl = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80";
 
-            // Seleção inteligente da foto lateral baseada no contexto do texto completo
             if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("omelete")) {
                 imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80";
             } else if (linhaMinuscula.includes("frango") || linhaMinuscula.includes("grelhado") || linhaMinuscula.includes("peito")) {
@@ -234,21 +248,26 @@
         const weight = document.getElementById('weight').value;
         const height = document.getElementById('height').value;
         const objective = document.getElementById('objective').value;
+        const userChatMessage = document.getElementById('userChatInput').value.trim();
         const btn = document.getElementById('btnAction');
 
         btn.disabled = true;
-        btn.innerText = "⚡ CALCULANDO ADAPTAÇÃO MUSCULAR...";
+        btn.innerText = "⚡ ANALISANDO SEU FEEDBACK COM O PERSONAL...";
 
-        let informacoesEvolucao = historicoEvolucaoCargas.map(c => `${c.exercicio} com ${c.carga}kg`).join(', ');
-
-        let promptMessage = `Você é o Personal Trainer da ${NOME_ACADEMIA_CLIENTE}. Monte o planejamento do aluno ${name}.
-        Perfil: Idade ${age} anos, Peso ${weight}kg, Altura ${height}cm, Objetivo: ${objective}.
+        let promptMessage = `Você é o Personal Trainer Chefe e Nutricionista da ${NOME_ACADEMIA_CLIENTE}. Responda ao aluno de forma direta e motivadora.
+        Perfil do Aluno: Nome ${name}, Idade ${age} anos, Peso ${weight}kg, Altura ${height}cm, Objetivo: ${objective}.`;
         
-        Divida a resposta usando rigorosamente as tags:
+        if(userChatMessage) {
+            promptMessage += `\n\nO Aluno enviou a seguinte mensagem sobre a rotina/alimentação dele hoje: "${userChatMessage}". Adapte rigorosamente o plano em cima disso e responda o comentário dele de forma breve no início da resposta.`;
+        }
+
+        promptMessage += `\n\nDivida estritamente a sua resposta inteira usando estes três marcadores exatos abaixo:
+        ---RESPOSTA_CHAT---
+        (Escreva aqui um parágrafo curto respondendo de forma direta, humanizada e profissional o relato ou dúvida que o aluno escreveu na caixa de chat).
         ---DIETA---
-        Monte o plano alimentar estruturado linha por linha detalhando o prato.
+        (Monte o plano alimentar estruturado linha por linha de acordo com o que ele relatou ou objetivo).
         ---TREINO---
-        Liste exatamente 4 exercícios de musculação, um por linha, com repetições. Não use marcadores, asteriscos ou hashtags.`;
+        (Liste exatamente 4 exercícios ideais, um por linha, com séries/repetições, sem numeração e sem símbolos adicionais como asteriscos ou hashtags).`;
 
         const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=openai&cache=false`;
 
@@ -256,10 +275,20 @@
             const response = await fetch(url);
             const fullText = await response.text();
 
+            let chatText = "Análise concluída com sucesso! Seus novos planos adaptados foram gerados nas abas abaixo.";
             let dietaText = "";
             let treinoText = "";
 
-            if (fullText.includes("---TREINO---")) {
+            // Divisor Inteligente de Abas de Conversa Completa
+            if (fullText.includes("---RESPOSTA_CHAT---") && fullText.includes("---DIETA---") && fullText.includes("---TREINO---")) {
+                let partsChat = fullText.split("---DIETA---");
+                let topParts = partsChat[0].split("---RESPOSTA_CHAT---");
+                chatText = topParts[1].trim();
+                
+                let bottomParts = partsChat[1].split("---TREINO---");
+                dietaText = bottomParts[0].trim();
+                treinoText = bottomParts[1].trim();
+            } else if (fullText.includes("---TREINO---")) {
                 let parts = fullText.split("---TREINO---");
                 dietaText = parts[0].replace("---DIETA---", "").trim();
                 treinoText = parts[1].trim();
@@ -268,6 +297,11 @@
                 treinoText = "Supino Reto 4x10\nAgachamento Livre 4x12\nRosca Direta 4x10\nPuxada Costas 4x12";
             }
 
+            // Exibe a resposta em formato chat de texto
+            document.getElementById('chatResponseText').innerText = chatText;
+            document.getElementById('chatResponseArea').style.display = 'block';
+
+            // Monta as abas de resultado
             document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
 
@@ -275,10 +309,10 @@
             parseTreinoComMidia(treinoText);
 
         } catch (error) {
-            alert("Ocorreu uma instabilidade rápida na rede. Por favor, clique novamente.");
+            alert("Ocorreu uma instabilidade na rede. Por favor, clique novamente para sincronizar.");
         } finally {
             btn.disabled = false;
-            btn.innerText = "🚀 Consultar Meu Personal Trainer AI";
+            btn.innerText = "🚀 Enviar e Consultar Personal AI";
         }
     }
 </script>
