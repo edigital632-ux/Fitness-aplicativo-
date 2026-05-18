@@ -46,7 +46,6 @@
         .item-title { font-weight: 800; font-size: 17px; color: white; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .item-subtitle { font-size: 13px; color: var(--primary-neon); font-weight: 600; margin-bottom: 12px; }
         
-        /* Container do GIF Animado que substituiu o player de vídeo */
         .gif-container { width: 100%; height: 240px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #1e293b; border: 1px solid var(--border-glow); position: relative; }
         .gif-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
@@ -171,17 +170,17 @@
             let exercicioLimpo = linha.toLowerCase();
             let gifUrl = "";
 
-            // Banco de GIFs limpos e rápidos em formato de imagem estável (.gif)
+            // Servidor estável de GIFs livres de direitos e sem travas de hotlink
             if (exercicioLimpo.includes("supino") || exercicioLimpo.includes("peito")) {
-                gifUrl = "https://i.pinimg.com/originals/e2/5c/4b/e25c4b149b1424b333be0599a0db246b.gif"; // Execução Supino Reto Animado
+                gifUrl = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z0cmN5b3ZwbW5wN3BvM3Y4YmZ0cHoxMnRnd3VvYXZpMmsyd3RxNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7qE0g9gTLjssTz32/giphy.gif";
             } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("perna") || exercicioLimpo.includes("stiff")) {
-                gifUrl = "https://i.pinimg.com/originals/cf/0f/55/cf0f55097bc8ff436e2f5b5f257127e2.gif"; // Execução Agachamento Animado
+                gifUrl = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmtwMzh1ZHlsOHdrcmZ2bDJ2bHpsbXl4ZmdwYW9pNzY0ZXJpZ3U0eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BRED2AAsfSif9S0/giphy.gif";
             } else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps") || exercicioLimpo.includes("triceps") || exercicioLimpo.includes("braço") || exercicioLimpo.includes("halter")) {
-                gifUrl = "https://i.pinimg.com/originals/6d/46/87/6d4687be696cd9360938f3818e3be163.gif"; // Execução Biceps Animado
+                gifUrl = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdndwOTRnbTR0MW9icWN0MHJnYnVqNmNndmsyN29reDJzY2phZXcyNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3ccbVukK9v9f6oFO/giphy.gif";
             } else if (exercicioLimpo.includes("puxada") || exercicioLimpo.includes("costas") || exercicioLimpo.includes("remada")) {
-                gifUrl = "https://i.pinimg.com/originals/bd/6d/9c/bd6d9c61266b7a9569b9195d52eb32b5.gif"; // Execução Costas Animado
+                gifUrl = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2xlM200NHUwdzh0cjByaHRsY2xlNDFzNzZreHR6MW1ldnVscHhhNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7qE1YcK60hO0G7p6/giphy.gif";
             } else {
-                gifUrl = "https://i.pinimg.com/originals/d6/11/49/d6114995ebc289069d2c206015b74686.gif"; // Execução Geral Fitness
+                gifUrl = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3AxdHczbnpxczFwNDVlMm5sNGd0NmR3d3Uxa2gwd2N5MThpd282eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT1XGvAsFFf9f6XJJu/giphy.gif";
             }
 
             let gifContainer = document.createElement('div');
