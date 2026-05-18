@@ -39,17 +39,14 @@
         .tab-content { display: none; background: #fff; border-radius: 12px; }
         .tab-content.active { display: block; }
 
-        /* Estilização de Cards Profissionais de Academia */
         .item-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .item-title { font-weight: 700; font-size: 16px; color: var(--primary); margin-bottom: 8px; }
+        .item-title { font-weight: 700; font-size: 16px; color: var(--primary); margin-bottom: 8px; line-height: 1.4; }
         
-        /* Renderizadores de Mídia Dinâmicos */
-        .media-box { width: 100%; max-height: 200px; border-radius: 8px; margin: 10px 0; object-fit: cover; display: block; border: 1px solid #e2e8f0; }
+        .media-box { width: 100%; height: 180px; border-radius: 8px; margin: 10px 0; object-fit: cover; display: block; border: 1px solid #e2e8f0; }
         
-        /* Painel de Evolução de Carga */
-        .evolution-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; }
-        .evolution-row input { padding: 6px; font-size: 13px; text-align: center; width: 80px; }
-        .btn-check { background: var(--accent); color: white; border: none; padding: 8px 12px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .evolution-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
+        .evolution-row input { padding: 8px; font-size: 14px; text-align: center; width: 80px; }
+        .btn-check { background: var(--accent); color: white; border: none; padding: 9px 14px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; flex: 1; }
         
         .ai-formatted { font-size: 15px; color: #334155; white-space: pre-wrap; line-height: 1.7; }
         .footer-brand { text-align: center; margin-top: 30px; font-size: 11px; color: var(--text-light); font-weight: bold; }
@@ -115,13 +112,11 @@
 </div>
 
 <script>
-    // 🔴 VARIÁVEL COMERCIAL: Altere o nome abaixo para a academia que comprou o seu app!
+    // 🔴 ALTERE AQUI O NOME PARA A ACADEMIA QUE VOCÊ FOR VENDER
     const NOME_ACADEMIA_CLIENTE = "Academia Alpha Fitness"; 
 
-    // Memória de Cargas do Aluno para Simular Evolução no Teste
     let historicoEvolucaoCargas = [];
 
-    // Aplica o nome da marca na inicialização do sistema
     document.getElementById('brandName').innerText = NOME_ACADEMIA_CLIENTE;
     document.getElementById('brandFooter').innerText = `Plataforma Oficial | ${NOME_ACADEMIA_CLIENTE}`;
 
@@ -132,78 +127,73 @@
         btn.classList.add('active');
     }
 
-    // Mecanismo de Registro e Feedback de Evolução de Carga
     function registrarEvolucao(exercicioNome, inputId) {
         const cargaDigitada = document.getElementById(inputId).value;
         if(!cargaDigitada) { alert("Digite a carga atual para salvar!"); return; }
         
-        historicoEvolucaoCargas.push({ exercicio: exercicioNome, carga: cargaDigitada, data: new Date().toLocaleDateString() });
-        alert(`Evolução Registrada! O Personal AI salvou que você executou ${exercicioNome} com ${cargaDigitada}kg. Essa evolução de força será calculada no seu próximo ajuste de treino!`);
+        historicoEvolucaoCargas.push({ exercicio: exercicioNome, carga: cargaDigitada });
+        alert(`Evolução de Carga Registrada! Peso atualizado para ${cargaDigitada}kg no exercício ${exercicioNome}.`);
     }
 
-    // Renderizador Inteligente de Elementos Visuais (Imagens e GIFs de Exercícios)
+    // Processador robusto que analisa o texto e monta cards individuais estáveis com imagens claras
     function parseTreinoComMidia(textoTreino) {
         const container = document.getElementById('treinoOutput');
         container.innerHTML = "";
 
-        let linhas = textoTreino.split('\n');
-        let cardAtual = null;
+        // Divide o texto linha por linha limpa
+        let linhas = textoTreino.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        let cardCount = 0;
 
-        linhas.forEach((linha, index) => {
-            if (linha.trim().length === 0) return;
+        linhas.forEach((linha) => {
+            // Ignora cabeçalhos genéricos vazios ou que não sejam exercícios reais
+            if(linha.toLowerCase().includes("parte 2") || linha.toLowerCase().includes("[treino]")) return;
 
-            // Identifica um título de bloco ou exercício
-            if (linha.includes("Treino") || linha.includes("Aquecimento") || linha.match(/^[0-9]/) || linha.includes("-")) {
-                if (cardAtual) container.appendChild(cardAtual);
+            cardCount++;
+            let card = document.createElement('div');
+            card.className = 'item-card';
 
-                cardAtual = document.createElement('div');
-                cardAtual.className = 'item-card';
+            let titulo = document.createElement('div');
+            titulo.className = 'item-title';
+            titulo.innerText = linha;
+            card.appendChild(titulo);
 
-                let titulo = document.createElement('div');
-                titulo.className = 'item-title';
-                titulo.innerText = linha;
-                cardAtual.appendChild(titulo);
+            let exercicioLimpo = linha.toLowerCase();
+            let imgUrl = "";
 
-                // Injeção de GIFs Dinâmicos baseados no nome do Exercício mapeado
-                let exercicioLimpo = linha.toLowerCase();
-                let urlMedia = "";
-
-                if (exercicioLimpo.includes("supino")) urlMedia = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3YwZndvYTNsc3E0cm96c3dkeW9wM202b3p5M3NtcGd6NXNsc2szNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7qE0gOGwzPbH81QQ/giphy.gif";
-                else if (exercicioLimpo.includes("agachamento")) urlMedia = "https://media.giphy.com/media/13sc1f6M24626Q/giphy.gif";
-                else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps")) urlMedia = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6MzU2ZTh3YmRnd3p5M3ZsZHBpaWV0eHBzNDZ0bHZmaTh4cnF0OCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/f3S0GZ25Lx54Y/giphy.gif";
-                else if (exercicioLimpo.includes("perna") || exercicioLimpo.includes("leg")) urlMedia = "https://media.giphy.com/media/YmZOBQM6g7p72/giphy.gif";
-                else if (exercicioLimpo.includes("puxada") || exercicioLimpo.includes("costas")) urlMedia = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDcyOGMwY3Z3bnh5czg4dHlzZnJreWRwNmFmdXFicm1ndzJ5cHkyNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/G9q3dT7f60R9K/giphy.gif";
-
-                if (urlMedia) {
-                    let gifImg = document.createElement('img');
-                    gifImg.className = 'media-box';
-                    gifImg.src = urlMedia;
-                    cardAtual.appendChild(gifImg);
-                }
-
-                // Linha de evolução e controle de cargas da academia
-                let inputId = `carga_${index}`;
-                let evoDiv = document.createElement('div');
-                evoDiv.className = 'evolution-row';
-                evoDiv.innerHTML = `
-                    <label style='margin:0; font-size:11px;'>Carga (kg):</label>
-                    <input type='number' id='${inputId}' placeholder='Ex: 20'>
-                    <button class='btn-check' onclick="registrarEvolucao('${linha.replace(/'|"/g, "")}', '${inputId}')">✔️ Concluir Série</button>
-                `;
-                cardAtual.appendChild(evoDiv);
-
+            // Mapeamento estável por agrupamentos musculares e exercícios chave (Sem quebra de link externo)
+            if (exercicioLimpo.includes("supino") || exercicioLimpo.includes("peito")) {
+                imgUrl = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&q=80"; // Banco de Supino / Peitorais
+            } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("perna") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("stiff")) {
+                imgUrl = "https://images.unsplash.com/photo-1434608519344-49d77a699e1d?w=500&q=80"; // Execução de Pernas / Quadríceps
+            } else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps") || exercicioLimpo.includes("triceps") || exercicioLimpo.includes("braço")) {
+                imgUrl = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&q=80"; // Treino de Braço com Halteres
+            } else if (exercicioLimpo.includes("puxada") || exercicioLimpo.includes("costas") || exercicioLimpo.includes("remada")) {
+                imgUrl = "https://images.unsplash.com/photo-1603287634278-ae6044a72d4b?w=500&q=80"; // Puxada de Costas / Dorsal
             } else {
-                if (cardAtual) {
-                    let p = document.createElement('p');
-                    p.style.fontSize = "14px";
-                    p.style.color = "#475569";
-                    p.innerText = linha;
-                    cardAtual.appendChild(p);
-                }
+                imgUrl = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80"; // Academia Geral / Execução Livre
             }
+
+            let imgElement = document.createElement('img');
+            imgElement.className = 'media-box';
+            imgElement.src = imgUrl;
+            imgElement.alt = "Demonstração de execução técnica";
+            card.appendChild(imgElement);
+
+            let inputId = `carga_treino_${cardCount}`;
+            let evoDiv = document.createElement('div');
+            evoDiv.className = 'evolution-row';
+            evoDiv.innerHTML = `
+                <label style='margin:0; font-size:11px; font-weight:700;'>CARGA (KG):</label>
+                <input type='number' id='${inputId}' placeholder='Ex: 40' value='20'>
+                <button class='btn-check' onclick="registrarEvolucao('${linha.replace(/'|"/g, "")}', '${inputId}')">✔️ Concluir Série</button>
+            `;
+            card.appendChild(evoDiv);
+            container.appendChild(card);
         });
 
-        if (cardAtual) container.appendChild(cardAtual);
+        if(container.children.length === 0) {
+            container.innerHTML = "<div class='item-card'>Nenhum exercício pôde ser segmentado. Tente gerar novamente.</div>";
+        }
     }
 
     function parseDietaComImagens(textoDieta) {
@@ -213,15 +203,16 @@
         let linhas = textoDieta.split('\n');
         
         linhas.forEach(linha => {
+            if(linha.trim().length === 0) return;
+            
             let p = document.createElement('div');
             p.innerText = linha;
-            p.style.marginBottom = "6px";
+            p.style.marginBottom = "8px";
             output.appendChild(p);
 
             let linhaMinuscula = linha.toLowerCase();
             let imgUrl = "";
 
-            // Mapeador de Imagens de Alimentos de Alta Resolução
             if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("mexidos")) imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&q=80";
             else if (linhaMinuscula.includes("frango") || linhaMinuscula.includes("grelhado")) imgUrl = "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&q=80";
             else if (linhaMinuscula.includes("banana") || linhaMinuscula.includes("fruta")) imgUrl = "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&q=80";
@@ -247,22 +238,21 @@
         btn.disabled = true;
         btn.innerText = "⚡ Seu Personal AI está montando a ficha...";
 
-        // Injetando o nome da academia e o histórico de cargas no cérebro da Inteligência Artificial
         let informacoesEvolucao = historicoEvolucaoCargas.map(c => `${c.exercicio} com ${c.carga}kg`).join(', ');
 
-        let promptMessage = `Você é o Personal Trainer e Nutricionista Oficial da ${NOME_ACADEMIA_CLIENTE}. Monte um planejamento completo de alta performance para o aluno ${name}.
+        let promptMessage = `Você é o Personal Trainer Oficial da ${NOME_ACADEMIA_CLIENTE}. Monte um planejamento resumido e direto para o aluno ${name}.
         Biometria: Idade ${age} anos, Peso ${weight}kg, Altura ${height}cm, Objetivo: ${objective}.`;
         
         if (historicoEvolucaoCargas.length > 0) {
-            promptMessage += `\nHISTÓRICO DE EVOLUÇÃO COMPROVADA: O aluno já evoluiu nas seguintes cargas anteriormente: ${informacoesEvolucao}. Use isso para adaptar os novos exercícios e aumentar a intensidade caso necessário!`;
+            promptMessage += `\nHISTÓRICO: O aluno evoluiu para as seguintes cargas: ${informacoesEvolucao}. Aumente a intensidade!`;
         }
 
-        promptMessage += `\n\nEscreva a resposta dividida exatamente usando essas duas tags:
+        promptMessage += `\n\nEscreva a resposta dividida exatamente usando essas duas tags estruturais:
         [DIETA]
-        Dê as boas-vindas em nome da ${NOME_ACADEMIA_CLIENTE}. Monte o plano de refeições indicando alimentos claros (Ex: Frango, Ovos, Banana, Arroz).
+        Monte um plano alimentar focado em alimentos simples (Frango, Ovos, Banana, Arroz).
         [TREINO]
-        Monte a lista de exercícios da ficha (Ex: Supino Reto, Agachamento, Rosca Direta) pulando linhas entre eles.
-        Regra absoluta: Não use nenhum asterisco (*) ou hashtag (#).`;
+        Escreva uma lista curta com apenas 4 principais exercícios físicos (Exemplo: Supino Reto, Agachamento Livre, Rosca Direta, Puxada Costas), colocando cada um em uma única linha direta, sem numeração e sem símbolos.
+        Regra: Não use nenhum asterisco (*) ou hashtag (#).`;
 
         const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=openai&cache=false`;
 
@@ -272,17 +262,16 @@
 
             let parts = fullText.split('[TREINO]');
             let dietaText = parts[0].replace('[DIETA]', '').trim();
-            let treinoText = parts[1] ? parts[1].trim() : "Ficha processada.";
+            let treinoText = parts[1] ? parts[1].trim() : "";
 
             document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
 
-            // Processa as duas funções visuais de transformação de mídia
             parseDietaComImagens(dietaText);
             parseTreinoComMidia(treinoText);
 
         } catch (error) {
-            alert("Erro ao conectar à central. Tente novamente.");
+            alert("Erro ao conectar ao servidor de IA. Tente gerar novamente.");
         } finally {
             btn.disabled = false;
             btn.innerText = "🚀 Consultar Meu Personal Trainer AI";
