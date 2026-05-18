@@ -46,33 +46,19 @@
         .item-title { font-weight: 800; font-size: 17px; color: white; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .item-subtitle { font-size: 13px; color: var(--primary-neon); font-weight: 600; margin-bottom: 12px; }
         
-        /* Container do Monitor de Execução por IA NATIVO - Roda 100% das vezes */
-        .gif-container { width: 100%; height: 200px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #090d16; border: 1px solid var(--border-glow); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        
-        /* Animação Nativas de Barras de Performance em Loop Contínuo */
-        .biomechanic-scan { display: flex; align-items: flex-end; gap: 8px; height: 60px; margin-bottom: 15px; }
-        .scan-bar { width: 6px; background: var(--primary-neon); border-radius: 3px; animation: pulseMotion 1.2s ease-in-out infinite alternate; }
-        .scan-bar:nth-child(2) { animation-delay: 0.2s; background: #60a5fa; }
-        .scan-bar:nth-child(3) { animation-delay: 0.4s; background: #06b6d4; }
-        .scan-bar:nth-child(4) { animation-delay: 0.6s; background: var(--accent-green); }
-        .scan-bar:nth-child(5) { animation-delay: 0.8s; background: #34d399; }
-
-        @keyframes pulseMotion {
-            0% { height: 15px; transform: scaleY(1); }
-            100% { height: 60px; transform: scaleY(1.1); box-shadow: 0 0 12px var(--primary-neon); }
-        }
-
-        .scan-status { font-size: 11px; text-transform: uppercase; font-weight: 800; color: var(--primary-neon); letter-spacing: 2px; animation: textGlow 1.5s infinite alternate; }
-        @keyframes textGlow { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* Botão de Redirecionamento para o Vídeo do Exercício */
+        .btn-video { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #1e293b; color: var(--primary-neon); border: 1px solid var(--primary-neon); padding: 12px; font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; text-decoration: none; text-transform: uppercase; margin: 8px 0 14px 0; transition: all 0.2s; }
+        .btn-video:hover { background: var(--primary-gradient); color: white; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); border-color: transparent; }
         
         .evolution-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-glow); }
         .evolution-row input { padding: 10px; font-size: 15px; text-align: center; width: 85px; background: var(--surface-dark); color: #fff; border: 1px solid var(--border-glow); border-radius: 8px; }
         .btn-check { background: var(--accent-green); color: white; border: none; padding: 12px 18px; font-size: 13px; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; text-transform: uppercase; transition: background 0.2s; }
         .btn-check:hover { background: #059669; }
         
-        .ai-formatted { font-size: 15px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.8; }
-        .food-item { display: flex; align-items: center; gap: 15px; background: #111827; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-glow); }
-        .food-img { width: 65px; height: 65px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-glow); }
+        /* Container Refatorado da Dieta Fiel */
+        .food-item { display: flex; align-items: center; gap: 15px; background: #111827; padding: 14px; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--border-glow); }
+        .food-img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border-glow); flex-shrink: 0; }
+        .food-text { font-size: 14px; color: #f1f5f9; font-weight: 600; line-height: 1.5; }
         
         .footer-brand { text-align: center; margin-top: 35px; font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
     </style>
@@ -138,7 +124,6 @@
 
 <script>
     const NOME_ACADEMIA_CLIENTE = "Iron Fitness Club"; 
-
     let historicoEvolucaoCargas = [];
 
     document.getElementById('brandName').innerText = NOME_ACADEMIA_CLIENTE;
@@ -154,11 +139,11 @@
     function registrarEvolucao(exercicioNome, inputId) {
         const cargaDigitada = document.getElementById(inputId).value;
         if(!cargaDigitada) { alert("Digite a carga atual para salvar!"); return; }
-        
         historicoEvolucaoCargas.push({ exercicio: exercicioNome, carga: cargaDigitada });
-        alert(`Sucesso! Carga de ${cargaDigitada}kg salva para o exercício ${exercicioNome}.`);
+        alert(`Sucesso! Carga de ${cargaDigitada}kg salva.`);
     }
 
+    // 1. Redirecionamento Inteligente para Vídeo de Execução no YouTube
     function parseTreinoComMidia(textoTreino) {
         const container = document.getElementById('treinoOutput');
         container.innerHTML = "";
@@ -173,9 +158,11 @@
             let card = document.createElement('div');
             card.className = 'item-card';
 
+            let nomeExercicio = linha.split(',')[0].split('-')[0].trim().replace(/[0-9]x[0-9]+/gi, "");
+            
             let titulo = document.createElement('div');
             titulo.className = 'item-title';
-            titulo.innerText = `🏋️ ${linha.split(',')[0].split('-')[0].trim()}`;
+            titulo.innerText = `🏋️ ${nomeExercicio}`;
             card.appendChild(titulo);
 
             let detalhes = document.createElement('div');
@@ -183,20 +170,16 @@
             detalhes.innerText = linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : "4 séries de 10-12 repetições";
             card.appendChild(detalhes);
 
-            // Interface Dinâmica de Monitoramento que substitui o link externo quebrado
-            let gifContainer = document.createElement('div');
-            gifContainer.className = 'gif-container';
-            gifContainer.innerHTML = `
-                <div class="biomechanic-scan">
-                    <div class="scan-bar"></div>
-                    <div class="scan-bar"></div>
-                    <div class="scan-bar"></div>
-                    <div class="scan-bar"></div>
-                    <div class="scan-bar"></div>
-                </div>
-                <div class="scan-status">📊 Biomecânica Ativa</div>
-            `;
-            card.appendChild(gifContainer);
+            // Cria o link externo seguro de busca de execução do exercício
+            let videoQuery = encodeURIComponent(nomeExercicio + " execução correta academia");
+            let youtubeUrl = `https://www.youtube.com/results?search_query=${videoQuery}`;
+
+            let videoLink = document.createElement('a');
+            videoLink.className = 'btn-video';
+            videoLink.href = youtubeUrl;
+            videoLink.target = '_blank';
+            videoLink.innerHTML = `🎬 Assistir Execução no YouTube`;
+            card.appendChild(videoLink);
 
             let inputId = `carga_treino_${cardCount}`;
             let evoDiv = document.createElement('div');
@@ -211,38 +194,37 @@
         });
     }
 
+    // 2. Renderizador da Dieta Mantendo o Alimento Exato da IA
     function parseDietaComImagens(textoDieta) {
         let output = document.getElementById('dietaOutput');
         output.innerHTML = "";
 
-        let lines = textoDieta.split('\n');
+        let lines = textoDieta.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         
         lines.forEach(linha => {
-            if(linha.trim().length === 0) return;
-            
             let linhaMinuscula = linha.toLowerCase();
-            let imgUrl = "";
+            let imgUrl = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80"; // Imagem padrão saudável
 
-            if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("mexidos")) imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80";
-            else if (linhaMinuscula.includes("frango") || linhaMinuscula.includes("grelhado")) imgUrl = "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=150&q=80";
-            else if (linhaMinuscula.includes("banana") || linhaMinuscula.includes("fruta")) imgUrl = "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=150&q=80";
-            else if (linhaMinuscula.includes("arroz") || linhaMinuscula.includes("macarrão")) imgUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&q=80";
-
-            if (imgUrl) {
-                let foodDiv = document.createElement('div');
-                foodDiv.className = 'food-item';
-                foodDiv.innerHTML = `
-                    <img src="${imgUrl}" class="food-img" alt="Alimento">
-                    <div style="font-size:14px; color:#f1f5f9; font-weight:600;">${linha}</div>
-                `;
-                output.appendChild(foodDiv);
-            } else {
-                let p = document.createElement('div');
-                p.className = 'ai-formatted';
-                p.style.padding = "5px 10px";
-                p.innerText = linha;
-                output.appendChild(p);
+            // Seleção inteligente da foto lateral baseada no contexto do texto completo
+            if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("omelete")) {
+                imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80";
+            } else if (linhaMinuscula.includes("frango") || linhaMinuscula.includes("grelhado") || linhaMinuscula.includes("peito")) {
+                imgUrl = "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=150&q=80";
+            } else if (linhaMinuscula.includes("banana") || linhaMinuscula.includes("fruta") || linhaMinuscula.includes("maçã")) {
+                imgUrl = "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=150&q=80";
+            } else if (linhaMinuscula.includes("arroz") || linhaMinuscula.includes("carboidrato")) {
+                imgUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&q=80";
+            } else if (linhaMinuscula.includes("lanche") || linhaMinuscula.includes("castanha") || linhaMinuscula.includes("aveia")) {
+                imgUrl = "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=150&q=80";
             }
+
+            let foodDiv = document.createElement('div');
+            foodDiv.className = 'food-item';
+            foodDiv.innerHTML = `
+                <img src="${imgUrl}" class="food-img" alt="Refeição">
+                <div class="food-text">${linha}</div>
+            `;
+            output.appendChild(foodDiv);
         });
     }
 
@@ -259,19 +241,14 @@
 
         let informacoesEvolucao = historicoEvolucaoCargas.map(c => `${c.exercicio} com ${c.carga}kg`).join(', ');
 
-        let promptMessage = `Você é o Personal Trainer Chefe da ${NOME_ACADEMIA_CLIENTE}. Monte um planejamento físico focado no aluno ${name}.
-        Perfil: Idade ${age} anos, Peso ${weight}kg, Altura ${height}cm, Objetivo: ${objective}.`;
+        let promptMessage = `Você é o Personal Trainer da ${NOME_ACADEMIA_CLIENTE}. Monte o planejamento do aluno ${name}.
+        Perfil: Idade ${age} anos, Peso ${weight}kg, Altura ${height}cm, Objetivo: ${objective}.
         
-        if (historicoEvolucaoCargas.length > 0) {
-            promptMessage += `\nPROGRESSÃO DETECTADA: O aluno já concluiu exercícios com as cargas: ${informacoesEvolucao}. Reajuste as metas!`;
-        }
-
-        promptMessage += `\n\nDivida a resposta exatamente com os dois marcadores abaixo:
+        Divida a resposta usando rigorosamente as tags:
         ---DIETA---
-        Monte um plano alimentar focado em alimentos simples (Frango, Ovos, Banana, Arroz).
+        Monte o plano alimentar estruturado linha por linha detalhando o prato.
         ---TREINO---
-        Escreva uma lista com exatamente 4 principais exercícios físicos da academia (Exemplo: Supino Reto, Agachamento Livre, Rosca Direta, Puxada Costas), colocando cada um em uma única linha direta acompanhado de suas séries, sem numeração e sem símbolos.
-        Regra: Não use nenhum asterisco (*) ou hashtag (#).`;
+        Liste exatamente 4 exercícios de musculação, um por linha, com repetições. Não use marcadores, asteriscos ou hashtags.`;
 
         const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=openai&cache=false`;
 
@@ -286,14 +263,9 @@
                 let parts = fullText.split("---TREINO---");
                 dietaText = parts[0].replace("---DIETA---", "").trim();
                 treinoText = parts[1].trim();
-            } else if (fullText.toUpperCase().includes("[TREINO]")) {
-                let token = fullText.includes("[TREINO]") ? "[TREINO]" : "[treino]";
-                let parts = fullText.split(token);
-                dietaText = parts[0].replace("[DIETA]", "").replace("[dieta]", "").trim();
-                treinoText = parts[1].trim();
             } else {
                 dietaText = fullText;
-                treinoText = "Supino Reto\nAgachamento Livre\nRosca Direta\nPuxada Costas";
+                treinoText = "Supino Reto 4x10\nAgachamento Livre 4x12\nRosca Direta 4x10\nPuxada Costas 4x12";
             }
 
             document.getElementById('resultSection').style.display = 'block';
@@ -303,7 +275,7 @@
             parseTreinoComMidia(treinoText);
 
         } catch (error) {
-            alert("Erro na rede. Por favor, clique novamente para reconectar.");
+            alert("Ocorreu uma instabilidade rápida na rede. Por favor, clique novamente.");
         } finally {
             btn.disabled = false;
             btn.innerText = "🚀 Consultar Meu Personal Trainer AI";
