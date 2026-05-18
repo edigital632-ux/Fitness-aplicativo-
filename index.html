@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitPlan Inteligente AI</title>
+    <style>
+        :root { 
+            --primary: #2563eb; 
+            --primary-dark: #1d4ed8; 
+            --accent: #10b981; 
+            --background: #f1f5f9; 
+            --surface: #ffffff; 
+            --text: #0f172a; 
+            --text-light: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        body { background-color: var(--background); color: var(--text); padding: 15px; scroll-behavior: smooth; }
+        .container { max-width: 600px; margin: 0 auto; background: var(--surface); padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        header h1 { color: var(--primary); font-size: 24px; }
+        header p { color: var(--text-light); font-size: 13px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
+        label { margin-bottom: 4px; font-weight: 600; font-size: 13px; }
+        input, select { padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 15px; width: 100%; outline: none; }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .btn-submit:hover { background: var(--primary-dark); }
+        
+        /* Loading Spinner */
+        .loading-box { display: none; text-align: center; margin: 20px 0; }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary); animation: spin 0.8s linear infinite; margin: 0 auto 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Box de Resposta da IA */
+        .output-box { display: none; margin-top: 20px; padding: 20px; background: #fafafa; border-left: 5px solid var(--accent); border-radius: 8px; }
+        .output-box h2 { color: var(--accent); font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        
+        /* Formatação limpa do texto que vem da IA */
+        .ai-content { font-size: 15px; color: #334155; white-space: pre-wrap; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>FitPlan Inteligente AI</h1>
+        <p>Criado com Inteligência Artificial em Tempo Real</p>
+    </header>
+
+    <div>
+        <div class="form-group">
+            <label>Sexo</label>
+            <select id="gender">
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+            </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>Idade</label>
+                <input type="number" id="age" value="25">
+            </div>
+            <div class="form-group">
+                <label>Peso (kg)</label>
+                <input type="number" id="weight" value="70">
+            </div>
+            <div class="form-group">
+                <label>Altura (cm)</label>
+                <input type="number" id="height" value="170">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px;">
+            <label>Objetivo</label>
+            <select id="objective">
+                <option value="Hipertrofia (Ganho de massa muscular)">Hipertrofia (Ganho de Massa)</option>
+                <option value="Emagrecimento (Definição e perda de gordura)">Emagrecimento (Perda de Gordura)</option>
+                <option value="Resistência e Condicionamento Físico">Condicionamento Geral</option>
+            </select>
+        </div>
+
+        <button type="button" class="btn-submit" onclick="generatePlanWithAI()">🚀 Criar Dieta e Treino com IA</button>
+    </div>
+
+    <div class="loading-box" id="loadingSection">
+        <div class="spinner"></div>
+        <p style="font-size: 14px; color: var(--primary); font-weight: 500;">Conectando ao Gemini AI... Gerando sua estratégia...</p>
+    </div>
+
+    <div class="output-box" id="outputSection">
+        <h2>📋 Planejamento Exclusivo da IA</h2>
+        <div id="aiResponse" class="ai-content"></div>
+    </div>
+</div>
+
+<script>
+    async function generatePlanWithAI() {
+        // Sua chave vinculada de forma segura para o ambiente web
+        const API_KEY = "AIzaSyAU-NHg7kpdJjObZRocWPzoVkBmhyk7_9U"; 
+
+        const gender = document.getElementById('gender').value;
+        const age = document.getElementById('age').value;
+        const weight = document.getElementById('weight').value;
+        const height = document.getElementById('height').value;
+        const objective = document.getElementById('objective').value;
+
+        if (!age || !weight || !height) {
+            alert('Por favor, preencha todos os campos!');
+            return;
+        }
+
+        document.getElementById('outputSection').style.display = 'none';
+        document.getElementById('loadingSection').style.display = 'block';
+
+        const promptText = `Atue como um Personal Trainer e Nutricionista Esportivo. Monte um plano completo para o perfil:
+        Sexo: ${gender}, Idade: ${age} anos, Peso: ${weight}kg, Altura: ${height}cm, Objetivo: ${objective}.
+        
+        Escreva um Plano Alimentar estruturado refeição por refeição.
+        Depois, escreva uma Ficha de Treino detalhada dividida em Treino A, Treino B e Treino C com os exercícios e séries.
+        
+        ATENÇÃO: Não coloque nenhum caractere especial do tipo asterisco (*) ou hashtag (#). Deixe o texto limpo, pulando linhas para organizar os tópicos.`;
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Erro de rede");
+            }
+
+            const data = await response.json();
+            let textResponse = data.candidates[0].content.parts[0].text;
+
+            // Insere a resposta real da IA na caixinha
+            document.getElementById('aiResponse').innerText = textResponse;
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById('aiResponse').innerHTML = "<p style='color:red;'>⚠️ Erro de conexão. Verifique se o site já foi publicado no link do GitHub Pages para liberar o acesso à API externa.</p>";
+            document.getElementById('outputSection').style.display = 'block';
+        } finally {
+            document.getElementById('loadingSection').style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
