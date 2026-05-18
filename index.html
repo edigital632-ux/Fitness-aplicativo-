@@ -3,53 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma Fitness AI</title>
+    <title>FitPlan Pro AI - White Label</title>
     <style>
         :root { 
-            --primary: #1e40af; 
-            --primary-light: #3b82f6;
-            --accent: #059669; 
-            --background: #f8fafc; 
-            --surface: #ffffff; 
-            --text: #0f172a; 
-            --text-light: #475569;
-            --border: #e2e8f0;
+            --bg-dark: #0f172a;
+            --surface-dark: #1e293b;
+            --primary-neon: #38bdf8;
+            --primary-gradient: linear-gradient(135deg, #0284c7, #38bdf8);
+            --accent-green: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-glow: #334155;
         }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--background); color: var(--text); padding: 20px 15px; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 20px 12px; }
         
-        .container { max-width: 600px; margin: 0 auto; background: var(--surface); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .container { max-width: 550px; margin: 0 auto; background: var(--surface-dark); padding: 25px; border-radius: 24px; border: 1px solid var(--border-glow); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
         
-        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
-        header h1 { color: var(--primary); font-size: 28px; font-weight: 800; text-transform: uppercase; }
-        header p { color: var(--text-light); font-size: 14px; margin-top: 4px; font-weight: 500; }
+        header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-glow); padding-bottom: 20px; }
+        header h1 { color: var(--primary-neon); font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        header p { color: var(--text-muted); font-size: 13px; margin-top: 5px; font-weight: 500; }
         
         .form-group { display: flex; flex-direction: column; margin-bottom: 16px; }
-        label { margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--text); text-transform: uppercase; }
-        input, select, textarea { padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; width: 100%; outline: none; background: #fdfdfd; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary-light); background: #fff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        label { margin-bottom: 6px; font-weight: 700; font-size: 12px; color: var(--primary-neon); text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, textarea { padding: 14px; border: 1.5px solid var(--border-glow); border-radius: 12px; font-size: 15px; width: 100%; outline: none; background: #111827; color: white; transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-neon); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
         
-        .btn-submit { width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 12px; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2); }
+        .btn-submit { width: 100%; background: var(--primary-gradient); color: white; border: none; padding: 16px; font-size: 16px; font-weight: 700; border-radius: 14px; cursor: pointer; margin-top: 10px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-submit:active { transform: scale(0.98); }
         
         .tabs-container { display: none; margin-top: 30px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-        .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 15px; font-weight: 700; color: var(--text-light); cursor: pointer; border-radius: 8px; }
-        .tab-btn.active { color: var(--primary); background: rgba(59, 130, 246, 0.08); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-glow); padding-bottom: 12px; }
+        .tab-btn { flex: 1; padding: 14px; background: #111827; border: 1px solid var(--border-glow); font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; border-radius: 10px; transition: all 0.2s; }
+        .tab-btn.active { color: white; background: var(--primary-gradient); border: none; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2); }
         
-        .tab-content { display: none; background: #fff; border-radius: 12px; }
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .item-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .item-title { font-weight: 700; font-size: 16px; color: var(--primary); margin-bottom: 8px; line-height: 1.4; }
+        /* Cards Estilo Aplicativo de Academia Premium */
+        .item-card { background: #111827; border: 1px solid var(--border-glow); border-radius: 16px; padding: 18px; margin-bottom: 18px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+        .item-card:hover { border-color: var(--primary-neon); }
+        .item-title { font-weight: 800; font-size: 17px; color: white; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .item-subtitle { font-size: 13px; color: var(--primary-neon); font-weight: 600; margin-bottom: 12px; }
         
-        .media-box { width: 100%; height: 180px; border-radius: 8px; margin: 10px 0; object-fit: cover; display: block; border: 1px solid #e2e8f0; }
+        /* Container Otimizado para os Vídeos em Loop (Estilo GIF) */
+        .gif-container { width: 100%; height: 240px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #000; border: 1px solid var(--border-glow); position: relative; }
+        .gif-video { width: 100%; height: 100%; object-fit: cover; }
         
-        .evolution-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
-        .evolution-row input { padding: 8px; font-size: 14px; text-align: center; width: 80px; }
-        .btn-check { background: var(--accent); color: white; border: none; padding: 9px 14px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; flex: 1; }
+        /* Painel de Controle de Carga e Progresso */
+        .evolution-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-glow); }
+        .evolution-row input { padding: 10px; font-size: 15px; text-align: center; width: 85px; background: var(--surface-dark); }
+        .btn-check { background: var(--accent-green); color: white; border: none; padding: 12px 18px; font-size: 13px; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; text-transform: uppercase; transition: background 0.2s; }
+        .btn-check:hover { background: #059669; }
         
-        .ai-formatted { font-size: 15px; color: #334155; white-space: pre-wrap; line-height: 1.7; }
-        .footer-brand { text-align: center; margin-top: 30px; font-size: 11px; color: var(--text-light); font-weight: bold; }
+        .ai-formatted { font-size: 15px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.8; }
+        .food-item { display: flex; align-items: center; gap: 15px; background: #111827; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-glow); }
+        .food-img { width: 65px; height: 65px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-glow); }
+        
+        .footer-brand { text-align: center; margin-top: 35px; font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -57,19 +69,19 @@
 <div class="container">
     <header>
         <h1 id="brandName">FitPlan AI</h1>
-        <p>Personal Trainer & Nutricionista Digital Exclusivo</p>
+        <p>Premium Fitness Intelligence System</p>
     </header>
 
     <div>
         <div class="form-group">
-            <label>Nome do Aluno</label>
+            <label>Nome Completo do Aluno</label>
             <input type="text" id="userName" placeholder="Ex: Jeferson Silva">
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
             <div class="form-group">
                 <label>Idade</label>
-                <input type="number" id="age" value="25">
+                <input type="number" id="age" value="27">
             </div>
             <div class="form-group">
                 <label>Peso (kg)</label>
@@ -82,11 +94,11 @@
         </div>
 
         <div class="form-group">
-            <label>Objetivo Principal</label>
+            <label>Objetivo Estipulado</label>
             <select id="objective">
                 <option value="Hipertrofia">Hipertrofia (Ganho de Massa)</option>
                 <option value="Emagrecimento">Emagrecimento (Perda de Gordura)</option>
-                <option value="Definição Extrema">Definição Muscular Avançada</option>
+                <option value="Definição Extrema">Definição Muscular</option>
             </select>
         </div>
 
@@ -100,7 +112,7 @@
         </div>
         
         <div id="dietaTab" class="tab-content active">
-            <div id="dietaOutput" class="ai-formatted"></div>
+            <div id="dietaOutput"></div>
         </div>
         
         <div id="treinoTab" class="tab-content">
@@ -108,17 +120,17 @@
         </div>
     </div>
 
-    <div class="footer-brand" id="brandFooter">Powered by FitPlan Pro AI Corporativo</div>
+    <div class="footer-brand" id="brandFooter">SaaS White Label Oficial</div>
 </div>
 
 <script>
-    // 🔴 ALTERE AQUI O NOME PARA A ACADEMIA QUE VOCÊ FOR VENDER
-    const NOME_ACADEMIA_CLIENTE = "Academia Alpha Fitness"; 
+    // 🔴 ALTERE AQUI PARA O NOME DA ACADEMIA QUE COMPRAR O SEU APP
+    const NOME_ACADEMIA_CLIENTE = "Iron Fitness Club"; 
 
     let historicoEvolucaoCargas = [];
 
     document.getElementById('brandName').innerText = NOME_ACADEMIA_CLIENTE;
-    document.getElementById('brandFooter').innerText = `Plataforma Oficial | ${NOME_ACADEMIA_CLIENTE}`;
+    document.getElementById('brandFooter').innerText = `Plataforma Exclusiva | ${NOME_ACADEMIA_CLIENTE}`;
 
     function switchTab(tabId, btn) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -132,20 +144,18 @@
         if(!cargaDigitada) { alert("Digite a carga atual para salvar!"); return; }
         
         historicoEvolucaoCargas.push({ exercicio: exercicioNome, carga: cargaDigitada });
-        alert(`Evolução de Carga Registrada! Peso atualizado para ${cargaDigitada}kg no exercício ${exercicioNome}.`);
+        alert(`Sucesso! Carga de ${cargaDigitada}kg salva para o exercício ${exercicioNome}.`);
     }
 
-    // Processador robusto que analisa o texto e monta cards individuais estáveis com imagens claras
+    // Processador de Ficha de Academia com Animações Premium em Loop (Estilo GIF)
     function parseTreinoComMidia(textoTreino) {
         const container = document.getElementById('treinoOutput');
         container.innerHTML = "";
 
-        // Divide o texto linha por linha limpa
         let linhas = textoTreino.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         let cardCount = 0;
 
         linhas.forEach((linha) => {
-            // Ignora cabeçalhos genéricos vazios ou que não sejam exercícios reais
             if(linha.toLowerCase().includes("parte 2") || linha.toLowerCase().includes("[treino]")) return;
 
             cardCount++;
@@ -154,46 +164,56 @@
 
             let titulo = document.createElement('div');
             titulo.className = 'item-title';
-            titulo.innerText = linha;
+            titulo.innerText = `🏋️ ${linha.split(',')[0].split('-')[0].trim()}`;
             card.appendChild(titulo);
 
-            let exercicioLimpo = linha.toLowerCase();
-            let imgUrl = "";
+            let detalhes = document.createElement('div');
+            detalhes.className = 'item-subtitle';
+            detalhes.innerText = linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : "4 séries de 10-12 repetições";
+            card.appendChild(detalhes);
 
-            // Mapeamento estável por agrupamentos musculares e exercícios chave (Sem quebra de link externo)
+            let exercicioLimpo = linha.toLowerCase();
+            let videoUrl = "";
+
+            // Banco de Execuções Animadas Livres de Alta Velocidade (Mapeamento Cirúrgico)
             if (exercicioLimpo.includes("supino") || exercicioLimpo.includes("peito")) {
-                imgUrl = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&q=80"; // Banco de Supino / Peitorais
-            } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("perna") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("stiff")) {
-                imgUrl = "https://images.unsplash.com/photo-1434608519344-49d77a699e1d?w=500&q=80"; // Execução de Pernas / Quadríceps
-            } else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps") || exercicioLimpo.includes("triceps") || exercicioLimpo.includes("braço")) {
-                imgUrl = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&q=80"; // Treino de Braço com Halteres
+                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-chest-with-barbell-press-on-bench-41614-large.mp4";
+            } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("pessa") || exercicioLimpo.includes("stiff")) {
+                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-doing-squats-with-a-barbell-in-the-gym-41620-large.mp4";
+            } else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps") || exercicioLimpo.includes("triceps") || exercicioLimpo.includes("braço") || exercicioLimpo.includes("halter")) {
+                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-his-biceps-with-dumbbells-41611-large.mp4";
             } else if (exercicioLimpo.includes("puxada") || exercicioLimpo.includes("costas") || exercicioLimpo.includes("remada")) {
-                imgUrl = "https://images.unsplash.com/photo-1603287634278-ae6044a72d4b?w=500&q=80"; // Puxada de Costas / Dorsal
+                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-working-out-his-back-on-lat-pulldown-machine-41617-large.mp4";
             } else {
-                imgUrl = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80"; // Academia Geral / Execução Livre
+                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-performing-heavy-deadlifts-in-the-gym-41622-large.mp4";
             }
 
-            let imgElement = document.createElement('img');
-            imgElement.className = 'media-box';
-            imgElement.src = imgUrl;
-            imgElement.alt = "Demonstração de execução técnica";
-            card.appendChild(imgElement);
+            // Cria o container do GIF/Video com carregamento assíncrono profissional
+            let gifContainer = document.createElement('div');
+            gifContainer.className = 'gif-container';
+
+            let video = document.createElement('video');
+            video.className = 'gif-video';
+            video.src = videoUrl;
+            video.autoplay = true;
+            video.loop = true;
+            video.muted = true;
+            video.playsInline = true;
+
+            gifContainer.appendChild(video);
+            card.appendChild(gifContainer);
 
             let inputId = `carga_treino_${cardCount}`;
             let evoDiv = document.createElement('div');
             evoDiv.className = 'evolution-row';
             evoDiv.innerHTML = `
-                <label style='margin:0; font-size:11px; font-weight:700;'>CARGA (KG):</label>
-                <input type='number' id='${inputId}' placeholder='Ex: 40' value='20'>
+                <label style='margin:0;'>CARGA:</label>
+                <input type='number' id='${inputId}' value='20'>
                 <button class='btn-check' onclick="registrarEvolucao('${linha.replace(/'|"/g, "")}', '${inputId}')">✔️ Concluir Série</button>
             `;
             card.appendChild(evoDiv);
             container.appendChild(card);
         });
-
-        if(container.children.length === 0) {
-            container.innerHTML = "<div class='item-card'>Nenhum exercício pôde ser segmentado. Tente gerar novamente.</div>";
-        }
     }
 
     function parseDietaComImagens(textoDieta) {
@@ -205,24 +225,28 @@
         linhas.forEach(linha => {
             if(linha.trim().length === 0) return;
             
-            let p = document.createElement('div');
-            p.innerText = linha;
-            p.style.marginBottom = "8px";
-            output.appendChild(p);
-
-            let linhaMinuscula = linha.toLowerCase();
+            let linhaMinuscula = Array.isArray(linha) ? "" : linha.toLowerCase();
             let imgUrl = "";
 
-            if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("mexidos")) imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&q=80";
-            else if (linhaMinuscula.includes("frango") || linhaMinuscula.includes("grelhado")) imgUrl = "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&q=80";
-            else if (linhaMinuscula.includes("banana") || linhaMinuscula.includes("fruta")) imgUrl = "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&q=80";
-            else if (linhaMinuscula.includes("arroz") || linhaMinuscula.includes("macarrão")) imgUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80";
+            if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("mexidos")) imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80";
+            else if (linhaMinuscula.includes("frango") || linhaMinuscula.includes("grelhado")) imgUrl = "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=150&q=80";
+            else if (linhaMinuscula.includes("banana") || linhaMinuscula.includes("fruta")) imgUrl = "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=150&q=80";
+            else if (linhaMinuscula.includes("arroz") || linhaMinuscula.includes("macarrão")) imgUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&q=80";
 
             if (imgUrl) {
-                let img = document.createElement('img');
-                img.className = 'media-box';
-                img.src = imgUrl;
-                output.appendChild(img);
+                let foodDiv = document.createElement('div');
+                foodDiv.className = 'food-item';
+                foodDiv.innerHTML = `
+                    <img src="${imgUrl}" class="food-img" alt="Alimento">
+                    <div style="font-size:14px; color:#f1f5f9; font-weight:600;">${linha}</div>
+                `;
+                output.appendChild(foodDiv);
+            } else {
+                let p = document.createElement('div');
+                p.className = 'ai-formatted';
+                p.style.padding = "5px 10px";
+                p.innerText = linha;
+                output.appendChild(p);
             }
         });
     }
@@ -236,22 +260,22 @@
         const btn = document.getElementById('btnAction');
 
         btn.disabled = true;
-        btn.innerText = "⚡ Seu Personal AI está montando a ficha...";
+        btn.innerText = "⚡ CALCULANDO ADAPTAÇÃO MUSCULAR...";
 
         let informacoesEvolucao = historicoEvolucaoCargas.map(c => `${c.exercicio} com ${c.carga}kg`).join(', ');
 
-        let promptMessage = `Você é o Personal Trainer Oficial da ${NOME_ACADEMIA_CLIENTE}. Monte um planejamento resumido e direto para o aluno ${name}.
-        Biometria: Idade ${age} anos, Peso ${weight}kg, Altura ${height}cm, Objetivo: ${objective}.`;
+        let promptMessage = `Você é o Personal Trainer Chefe da ${NOME_ACADEMIA_CLIENTE}. Monte um planejamento físico focado no aluno ${name}.
+        Perfil: Idade ${age} anos, Peso ${weight}kg, Altura ${height}cm, Objetivo: ${objective}.`;
         
         if (historicoEvolucaoCargas.length > 0) {
-            promptMessage += `\nHISTÓRICO: O aluno evoluiu para as seguintes cargas: ${informacoesEvolucao}. Aumente a intensidade!`;
+            promptMessage += `\nPROGRESSÃO DETECTADA: O aluno já concluiu exercícios com as cargas: ${informacoesEvolucao}. Reajuste as metas!`;
         }
 
-        promptMessage += `\n\nEscreva a resposta dividida exatamente usando essas duas tags estruturais:
+        promptMessage += `\n\nDivida a resposta exatamente com as duas tags abaixo:
         [DIETA]
-        Monte um plano alimentar focado em alimentos simples (Frango, Ovos, Banana, Arroz).
+        Monte um plano alimentar focado em alimentos limpos (Frango, Ovos, Banana, Arroz).
         [TREINO]
-        Escreva uma lista curta com apenas 4 principais exercícios físicos (Exemplo: Supino Reto, Agachamento Livre, Rosca Direta, Puxada Costas), colocando cada um em uma única linha direta, sem numeração e sem símbolos.
+        Escreva uma lista com exatamente 4 principais exercícios físicos da academia (Exemplo: Supino Reto, Agachamento Livre, Rosca Direta, Puxada Costas), colocando cada um em uma única linha direta acompanhado de suas séries, sem numeração e sem símbolos.
         Regra: Não use nenhum asterisco (*) ou hashtag (#).`;
 
         const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=openai&cache=false`;
@@ -271,7 +295,7 @@
             parseTreinoComMidia(treinoText);
 
         } catch (error) {
-            alert("Erro ao conectar ao servidor de IA. Tente gerar novamente.");
+            alert("Erro na rede. Por favor, clique novamente para reconectar.");
         } finally {
             btn.disabled = false;
             btn.innerText = "🚀 Consultar Meu Personal Trainer AI";
