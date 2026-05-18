@@ -37,7 +37,7 @@
         .output-box { display: none; margin-top: 20px; padding: 20px; background: #fafafa; border-left: 5px solid var(--accent); border-radius: 8px; }
         .output-box h2 { color: var(--accent); font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
         
-        /* Formatação limpa do texto que vem da IA */
+        /* Formatação automática das quebras de linha da IA */
         .ai-content { font-size: 15px; color: #334155; white-space: pre-wrap; line-height: 1.6; }
     </style>
 </head>
@@ -98,7 +98,7 @@
 
 <script>
     async function generatePlanWithAI() {
-        // Sua chave vinculada de forma segura para o ambiente web
+        // Sua chave vinculada de forma segura
         const API_KEY = "AIzaSyAU-NHg7kpdJjObZRocWPzoVkBmhyk7_9U"; 
 
         const gender = document.getElementById('gender').value;
@@ -121,34 +121,40 @@
         Escreva um Plano Alimentar estruturado refeição por refeição.
         Depois, escreva uma Ficha de Treino detalhada dividida em Treino A, Treino B e Treino C com os exercícios e séries.
         
-        ATENÇÃO: Não coloque nenhum caractere especial do tipo asterisco (*) ou hashtag (#). Deixe o texto limpo, pulando linhas para organizar os tópicos.`;
+        ATENÇÃO: Não coloque nenhum caractere especial do tipo asterisco (*) ou hashtag (#). Deixe o texto totalmente limpo, pulando linhas para organizar os tópicos.`;
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // URL configurada exatamente no formato exigido pela API estável do Google
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
         try {
             const response = await fetch(url, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json" 
+                },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }] }]
+                    contents: [{ 
+                        parts: [{ text: promptText }] 
+                    }]
                 })
             });
 
-            if (!response.ok) {
-                throw new Error("Erro de rede");
-            }
-
             const data = await response.json();
-            let textResponse = data.candidates[0].content.parts[0].text;
 
-            // Insere a resposta real da IA na caixinha
-            document.getElementById('aiResponse').innerText = textResponse;
-            document.getElementById('outputSection').style.display = 'block';
-            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+            // Validação precisa se o texto voltou do Google com sucesso
+            if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                let textResponse = data.candidates[0].content.parts[0].text;
+                
+                document.getElementById('aiResponse').innerText = textResponse;
+                document.getElementById('outputSection').style.display = 'block';
+                document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                throw new Error("Resposta inválida");
+            }
 
         } catch (error) {
             console.error(error);
-            document.getElementById('aiResponse').innerHTML = "<p style='color:red;'>⚠️ Erro de conexão. Verifique se o site já foi publicado no link do GitHub Pages para liberar o acesso à API externa.</p>";
+            document.getElementById('aiResponse').innerHTML = "<p style='color:red;'>⚠️ Erro ao receber os dados da Inteligência Artificial. Atualize a página e tente novamente em instantes.</p>";
             document.getElementById('outputSection').style.display = 'block';
         } finally {
             document.getElementById('loadingSection').style.display = 'none';
