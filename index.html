@@ -34,7 +34,6 @@
         .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30, 64, 175, 0.3); }
         .btn-submit:active { transform: translateY(1px); }
         
-        /* Layout de Abas Profissionais (Tabs) */
         .tabs-container { display: none; margin-top: 30px; animation: fadeIn 0.4s ease; }
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 15px; font-weight: 700; color: var(--text-light); cursor: pointer; border-radius: 8px; transition: all 0.2s; }
@@ -43,12 +42,10 @@
         .tab-content { display: none; background: #fff; border-radius: 12px; }
         .tab-content.active { display: block; }
 
-        /* Cursor piscante do ChatGPT */
         .typing::after { content: '▌'; animation: blink 0.6s infinite; color: var(--primary-light); font-weight: bold; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Estilização interna da ficha da IA */
         .ai-formatted { font-size: 15px; color: #334155; white-space: pre-wrap; line-height: 1.7; padding: 10px 5px; }
     </style>
 </head>
@@ -142,7 +139,7 @@
             if (i < words.length) {
                 element.innerHTML += words[i] + " ";
                 i++;
-                setTimeout(type, 15); // Digitação levemente acelerada para melhor experiência
+                setTimeout(type, 15); 
             } else {
                 element.classList.remove('typing');
                 if(callback) callback();
@@ -151,11 +148,9 @@
         type();
     }
 
-    // Função auxiliar com controle robusto de tempo de resposta e reconexão automática
     async function fetchWithRetry(url, options = {}, retries = 3) {
         for (let i = 0; i < retries; i++) {
             try {
-                // Cria um controlador para cancelar a requisição se demorar mais que 25 segundos
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 25000);
                 
@@ -164,9 +159,8 @@
                 
                 if (response.ok) return await response.text();
             } catch (err) {
-                console.warn(`Tentativa ${i + 1} falhou. Reconectando...`);
+                console.warn(`Tentativa ${i + 1} falhou.`);
                 if (i === retries - 1) throw err;
-                // Aguarda 1.5 segundos antes de tentar novamente para dar fôlego ao servidor
                 await new Promise(res => setTimeout(res, 1500)); 
             }
         }
@@ -191,38 +185,56 @@
         btn.innerText = "⚡ Analisando Biometria e Gerando Plano...";
         document.getElementById('resultSection').style.display = 'none';
 
-        let promptMessage = `Atue como um Personal Trainer e Nutricionista Esportivo de alta performance. Monte um planejamento completo focado no aluno chamado ${name}. Perfil: Sexo ${gender}, ${age} anos, ${weight}kg, ${height}cm, Objetivo: ${objective}.`;
+        // Melhoramos os marcadores para garantir que a IA os escreva de forma idêntica
+        let promptMessage = `Atue como um Personal Trainer e Nutricionista Esportivo de alta performance. Monte um planejamento completo de dieta e treino focado no aluno chamado ${name}. Perfil: Sexo ${gender}, ${age} anos, ${weight}kg, ${height}cm, Objetivo: ${objective}.`;
         
         if (customRequest) {
             promptMessage += ` Restrição importante: "${customRequest}".`;
         }
 
-        promptMessage += ` Escreva estritamente no seguinte formato, dividindo as seções com as tags exatas:
-        [DIETA]
-        Faça uma saudação inicial breve a(o) ${name}. Monte o Plano Alimentar estruturado refeição por refeição de forma limpa.
-        [TREINO]
-        Monte a Ficha de Treino ABC detalhada com os exercícios e séries.
-        Regra: Não use nenhum caractere especial do tipo asterisco (*) ou hashtag (#), use apenas linhas normais e limpas.`;
+        promptMessage += ` Escreva o plano completo estruturado estritamente em duas partes limpas utilizando os cabeçalhos exatos abaixo:
 
-        // Retornamos ao modelo 'openai', que gerencia textos longos estruturados com maior estabilidade
+        PARTE 1: DIETA
+        Faça uma saudação inicial breve a(o) ${name}. Monte o Plano Alimentar estruturado refeição por refeição de forma clara.
+
+        PARTE 2: TREINO
+        Monte a Ficha de Treino ABC detalhada com os exercícios, séries e repetições de forma limpa.
+
+        Regra crucial: Não use nenhum caractere especial como asteriscos (*) ou hashtags (#), use apenas linhas normais e pulos de linha.`;
+
         const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=openai&cache=false`;
 
         try {
             const fullText = await fetchWithRetry(url);
 
-            let parts = fullText.split('[TREINO]');
-            let dietaText = parts[0].replace('[DIETA]', '').trim();
-            let treinoText = parts[1] ? parts[1].trim() : "Ficha de Treino estruturada com sucesso. Clique na aba correspondente para visualizar.";
+            let dietaText = "";
+            let treinoText = "";
+
+            // Sistema inteligente flexível de corte por palavra-chave para evitar falhas de separação nas abas
+            if (fullText.includes("PARTE 2: TREINO")) {
+                let parts = fullText.split("PARTE 2: TREINO");
+                dietaText = parts[0].replace("PARTE 1: DIETA", "").trim();
+                treinoText = parts[1].trim();
+            } else if (fullText.includes("TREINO")) {
+                let parts = fullText.split("TREINO");
+                dietaText = parts[0].replace("DIETA", "").trim();
+                treinoText = parts[1].trim();
+            } else {
+                // Caso a IA mude a estrutura por completo, entrega o texto inteiro na aba de dieta e instrui na aba de treino
+                dietaText = fullText;
+                treinoText = "O plano completo foi gerado. Caso o treino apareça junto na aba anterior, refine os parâmetros.";
+            }
 
             document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
             
+            // Inicia o efeito do ChatGPT na aba de Dieta e insere o Treino perfeitamente em background
             typeEffect(dietaText, 'dietaOutput', () => {
                 document.getElementById('treinoOutput').innerText = treinoText;
             });
 
         } catch (error) {
-            alert("O servidor de IA demorou um pouco para responder devido ao tamanho do treino. Por favor, clique novamente para recalibrar.");
+            alert("O servidor de IA demorou um pouco para responder. Por favor, clique novamente para recalibrar.");
         } finally {
             btn.disabled = false;
             btn.innerText = "🚀 Gerar Planejamento de Alta Performance";
