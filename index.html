@@ -834,8 +834,19 @@
 
             cardCount++;
             const inputId = `load_${cardCount}`;
-            const nomeParts = linha.split(',')[0].split('-')[0].trim().replace(/\d+x\d+/gi, '').trim();
-            const setsText = linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : '4 × 10–12 repetições';
+
+            // Extrai séries: padrão "4x12", "4 x 12", "4 séries de 12"
+            const setsMatch = linha.match(/(\d+\s*[xX×]\s*\d+(?:[–\-]\d+)?(?:\s*rep(?:etições|s)?)?|\d+\s*séries?\s*(?:de\s*)?\d+(?:[–\-]\d+)?(?:\s*rep(?:etições|s)?)?)/i);
+            const setsText = setsMatch ? setsMatch[0].trim() : (linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : '4 × 10–12 repetições');
+
+            // Remove o trecho de séries e delimitadores para obter só o nome
+            let nomeParts = linha
+                .replace(setsMatch ? setsMatch[0] : '', '')
+                .replace(/,.*$/, '')
+                .replace(/[-–]\s*$/, '')
+                .replace(/^\W+/, '')
+                .trim();
+            if (!nomeParts) nomeParts = linha.split(',')[0].trim();
             const gifQuery = encodeURIComponent(nomeParts.toLowerCase() + ' exercise fitness');
 
             const card = document.createElement('div');
