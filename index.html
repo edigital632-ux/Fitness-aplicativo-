@@ -1,987 +1,362 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitPlan Pro AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --black: #050607;
-            --surface: #0d1117;
-            --card: #111820;
-            --card-hover: #161e29;
-            --border: rgba(255,255,255,0.06);
-            --border-active: rgba(99,210,255,0.4);
-            --primary: #63d2ff;
-            --primary-dim: rgba(99,210,255,0.12);
-            --green: #4ade80;
-            --green-dim: rgba(74,222,128,0.1);
-            --orange: #fb923c;
-            --orange-dim: rgba(251,146,60,0.1);
-            --red: #f87171;
-            --text: #f0f4f8;
-            --text-muted: #64748b;
-            --text-soft: #94a3b8;
-            --radius: 14px;
-            --radius-sm: 8px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--black);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 24px 16px 60px;
-            background-image:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,210,255,0.06), transparent),
-                radial-gradient(ellipse 40% 30% at 80% 80%, rgba(74,222,128,0.03), transparent);
-        }
-
-        .app {
-            max-width: 560px;
-            margin: 0 auto;
-        }
-
-        /* ─── HEADER ─── */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 4px;
-            margin-bottom: 36px;
-        }
-
-        .logo-block {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-
-        .logo-text {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 34px;
-            letter-spacing: 2px;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .logo-badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            color: var(--primary);
-            background: var(--primary-dim);
-            border: 1px solid rgba(99,210,255,0.2);
-            padding: 3px 8px;
-            border-radius: 4px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .header-status {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--green);
-            box-shadow: 0 0 8px var(--green);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* ─── SECTION LABEL ─── */
-        .section-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            padding-left: 2px;
-        }
-
-        /* ─── CARD ─── */
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 12px;
-            transition: border-color 0.2s;
-        }
-
-        .card:hover { border-color: rgba(255,255,255,0.1); }
-
-        /* ─── TRAINING PANEL ─── */
-        .training-panel {
-            background: var(--card);
-            border: 1px solid rgba(251,146,60,0.2);
-            border-radius: var(--radius);
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-
-        .training-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.15s;
-        }
-
-        .training-toggle:hover { background: rgba(251,146,60,0.04); }
-
-        .training-toggle-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .training-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--orange-dim);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-        }
-
-        .training-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--orange);
-        }
-
-        .training-sublabel {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 1px;
-        }
-
-        .chevron {
-            font-size: 12px;
-            color: var(--text-muted);
-            transition: transform 0.2s;
-        }
-
-        .chevron.open { transform: rotate(180deg); }
-
-        .training-body {
-            display: none;
-            padding: 0 20px 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .training-body.open { display: block; }
-
-        .training-body textarea {
-            margin-top: 14px;
-        }
-
-        /* ─── FORM ELEMENTS ─── */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        .field { margin-bottom: 14px; }
-        .field:last-child { margin-bottom: 0; }
-
-        .field label {
-            display: block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .field input,
-        .field select,
-        .field textarea {
-            width: 100%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--text);
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            appearance: none;
-        }
-
-        .field input:focus,
-        .field select:focus,
-        .field textarea:focus {
-            border-color: var(--border-active);
-            box-shadow: 0 0 0 3px rgba(99,210,255,0.08);
-        }
-
-        .field input::placeholder,
-        .field textarea::placeholder {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        .field select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 36px;
-            cursor: pointer;
-        }
-
-        .field select option { background: #0d1117; }
-
-        /* ─── OBJECTIVE CHIPS ─── */
-        .chip-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .chip {
-            padding: 9px 16px;
-            border-radius: 100px;
-            border: 1px solid var(--border);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-soft);
-            background: var(--surface);
-            cursor: pointer;
-            transition: all 0.15s;
-            user-select: none;
-        }
-
-        .chip:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
-
-        .chip.selected {
-            background: var(--primary-dim);
-            border-color: rgba(99,210,255,0.4);
-            color: var(--primary);
-        }
-
-        /* ─── SUBMIT BUTTON ─── */
-        .btn-primary {
-            width: 100%;
-            background: linear-gradient(135deg, #0ea5e9, #63d2ff);
-            color: #020c14;
-            border: none;
-            border-radius: var(--radius);
-            padding: 16px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 24px rgba(99,210,255,0.2);
-            margin-top: 8px;
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 6px 30px rgba(99,210,255,0.35);
-            transform: translateY(-1px);
-        }
-
-        .btn-primary:active { transform: scale(0.99); }
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-icon { font-size: 18px; }
-
-        /* ─── LOADING SPINNER ─── */
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(2,12,20,0.4);
-            border-top-color: #020c14;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ─── CHAT PANEL ─── */
-        .chat-panel {
-            display: none;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-top: 12px;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .chat-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            background: rgba(99,210,255,0.03);
-        }
-
-        .chat-avatar {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #0ea5e9, #63d2ff);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 15px;
-            color: #020c14;
-            letter-spacing: 1px;
-            flex-shrink: 0;
-        }
-
-        .chat-name { font-weight: 600; font-size: 14px; }
-        .chat-role { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-
-        .chat-body {
-            padding: 18px;
-            font-size: 14px;
-            line-height: 1.75;
-            color: #cbd5e1;
-            white-space: pre-wrap;
-        }
-
-        /* ─── TABS ─── */
-        .tabs-section {
-            display: none;
-            margin-top: 24px;
-            animation: slideIn 0.3s ease;
-        }
-
-        .tab-bar {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 16px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 6px;
-        }
-
-        .tab-btn {
-            padding: 11px;
-            border: none;
-            background: transparent;
-            border-radius: var(--radius-sm);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-        }
-
-        .tab-btn.active {
-            background: var(--primary-dim);
-            color: var(--primary);
-            border: 1px solid rgba(99,210,255,0.2);
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* ─── SECTION DIVIDER ─── */
-        .day-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--primary);
-            background: var(--primary-dim);
-            border: 1px solid rgba(99,210,255,0.15);
-            padding: 6px 14px;
-            border-radius: 100px;
-            margin: 20px 0 12px;
-        }
-
-        /* ─── EXERCISE CARD ─── */
-        .exercise-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 18px;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-
-        .exercise-card:hover { border-color: rgba(255,255,255,0.1); }
-
-        .exercise-name {
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--text);
-            margin-bottom: 3px;
-        }
-
-        .exercise-sets {
-            font-size: 12px;
-            color: var(--primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .btn-gif {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            width: 100%;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 9px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-soft);
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-            margin-bottom: 12px;
-        }
-
-        .btn-gif:hover {
-            background: var(--primary-dim);
-            border-color: rgba(99,210,255,0.3);
-            color: var(--primary);
-        }
-
-        .load-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        .load-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            white-space: nowrap;
-        }
-
-        .load-input {
-            width: 70px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 8px 10px;
-            font-size: 13px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            color: var(--text);
-            text-align: center;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .load-input:focus { border-color: var(--border-active); }
-
-        .load-unit {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-right: auto;
-        }
-
-        .btn-save {
-            background: var(--green-dim);
-            border: 1px solid rgba(74,222,128,0.2);
-            border-radius: var(--radius-sm);
-            padding: 8px 14px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--green);
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-save:hover {
-            background: rgba(74,222,128,0.18);
-            border-color: rgba(74,222,128,0.4);
-        }
-
-        /* ─── FOOD CARD ─── */
-        .food-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px 16px;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-
-        .food-card:hover { border-color: rgba(255,255,255,0.1); }
-
-        .food-thumb {
-            width: 52px;
-            height: 52px;
-            border-radius: var(--radius-sm);
-            object-fit: cover;
-            border: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        .food-text {
-            font-size: 14px;
-            color: #cbd5e1;
-            line-height: 1.55;
-        }
-
-        /* ─── DIVIDER ─── */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 20px 0;
-        }
-
-        /* ─── FOOTER ─── */
-        .footer {
-            text-align: center;
-            margin-top: 48px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .footer-logo {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .footer-sub {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            opacity: 0.5;
-        }
-
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 400px) {
-            .form-row { grid-template-columns: 1fr 1fr; }
-            .form-row .field:last-child { grid-column: 1 / -1; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPlan Pro AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:#0b0f14;
+    color:white;
+    padding:20px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+.header{
+    margin-bottom:30px;
+}
+
+.logo{
+    font-size:40px;
+    font-weight:700;
+    color:#63d2ff;
+}
+
+.subtitle{
+    color:#94a3b8;
+    margin-top:5px;
+}
+
+.search-box{
+    margin-top:25px;
+    display:flex;
+    gap:10px;
+}
+
+.search-box input{
+    flex:1;
+    padding:16px;
+    border:none;
+    border-radius:12px;
+    background:#151c24;
+    color:white;
+    font-size:16px;
+    outline:none;
+}
+
+.search-box button{
+    padding:16px 24px;
+    border:none;
+    border-radius:12px;
+    background:#63d2ff;
+    color:black;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.section-title{
+    margin-top:40px;
+    margin-bottom:20px;
+    font-size:26px;
+    font-weight:700;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#131922;
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.05);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.exercise-image,
+.food-image{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+    background:black;
+}
+
+.card-content{
+    padding:16px;
+}
+
+.card-title{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:8px;
+    text-transform:capitalize;
+}
+
+.card-desc{
+    color:#94a3b8;
+    font-size:14px;
+    line-height:1.5;
+}
+
+.tags{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+    flex-wrap:wrap;
+}
+
+.tag{
+    background:#1e293b;
+    color:#63d2ff;
+    padding:6px 10px;
+    border-radius:8px;
+    font-size:12px;
+}
+
+.loading{
+    text-align:center;
+    margin-top:20px;
+    color:#63d2ff;
+}
+
+</style>
 </head>
+
 <body>
 
-<div class="app">
+<div class="container">
 
-    <!-- HEADER -->
     <div class="header">
-        <div class="logo-block">
-            <div class="logo-text" id="brandName">FitPlan</div>
-            <div class="logo-badge">AI Pro</div>
-        </div>
-        <div class="header-status">
-            <div class="status-dot"></div>
-            Sistema Ativo
-        </div>
-    </div>
 
-    <!-- AI TRAINING PANEL -->
-    <div class="training-panel">
-        <div class="training-toggle" onclick="toggleTraining()">
-            <div class="training-toggle-left">
-                <div class="training-icon">⚙️</div>
-                <div>
-                    <div class="training-label">Configurações do Sistema</div>
-                    <div class="training-sublabel">Instruções fixas para a IA</div>
-                </div>
-            </div>
-            <div class="chevron" id="chevron">▾</div>
+        <div class="logo">
+            FITPLAN PRO AI
         </div>
-        <div class="training-body" id="trainingBody">
-            <div class="field">
-                <label>Diretrizes da IA</label>
-                <textarea id="aiSystemDirectives" rows="3" placeholder="Ex: Sempre incluir panturrilha nos treinos de perna. Priorizar ovos e frango na dieta..."></textarea>
-            </div>
-            <button class="btn-primary" style="background: linear-gradient(135deg, #c2410c, #fb923c); box-shadow: 0 4px 20px rgba(251,146,60,0.2);" onclick="saveAITraining()">
-                <span>💾</span> Salvar Configurações
+
+        <div class="subtitle">
+            Aplicativo fitness com exercícios e alimentos
+        </div>
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Digite peito, braço, costas..."
+            >
+
+            <button onclick="buscarExercicios()">
+                Buscar
             </button>
+
         </div>
+
     </div>
 
-    <!-- STUDENT FORM -->
-    <div class="card">
-        <div class="section-label">Dados do Aluno</div>
-
-        <div class="field">
-            <label>Nome Completo</label>
-            <input type="text" id="userName" placeholder="Ex: Jeferson Silva">
-        </div>
-
-        <div class="form-row">
-            <div class="field">
-                <label>Idade</label>
-                <input type="number" id="age" value="27" min="14" max="80">
-            </div>
-            <div class="field">
-                <label>Peso (kg)</label>
-                <input type="number" id="weight" value="70" min="30" max="300">
-            </div>
-            <div class="field">
-                <label>Altura (cm)</label>
-                <input type="number" id="height" value="170" min="120" max="230">
-            </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="section-label">Objetivo</div>
-        <div class="chip-group" id="chipGroup">
-            <div class="chip selected" data-value="Hipertrofia" onclick="selectChip(this)">💪 Hipertrofia</div>
-            <div class="chip" data-value="Emagrecimento" onclick="selectChip(this)">🔥 Emagrecimento</div>
-            <div class="chip" data-value="Definição Muscular" onclick="selectChip(this)">⚡ Definição</div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="section-label">Mensagem para o Personal</div>
-        <div class="field" style="margin-bottom: 0;">
-            <textarea id="userChatInput" rows="3" placeholder="Fale sobre a divisão que quer, o que comeu, como está se sentindo..."></textarea>
-        </div>
+    <div class="section-title">
+        Exercícios
     </div>
 
-    <button class="btn-primary" id="btnAction" onclick="generatePlan()">
-        <span class="btn-icon">🚀</span>
-        Consultar Personal AI
-    </button>
+    <div class="grid" id="exerciseGrid"></div>
 
-    <!-- CHAT RESPONSE -->
-    <div class="chat-panel" id="chatPanel">
-        <div class="chat-header">
-            <div class="chat-avatar">AI</div>
-            <div>
-                <div class="chat-name">Personal Trainer AI</div>
-                <div class="chat-role" id="brandNameSmall">Iron Fitness Club</div>
-            </div>
-        </div>
-        <div class="chat-body" id="chatBody"></div>
+    <div class="section-title">
+        Alimentos Fitness
     </div>
 
-    <!-- RESULTS TABS -->
-    <div class="tabs-section" id="tabsSection">
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('dietaTab', this)">🥗 Plano Alimentar</button>
-            <button class="tab-btn" onclick="switchTab('treinoTab', this)">💪 Ficha de Treino</button>
-        </div>
+    <div class="grid" id="foodGrid"></div>
 
-        <div id="dietaTab" class="tab-content active">
-            <div id="dietaOutput"></div>
-        </div>
-
-        <div id="treinoTab" class="tab-content">
-            <div id="treinoOutput"></div>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-        <div class="footer-logo" id="brandFooter">IRON FITNESS CLUB</div>
-        <div class="footer-sub">PLATAFORMA EXCLUSIVA · POWERED BY AI</div>
-    </div>
+    <div class="loading" id="loading"></div>
 
 </div>
 
 <script>
-    const ACADEMIA = "Iron Fitness Club";
-    let historicoCargas = [];
-    let objetivoSelecionado = "Hipertrofia";
 
-    // Init
-    document.getElementById('brandName').innerText = ACADEMIA;
-    document.getElementById('brandFooter').innerText = ACADEMIA.toUpperCase();
-    document.getElementById('brandNameSmall').innerText = ACADEMIA;
+const PEXELS_API_KEY = "SUA_CHAVE_PEXELS";
+const RAPID_API_KEY = "SUA_CHAVE_RAPIDAPI";
 
-    window.onload = () => {
-        const saved = localStorage.getItem('fitplan_directives');
-        if (saved) document.getElementById('aiSystemDirectives').value = saved;
-    };
+const exerciseGrid = document.getElementById("exerciseGrid");
+const foodGrid = document.getElementById("foodGrid");
+const loading = document.getElementById("loading");
 
-    function toggleTraining() {
-        const body = document.getElementById('trainingBody');
-        const chevron = document.getElementById('chevron');
-        body.classList.toggle('open');
-        chevron.classList.toggle('open');
-    }
+async function buscarExercicios(){
 
-    function saveAITraining() {
-        const val = document.getElementById('aiSystemDirectives').value.trim();
-        localStorage.setItem('fitplan_directives', val);
-        showToast('Configurações salvas com sucesso!');
-    }
+    const busca =
+        document.getElementById("searchInput").value || "chest";
 
-    function selectChip(el) {
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        objetivoSelecionado = el.dataset.value;
-    }
+    loading.innerHTML = "Carregando exercícios...";
 
-    function switchTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-    }
+    exerciseGrid.innerHTML = "";
 
-    function registrarCarga(exercicio, inputId) {
-        const val = document.getElementById(inputId).value;
-        if (!val) { showToast('Digite a carga antes de salvar!', 'error'); return; }
-        historicoCargas.push({ exercicio, carga: val, data: new Date().toLocaleDateString('pt-BR') });
-        showToast(`${val}kg registrado para "${exercicio.substring(0,30)}"`);
-    }
+    try{
 
-    function showToast(msg, type = 'success') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: ${type === 'error' ? '#f87171' : '#4ade80'};
-            color: #020c14; padding: 10px 20px; border-radius: 100px;
-            font-size: 13px; font-weight: 700; z-index: 9999;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            white-space: nowrap; max-width: 90vw;
-        `;
-        toast.innerText = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2800);
-    }
-
-    function parseTreino(text) {
-        const container = document.getElementById('treinoOutput');
-        container.innerHTML = '';
-        let cardCount = 0;
-
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
-        const dayWords = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo', 'dia ', 'feira'];
-
-        lines.forEach(linha => {
-            if (linha.includes('---')) return;
-
-            const isDay = dayWords.some(w => linha.toLowerCase().includes(w));
-            if (isDay) {
-                const badge = document.createElement('div');
-                badge.className = 'day-badge';
-                badge.innerText = '📅 ' + linha.replace(/[:-]/g, '').trim();
-                container.appendChild(badge);
-                return;
+        const response = await fetch(
+            `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${busca}`,
+            {
+                method:"GET",
+                headers:{
+                    "X-RapidAPI-Key": RAPID_API_KEY,
+                    "X-RapidAPI-Host":"exercisedb.p.rapidapi.com"
+                }
             }
+        );
 
-            cardCount++;
-            const inputId = `load_${cardCount}`;
+        const data = await response.json();
 
-            // Extrai séries: padrão "4x12", "4 x 12", "4 séries de 12"
-            const setsMatch = linha.match(/(\d+\s*[xX×]\s*\d+(?:[–\-]\d+)?(?:\s*rep(?:etições|s)?)?|\d+\s*séries?\s*(?:de\s*)?\d+(?:[–\-]\d+)?(?:\s*rep(?:etições|s)?)?)/i);
-            const setsText = setsMatch ? setsMatch[0].trim() : (linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : '4 × 10–12 repetições');
+        const exercicios = data.slice(0,6);
 
-            // Remove o trecho de séries e delimitadores para obter só o nome
-            let nomeParts = linha
-                .replace(setsMatch ? setsMatch[0] : '', '')
-                .replace(/,.*$/, '')
-                .replace(/[-–]\s*$/, '')
-                .replace(/^\W+/, '')
-                .trim();
-            if (!nomeParts) nomeParts = linha.split(',')[0].trim();
-            // ExRx.net — banco de exercícios com GIF único de execução por exercício
-            // Traduz nome para inglês básico para melhor resultado na busca
-            const traducoes = {
-                'supino': 'bench press', 'agachamento': 'squat', 'leg press': 'leg press',
-                'cadeira extensora': 'leg extension', 'cadeira flexora': 'leg curl',
-                'desenvolvimento': 'shoulder press', 'rosca direta': 'bicep curl',
-                'rosca alternada': 'alternating curl', 'rosca martelo': 'hammer curl',
-                'triceps corda': 'triceps pushdown rope', 'triceps pulley': 'triceps pushdown',
-                'tríceps corda': 'triceps pushdown rope', 'tríceps pulley': 'triceps pushdown',
-                'triceps testa': 'skull crusher', 'tríceps testa': 'skull crusher',
-                'puxada': 'lat pulldown', 'remada': 'row', 'crucifixo': 'dumbbell fly',
-                'panturrilha': 'calf raise', 'stiff': 'stiff leg deadlift',
-                'levantamento terra': 'deadlift', 'abdominais': 'crunch', 'abdominal': 'crunch',
-                'paralela': 'dips', 'pulldown': 'lat pulldown', 'voador': 'pec deck fly',
-            };
-            let nomeEn = nomeParts.toLowerCase();
-            for (const [pt, en] of Object.entries(traducoes)) {
-                if (nomeEn.includes(pt)) { nomeEn = en; break; }
-            }
-            const exrxUrl = `https://exrx.net/Search?term=${encodeURIComponent(nomeEn)}`;
+        exercicios.forEach(exercicio => {
 
-            const card = document.createElement('div');
-            card.className = 'exercise-card';
-            card.innerHTML = `
-                <div class="exercise-name">🏋️ ${nomeParts}</div>
-                <div class="exercise-sets">${setsText}</div>
-                <a class="btn-gif" href="${exrxUrl}" target="_blank" rel="noopener">
-                    ▶ Ver execução correta
-                </a>
-                <div class="load-row">
-                    <div class="load-label">Carga</div>
-                    <input type="number" id="${inputId}" class="load-input" value="20">
-                    <div class="load-unit">kg</div>
-                    <button class="btn-save" onclick="registrarCarga('${nomeParts.replace(/'/g, '')}', '${inputId}')">✓ Salvar</button>
+            exerciseGrid.innerHTML += `
+
+            <div class="card">
+
+                <img
+                    class="exercise-image"
+                    src="${exercicio.gifUrl}"
+                >
+
+                <div class="card-content">
+
+                    <div class="card-title">
+                        ${exercicio.name}
+                    </div>
+
+                    <div class="card-desc">
+                        Músculo alvo: ${exercicio.target}
+                    </div>
+
+                    <div class="tags">
+
+                        <div class="tag">
+                            ${exercicio.bodyPart}
+                        </div>
+
+                        <div class="tag">
+                            ${exercicio.equipment}
+                        </div>
+
+                    </div>
+
                 </div>
+
+            </div>
+
             `;
-            container.appendChild(card);
+
         });
+
+    }catch(error){
+
+        exerciseGrid.innerHTML = `
+            <p>Erro ao carregar exercícios.</p>
+        `;
+
     }
 
-    function parseDieta(text) {
-        const container = document.getElementById('dietaOutput');
-        container.innerHTML = '';
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    loading.innerHTML = "";
 
-        const imgMap = [
-            { keys: ['ovo', 'omelete', 'mexido'], url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80' },
-            { keys: ['frango', 'grelhado', 'peito'], url: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=150&q=80' },
-            { keys: ['banana', 'fruta', 'maçã'], url: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=150&q=80' },
-            { keys: ['arroz', 'feijão', 'grão'], url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150&q=80' },
-            { keys: ['salada', 'legume', 'brócolis', 'vegetal'], url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=150&q=80' },
-            { keys: ['peixe', 'atum', 'salmão'], url: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=150&q=80' },
-        ];
+}
 
-        lines.forEach(linha => {
-            if (linha.includes('---')) return;
-            const lower = linha.toLowerCase();
-            let imgUrl = 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80';
-            for (const entry of imgMap) {
-                if (entry.keys.some(k => lower.includes(k))) { imgUrl = entry.url; break; }
-            }
+async function carregarAlimentos(){
 
-            const card = document.createElement('div');
-            card.className = 'food-card';
-            card.innerHTML = `
-                <img src="${imgUrl}" class="food-thumb" alt="Alimento" loading="lazy">
-                <div class="food-text">${linha}</div>
+    const alimentos = [
+        "frango grelhado",
+        "banana",
+        "arroz integral",
+        "aveia",
+        "ovo cozido",
+        "salada fitness"
+    ];
+
+    foodGrid.innerHTML = "";
+
+    for(const alimento of alimentos){
+
+        try{
+
+            const response = await fetch(
+                `https://api.pexels.com/v1/search?query=${alimento}&per_page=1`,
+                {
+                    headers:{
+                        Authorization:PEXELS_API_KEY
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            const foto = data.photos[0];
+
+            foodGrid.innerHTML += `
+
+            <div class="card">
+
+                <img
+                    class="food-image"
+                    src="${foto.src.large}"
+                >
+
+                <div class="card-content">
+
+                    <div class="card-title">
+                        ${alimento}
+                    </div>
+
+                    <div class="card-desc">
+                        Alimento saudável para dieta fitness
+                    </div>
+
+                    <div class="tags">
+
+                        <div class="tag">
+                            Proteína
+                        </div>
+
+                        <div class="tag">
+                            Fitness
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
             `;
-            container.appendChild(card);
-        });
-    }
 
-    async function generatePlan() {
-        const name = document.getElementById('userName').value.trim() || "Aluno";
-        const age = document.getElementById('age').value;
-        const weight = document.getElementById('weight').value;
-        const height = document.getElementById('height').value;
-        const userMsg = document.getElementById('userChatInput').value.trim();
-        const customDirectives = localStorage.getItem('fitplan_directives') || '';
-        const btn = document.getElementById('btnAction');
+        }catch(error){
 
-        btn.disabled = true;
-        btn.innerHTML = '<div class="spinner"></div> Processando com a IA...';
+            console.log(error);
 
-        let prompt = `Você é o Personal Trainer expert da ${ACADEMIA}. Responda de forma profissional e humanizada.
-Ficha: Nome ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${objetivoSelecionado}.
-Mensagem do aluno: "${userMsg}".`;
-
-        if (customDirectives) prompt += `\n\nDiretrizes obrigatórias: ${customDirectives}`;
-
-        prompt += `\n\nREGRA ANATÔMICA: Exercícios de membros inferiores pesados (Agachamento, Leg Press, Extensora) NUNCA no mesmo dia que braços (Bíceps, Tríceps, Ombros).
-Organize por dias da semana com títulos claros (Ex: Segunda-feira: Peito e Tríceps).
-
-Responda com exatamente estes três marcadores:
----RESPOSTA_CHAT---
-(Parágrafo de consultoria humanizada respondendo ao aluno)
----DIETA---
-(Plano alimentar linha por linha, sem marcadores de asterisco ou hashtag)
----TREINO---
-(Ficha estruturada por dias da semana e exercícios, sem asteriscos ou hashtags)`;
-
-        const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`;
-
-        try {
-            const res = await fetch(url);
-            const fullText = await res.text();
-
-            let chatText = '', dietaText = '', treinoText = '';
-
-            if (fullText.includes('---RESPOSTA_CHAT---') && fullText.includes('---DIETA---') && fullText.includes('---TREINO---')) {
-                const [top, bottom] = fullText.split('---DIETA---');
-                chatText = top.split('---RESPOSTA_CHAT---')[1]?.trim() || '';
-                const [dieta, treino] = bottom.split('---TREINO---');
-                dietaText = dieta.trim();
-                treinoText = treino.trim();
-            } else {
-                chatText = 'Plano gerado com sucesso! Confira as abas abaixo.';
-                dietaText = fullText;
-                treinoText = 'Segunda-feira: Peito e Tríceps\nSupino Reto, 4x10\nCrucifixo, 3x12\nTríceps Pulley, 4x12\nTerça-feira: Pernas\nAgachamento Livre, 4x10\nLeg Press, 4x12\nCadeira Extensora, 3x15';
-            }
-
-            document.getElementById('chatBody').innerText = chatText;
-            document.getElementById('chatPanel').style.display = 'block';
-            document.getElementById('tabsSection').style.display = 'block';
-
-            parseDieta(dietaText);
-            parseTreino(treinoText);
-
-        } catch (err) {
-            showToast('Erro ao conectar com a IA. Tente novamente.', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<span class="btn-icon">🚀</span> Consultar Personal AI';
         }
+
     }
+
+}
+
+buscarExercicios();
+carregarAlimentos();
+
 </script>
 
 </body>
