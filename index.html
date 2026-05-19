@@ -847,16 +847,33 @@
                 .replace(/^\W+/, '')
                 .trim();
             if (!nomeParts) nomeParts = linha.split(',')[0].trim();
-            // YouTube Shorts filtrado: abre direto num vídeo curto de execução do exercício
-            const ytQuery = encodeURIComponent('como fazer ' + nomeParts + ' execução correta');
-            const ytUrl = `https://www.youtube.com/shorts?search_query=${ytQuery}`;
+            // ExRx.net — banco de exercícios com GIF único de execução por exercício
+            // Traduz nome para inglês básico para melhor resultado na busca
+            const traducoes = {
+                'supino': 'bench press', 'agachamento': 'squat', 'leg press': 'leg press',
+                'cadeira extensora': 'leg extension', 'cadeira flexora': 'leg curl',
+                'desenvolvimento': 'shoulder press', 'rosca direta': 'bicep curl',
+                'rosca alternada': 'alternating curl', 'rosca martelo': 'hammer curl',
+                'triceps corda': 'triceps pushdown rope', 'triceps pulley': 'triceps pushdown',
+                'tríceps corda': 'triceps pushdown rope', 'tríceps pulley': 'triceps pushdown',
+                'triceps testa': 'skull crusher', 'tríceps testa': 'skull crusher',
+                'puxada': 'lat pulldown', 'remada': 'row', 'crucifixo': 'dumbbell fly',
+                'panturrilha': 'calf raise', 'stiff': 'stiff leg deadlift',
+                'levantamento terra': 'deadlift', 'abdominais': 'crunch', 'abdominal': 'crunch',
+                'paralela': 'dips', 'pulldown': 'lat pulldown', 'voador': 'pec deck fly',
+            };
+            let nomeEn = nomeParts.toLowerCase();
+            for (const [pt, en] of Object.entries(traducoes)) {
+                if (nomeEn.includes(pt)) { nomeEn = en; break; }
+            }
+            const exrxUrl = `https://exrx.net/Search?term=${encodeURIComponent(nomeEn)}`;
 
             const card = document.createElement('div');
             card.className = 'exercise-card';
             card.innerHTML = `
                 <div class="exercise-name">🏋️ ${nomeParts}</div>
                 <div class="exercise-sets">${setsText}</div>
-                <a class="btn-gif" href="${ytUrl}" target="_blank" rel="noopener">
+                <a class="btn-gif" href="${exrxUrl}" target="_blank" rel="noopener">
                     ▶ Ver execução correta
                 </a>
                 <div class="load-row">
