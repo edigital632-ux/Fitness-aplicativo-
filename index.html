@@ -847,14 +847,16 @@
                 .replace(/^\W+/, '')
                 .trim();
             if (!nomeParts) nomeParts = linha.split(',')[0].trim();
-            const gifQuery = encodeURIComponent(nomeParts.toLowerCase() + ' exercise fitness');
+            // YouTube Shorts filtrado: abre direto num vídeo curto de execução do exercício
+            const ytQuery = encodeURIComponent('como fazer ' + nomeParts + ' execução correta');
+            const ytUrl = `https://www.youtube.com/shorts?search_query=${ytQuery}`;
 
             const card = document.createElement('div');
             card.className = 'exercise-card';
             card.innerHTML = `
                 <div class="exercise-name">🏋️ ${nomeParts}</div>
                 <div class="exercise-sets">${setsText}</div>
-                <a class="btn-gif" href="https://giphy.com/search/${gifQuery}" target="_blank" rel="noopener">
+                <a class="btn-gif" href="${ytUrl}" target="_blank" rel="noopener">
                     ▶ Ver execução correta
                 </a>
                 <div class="load-row">
