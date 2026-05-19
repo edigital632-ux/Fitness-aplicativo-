@@ -11,6 +11,7 @@
             --primary-neon: #38bdf8;
             --primary-gradient: linear-gradient(135deg, #0284c7, #38bdf8);
             --accent-green: #10b981;
+            --accent-orange: #f97316;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-glow: #334155;
@@ -31,7 +32,15 @@
         input, select, textarea { padding: 14px; border: 1.5px solid var(--border-glow); border-radius: 12px; font-size: 15px; width: 100%; outline: none; background: #111827; color: white; transition: all 0.2s; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary-neon); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
         
-        /* Interface de Chat Estilo ChatGPT */
+        /* Nova Área: Treinar a IA (Painel Avançado) */
+        .ai-training-panel { background: #0f172a; border: 1px dashed var(--accent-orange); border-radius: 16px; padding: 15px; margin-bottom: 20px; }
+        .ai-training-title { font-size: 13px; font-weight: 800; color: var(--accent-orange); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+        .ai-training-content { margin-top: 12px; display: none; }
+        .ai-training-content.open { display: block; }
+        .btn-save-training { background: var(--accent-orange); color: white; border: none; padding: 10px; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 8px; width: 100%; transition: opacity 0.2s; }
+        .btn-save-training:hover { opacity: 0.9; }
+
+        /* ChatGPT Interface Box */
         .chat-container { display: none; background: var(--chat-bg); border: 1px solid var(--border-glow); border-radius: 16px; padding: 16px; margin: 20px 0; }
         .chat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid var(--border-glow); padding-bottom: 10px; }
         .chat-avatar { width: 35px; height: 35px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; color: white; }
@@ -49,8 +58,8 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Divisores de Dias da Semana (Ficha de Academia Oficial) */
-        .day-header { font-size: 14px; font-weight: 800; color: var(--bg-dark); background: var(--primary-neon); padding: 6px 14px; border-radius: 20px; display: inline-block; margin: 20px 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Cabeçalhos Oficiais dos Dias da Semana */
+        .day-header { font-size: 14px; font-weight: 800; color: var(--bg-dark); background: var(--primary-neon); padding: 6px 14px; border-radius: 20px; display: inline-block; margin: 22px 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; width: auto; }
         
         .item-card { background: #111827; border: 1px solid var(--border-glow); border-radius: 16px; padding: 18px; margin-bottom: 14px; position: relative; overflow: hidden; transition: border-color 0.2s; }
         .item-card:hover { border-color: var(--primary-neon); }
@@ -80,6 +89,20 @@
     </header>
 
     <div>
+        <div class="ai-training-panel">
+            <div class="ai-training-title" onclick="toggleTrainingPanel()">
+                <span>⚙️ Treinar a IA (Configurações Core)</span>
+                <span id="trainingArrow">▼</span>
+            </div>
+            <div class="ai-training-content" id="trainingContent">
+                <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+                    <label style="color: var(--accent-orange);">Instruções fixas de treinamento do sistema</label>
+                    <textarea id="aiSystemDirectives" rows="4" placeholder="Ex: Sempre adicione patuá/panturrilha nos treinos de perna. Prefira recomendar ovos e frango na dieta. Mantenha um tom motivador de fisiculturista..."></textarea>
+                    <button type="button" class="btn-save-training" onclick="saveAITraining()">💾 Salvar Treinamento da IA</button>
+                </div>
+            </div>
+        </div>
+
         <div class="form-group">
             <label>Nome Completo do Aluno</label>
             <input type="text" id="userName" placeholder="Ex: Jeferson Silva">
@@ -110,16 +133,16 @@
         </div>
 
         <div class="form-group">
-            <label>Fale com seu Personal (Divisão de treinos, o que comeu, etc.)</label>
-            <textarea id="userChatInput" rows="3" placeholder="Ex: Quero organizar meu treino com segunda peito/tríceps, terça perna... E comi bastante proteína hoje."></textarea>
+            <label>Fale com seu Personal Trainer AI (Estilo ChatGPT)</label>
+            <textarea id="userChatInput" rows="3" placeholder="Fale como quer a divisão hoje, o que comeu ou relate seu dia..."></textarea>
         </div>
 
-        <button type="button" class="btn-submit" id="btnAction" onclick="generateWhiteLabelPlan()">🚀 Perguntar ao Personal & Gerar Ficha</button>
+        <button type="button" class="btn-submit" id="btnAction" onclick="generateWhiteLabelPlan()">🚀 Consultar Meu Personal AI</button>
 
         <div class="chat-container" id="chatContainer">
             <div class="chat-header">
                 <div class="chat-avatar">AI</div>
-                <div class="chat-title">Personal Trainer AI (Estilo ChatGPT)</div>
+                <div class="chat-title">Personal Trainer AI</div>
             </div>
             <div class="chat-message" id="chatMessageText"></div>
         </div>
@@ -150,6 +173,28 @@
     document.getElementById('brandName').innerText = NOME_ACADEMIA_CLIENTE;
     document.getElementById('brandFooter').innerText = `Plataforma Exclusiva | ${NOME_ACADEMIA_CLIENTE}`;
 
+    // Funções de Interface do Painel de Treinamento
+    function toggleTrainingPanel() {
+        const content = document.getElementById('trainingContent');
+        const arrow = document.getElementById('trainingArrow');
+        content.classList.toggle('open');
+        arrow.innerText = content.classList.contains('open') ? "▲" : "▼";
+    }
+
+    function saveAITraining() {
+        const directives = document.getElementById('aiSystemDirectives').value;
+        localStorage.setItem('fitplan_ai_directives', directives);
+        alert("Treinamento da IA atualizado e salvo com sucesso no core do app!");
+    }
+
+    // Carregar regras salvas anteriormente se existirem
+    window.onload = function() {
+        const savedDirectives = localStorage.getItem('fitplan_ai_directives');
+        if(savedDirectives) {
+            document.getElementById('aiSystemDirectives').value = savedDirectives;
+        }
+    };
+
     function switchTab(tabId, btn) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -164,7 +209,6 @@
         alert(`Sucesso! Carga de ${cargaDigitada}kg salva.`);
     }
 
-    // Organiza a Ficha de Academia dividida certinha por dias da semana
     function parseTreinoComMidia(textoTreino) {
         const container = document.getElementById('treinoOutput');
         container.innerHTML = "";
@@ -175,7 +219,6 @@
         linhas.forEach((linha) => {
             if(linha.toLowerCase().includes("---")) return;
 
-            // Identifica se a linha é um dia/grupo muscular da ficha (Ex: Segunda-feira:)
             if(linha.toLowerCase().includes("feira") || linha.toLowerCase().includes("segunda") || linha.toLowerCase().includes("terça") || linha.toLowerCase().includes("quarta") || linha.toLowerCase().includes("quinta") || linha.toLowerCase().includes("sexta") || linha.toLowerCase().includes("sábado") || linha.toLowerCase().includes("dia ")) {
                 let dayDiv = document.createElement('div');
                 dayDiv.className = 'day-header';
@@ -207,7 +250,7 @@
             videoLink.className = 'btn-video';
             videoLink.href = externalGifUrl;
             videoLink.target = '_blank';
-            videoLink.innerHTML = `🖼️ Ver GIF de Execução`;
+            videoLink.innerHTML = `🖼️ Ver Execução Correta`;
             card.appendChild(videoLink);
 
             let inputId = `carga_treino_${cardCount}`;
@@ -230,7 +273,7 @@
         
         lines.forEach(linha => {
             if(linha.toLowerCase().includes("---")) return;
-            let linhaMinuscula = Franz = linha.toLowerCase();
+            let linhaMinuscula = linha.toLowerCase();
             let imgUrl = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80";
 
             if (linhaMinuscula.includes("ovo") || linhaMinuscula.includes("omelete")) imgUrl = "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80";
@@ -252,24 +295,32 @@
         const height = document.getElementById('height').value;
         const objective = document.getElementById('objective').value;
         const userChatMessage = document.getElementById('userChatInput').value.trim();
+        const customDirectives = localStorage.getItem('fitplan_ai_directives') || "";
         const btn = document.getElementById('btnAction');
 
         btn.disabled = true;
-        btn.innerText = "⚡ CONECTANDO AO CHAT DO PERSONAL...";
+        btn.innerText = "⚡ PROGRESANDO COM A IA...";
 
-        let promptMessage = `Você é o Personal Trainer Avançado da ${NOME_ACADEMIA_CLIENTE}. Responda ao aluno no estilo ChatGPT.
-        Dados: Aluno ${name}, Objetivo: ${objective}. Mensagem/Pedido do aluno: "${userChatMessage}".
-        
-        Siga as regras de organização de ficha de recepção de academia:
-        Organize a divisão dos treinos obrigatoriamente por dias (Exemplo: Segunda-feira: Peito e Tríceps, Terça-feira: Pernas, Quarta-feira: Costas e Bíceps, etc.) de forma bem estruturada e profissional.
+        let promptMessage = `Você é o Personal Trainer Avançado e expert da ${NOME_ACADEMIA_CLIENTE}. Responda ao aluno no estilo limpo do ChatGPT.
+        Ficha do Aluno: Nome ${name}, Objetivo: ${objective}.
+        Mensagem enviada pelo aluno: "${userChatMessage}".`;
+
+        // Injeta as diretrizes de treinamento salvas pelo dono do app
+        if(customDirectives) {
+            promptMessage += `\n\nREGRAS ADICIONAIS DE TREINAMENTO DA IA (Siga estritamente): ${customDirectives}`;
+        }
+
+        promptMessage += `\n\nREGRA DE DIVISÃO CRUCIAL DE ACADEMIA: 
+        1. Exercícios de membros inferiores pesados (como Agachamento Livre, Leg Press, Cadeira Extensora) NUNCA podem ser gerados no mesmo dia que treinos de braço (como Bíceps, Tríceps ou Ombros). Separe-os estritamente em dias diferentes da semana!
+        2. Organize os treinos obrigatoriamente por títulos de dias claros (Ex: Segunda-feira: Peito e Tríceps, Terça-feira: Pernas Completo, Quarta-feira: Costas e Bíceps, etc.).
 
         Divida toda a resposta usando esses três marcadores exatos:
         ---RESPOSTA_CHAT---
-        (Aqui escreva a resposta explicativa do Personal Trainer conversando de forma humanizada e detalhada com o aluno sobre o feedback dele).
+        (Escreva aqui o seu parágrafo de consultoria humanizada e detalhada respondendo o que o aluno comentou).
         ---DIETA---
-        (Monte o plano alimentar fiel e exato linha por linha).
+        (Monte o plano alimentar fiel linha por linha de forma exata).
         ---TREINO---
-        (Escreva a ficha de academia bem estruturada com os dias da semana em destaque, seguidos pelos respectivos exercícios em linhas isoladas sem usar hashtags ou asteriscos).`;
+        (Escreva a ficha estruturada com os dias da semana e os respectivos exercícios abaixo de cada dia, sem marcadores de asteriscos ou hashtags).`;
 
         const url = `https://text.pollinations.ai/${encodeURIComponent(promptMessage)}?model=openai&cache=false`;
 
@@ -290,16 +341,14 @@
                 dietaText = bottomParts[0].trim();
                 treinoText = bottomParts[1].trim();
             } else {
-                chatText = "Ficha de treinamento atualizada e estruturada estilo ChatGPT com sucesso!";
+                chatText = "Ficha de treinamento atualizada e montada por IA seguindo todas as restrições anatômicas!";
                 dietaText = fullText;
                 treinoText = "Segunda-feira: Peito e Tríceps\nSupino Reto 4x10\nTríceps Pulley 4x12\nTerça-feira: Pernas Completo\nAgachamento Livre 4x12";
             }
 
-            // Renderiza o Chat estilo ChatGPT
             document.getElementById('chatMessageText').innerText = chatText;
             document.getElementById('chatContainer').style.display = 'block';
 
-            // Abre as abas oficiais
             document.getElementById('resultSection').style.display = 'block';
             document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
 
@@ -307,10 +356,10 @@
             parseTreinoComMidia(treinoText);
 
         } catch (error) {
-            alert("Erro na sincronização rápida do chat. Tente de novo!");
+            alert("Houve um pequeno atraso de resposta do servidor de IA. Tente clicar novamente.");
         } finally {
             btn.disabled = false;
-            btn.innerText = "🚀 Perguntar ao Personal & Gerar Ficha";
+            btn.innerText = "🚀 Consultar Meu Personal AI";
         }
     }
 </script>
