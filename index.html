@@ -1,1023 +1,530 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitPlan Pro AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --black: #050607;
-            --surface: #0d1117;
-            --card: #111820;
-            --card-hover: #161e29;
-            --border: rgba(255,255,255,0.06);
-            --border-active: rgba(99,210,255,0.4);
-            --primary: #63d2ff;
-            --primary-dim: rgba(99,210,255,0.12);
-            --green: #4ade80;
-            --green-dim: rgba(74,222,128,0.1);
-            --orange: #fb923c;
-            --orange-dim: rgba(251,146,60,0.1);
-            --red: #f87171;
-            --text: #f0f4f8;
-            --text-muted: #64748b;
-            --text-soft: #94a3b8;
-            --radius: 14px;
-            --radius-sm: 8px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--black);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 24px 16px 60px;
-            background-image:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,210,255,0.06), transparent),
-                radial-gradient(ellipse 40% 30% at 80% 80%, rgba(74,222,128,0.03), transparent);
-        }
-
-        .app {
-            max-width: 560px;
-            margin: 0 auto;
-        }
-
-        /* ─── HEADER ─── */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 4px;
-            margin-bottom: 36px;
-        }
-
-        .logo-block {
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-
-        .logo-text {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 34px;
-            letter-spacing: 2px;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .logo-badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            color: var(--primary);
-            background: var(--primary-dim);
-            border: 1px solid rgba(99,210,255,0.2);
-            padding: 3px 8px;
-            border-radius: 4px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .header-status {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--green);
-            box-shadow: 0 0 8px var(--green);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* ─── SECTION LABEL ─── */
-        .section-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            padding-left: 2px;
-        }
-
-        /* ─── CARD ─── */
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 12px;
-            transition: border-color 0.2s;
-        }
-
-        .card:hover { border-color: rgba(255,255,255,0.1); }
-
-        /* ─── TRAINING PANEL ─── */
-        .training-panel {
-            background: var(--card);
-            border: 1px solid rgba(251,146,60,0.2);
-            border-radius: var(--radius);
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-
-        .training-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.15s;
-        }
-
-        .training-toggle:hover { background: rgba(251,146,60,0.04); }
-
-        .training-toggle-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .training-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--orange-dim);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-        }
-
-        .training-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--orange);
-        }
-
-        .training-sublabel {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 1px;
-        }
-
-        .chevron {
-            font-size: 12px;
-            color: var(--text-muted);
-            transition: transform 0.2s;
-        }
-
-        .chevron.open { transform: rotate(180deg); }
-
-        .training-body {
-            display: none;
-            padding: 0 20px 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .training-body.open { display: block; }
-
-        .training-body textarea {
-            margin-top: 14px;
-        }
-
-        /* ─── FORM ELEMENTS ─── */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        .field { margin-bottom: 14px; }
-        .field:last-child { margin-bottom: 0; }
-
-        .field label {
-            display: block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .field input,
-        .field select,
-        .field textarea {
-            width: 100%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--text);
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            appearance: none;
-        }
-
-        .field input:focus,
-        .field select:focus,
-        .field textarea:focus {
-            border-color: var(--border-active);
-            box-shadow: 0 0 0 3px rgba(99,210,255,0.08);
-        }
-
-        .field input::placeholder,
-        .field textarea::placeholder {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        .field select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 36px;
-            cursor: pointer;
-        }
-
-        .field select option { background: #0d1117; }
-
-        /* ─── OBJECTIVE CHIPS ─── */
-        .chip-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .chip {
-            padding: 9px 16px;
-            border-radius: 100px;
-            border: 1px solid var(--border);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-soft);
-            background: var(--surface);
-            cursor: pointer;
-            transition: all 0.15s;
-            user-select: none;
-        }
-
-        .chip:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
-
-        .chip.selected {
-            background: var(--primary-dim);
-            border-color: rgba(99,210,255,0.4);
-            color: var(--primary);
-        }
-
-        /* ─── SUBMIT BUTTON ─── */
-        .btn-primary {
-            width: 100%;
-            background: linear-gradient(135deg, #0ea5e9, #63d2ff);
-            color: #020c14;
-            border: none;
-            border-radius: var(--radius);
-            padding: 16px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 24px rgba(99,210,255,0.2);
-            margin-top: 8px;
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 6px 30px rgba(99,210,255,0.35);
-            transform: translateY(-1px);
-        }
-
-        .btn-primary:active { transform: scale(0.99); }
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-icon { font-size: 18px; }
-
-        /* ─── LOADING SPINNER ─── */
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(2,12,20,0.4);
-            border-top-color: #020c14;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ─── CHAT PANEL ─── */
-        .chat-panel {
-            display: none;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-top: 12px;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .chat-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            background: rgba(99,210,255,0.03);
-        }
-
-        .chat-avatar {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #0ea5e9, #63d2ff);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 15px;
-            color: #020c14;
-            letter-spacing: 1px;
-            flex-shrink: 0;
-        }
-
-        .chat-name { font-weight: 600; font-size: 14px; }
-        .chat-role { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-
-        .chat-body {
-            padding: 18px;
-            font-size: 14px;
-            line-height: 1.75;
-            color: #cbd5e1;
-            white-space: pre-wrap;
-        }
-
-        /* ─── TABS ─── */
-        .tabs-section {
-            display: none;
-            margin-top: 24px;
-            animation: slideIn 0.3s ease;
-        }
-
-        .tab-bar {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 16px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 6px;
-        }
-
-        .tab-btn {
-            padding: 11px;
-            border: none;
-            background: transparent;
-            border-radius: var(--radius-sm);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-        }
-
-        .tab-btn.active {
-            background: var(--primary-dim);
-            color: var(--primary);
-            border: 1px solid rgba(99,210,255,0.2);
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* ─── SECTION DIVIDER ─── */
-        .day-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--primary);
-            background: var(--primary-dim);
-            border: 1px solid rgba(99,210,255,0.15);
-            padding: 6px 14px;
-            border-radius: 100px;
-            margin: 20px 0 12px;
-        }
-
-        /* ─── EXERCISE CARD ─── */
-        .exercise-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 18px;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-
-        .exercise-card:hover { border-color: rgba(255,255,255,0.1); }
-
-        .exercise-name {
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--text);
-            margin-bottom: 3px;
-        }
-
-        .exercise-sets {
-            font-size: 12px;
-            color: var(--primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        /* Área interna para renderizar o GIF único diretamente no App */
-        .gif-display-box {
-            display: none;
-            width: 100%;
-            height: auto;
-            max-height: 220px;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: #000;
-        }
-
-        .gif-display-box iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .btn-gif {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            width: 100%;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 9px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-soft);
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 12px;
-        }
-
-        .btn-gif.active {
-            background: var(--primary-dim);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-gif:hover {
-            background: var(--primary-dim);
-            border-color: rgba(99,210,255,0.3);
-            color: var(--primary);
-        }
-
-        .load-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        .load-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            white-space: nowrap;
-        }
-
-        .load-input {
-            width: 70px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 8px 10px;
-            font-size: 13px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            color: var(--text);
-            text-align: center;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .load-input:focus { border-color: var(--border-active); }
-
-        .load-unit {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-right: auto;
-        }
-
-        .btn-save {
-            background: var(--green-dim);
-            border: 1px solid rgba(74,222,128,0.2);
-            border-radius: var(--radius-sm);
-            padding: 8px 14px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--green);
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-save:hover {
-            background: rgba(74,222,128,0.18);
-            border-color: rgba(74,222,128,0.4);
-        }
-
-        /* ─── FOOD CARD ─── */
-        .food-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px 16px;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-
-        .food-card:hover { border-color: rgba(255,255,255,0.1); }
-
-        .food-thumb {
-            width: 52px;
-            height: 52px;
-            border-radius: var(--radius-sm);
-            object-fit: cover;
-            border: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        .food-text {
-            font-size: 14px;
-            color: #cbd5e1;
-            line-height: 1.55;
-        }
-
-        /* ─── DIVIDER ─── */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 20px 0;
-        }
-
-        /* ─── FOOTER ─── */
-        .footer {
-            text-align: center;
-            margin-top: 48px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .footer-logo {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .footer-sub {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            opacity: 0.5;
-        }
-
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 400px) {
-            .form-row { grid-template-columns: 1fr 1fr; }
-            .form-row .field:last-child { grid-column: 1 / -1; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>FitPlan Pro AI • métrica viva</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #050607;
+      --surface: #0d1117;
+      --card: #111820;
+      --card-hover: #161e29;
+      --border: rgba(255,255,255,0.06);
+      --border-active: rgba(99,210,255,0.4);
+      --primary: #63d2ff;
+      --primary-dim: rgba(99,210,255,0.12);
+      --green: #4ade80;
+      --green-dim: rgba(74,222,128,0.1);
+      --orange: #fb923c;
+      --orange-dim: rgba(251,146,60,0.1);
+      --red: #f87171;
+      --text: #f0f4f8;
+      --text-muted: #64748b;
+      --text-soft: #94a3b8;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,210,255,0.06), transparent),
+        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(74,222,128,0.03), transparent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app {
+      max-width: 560px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+      margin-bottom: 36px;
+    }
+
+    .logo-block {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 34px;
+      letter-spacing: 2px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .logo-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-dim);
+      border: 1px solid rgba(99,210,255,0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ─── SECTION LABEL ─── */
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label i {
+      font-style: normal;
+      font-size: 13px;
+      color: var(--primary);
+    }
+
+    /* ─── MÉTRICA VIVA (substituto do gif) ─── */
+    .live-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 20px 18px;
+      margin-bottom: 28px;
+      backdrop-filter: blur(2px);
+      box-shadow: 0 20px 30px -15px rgba(0,0,0,0.6);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .live-panel::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--green), transparent);
+      opacity: 0.5;
+    }
+
+    .live-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .live-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text);
+      letter-spacing: 0.3px;
+    }
+
+    .live-badge {
+      background: rgba(251,146,60,0.18);
+      border: 1px solid rgba(251,146,60,0.35);
+      color: var(--orange);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .live-badge span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--orange);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--orange);
+      animation: pulse 1.8s infinite;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .metric-card {
+      background: rgba(13, 17, 23, 0.7);
+      border-radius: var(--radius-sm);
+      padding: 14px 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      backdrop-filter: blur(4px);
+      transition: border 0.2s;
+    }
+
+    .metric-card:hover {
+      border-color: rgba(255,255,255,0.12);
+      background: #0f1620;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 600;
+      color: white;
+      line-height: 1.1;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .metric-unit {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    .trend-up {
+      color: var(--green);
+      font-size: 12px;
+      margin-left: 5px;
+    }
+
+    .progress-ring-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 30px;
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .progress-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .progress-bar-bg {
+      width: 120px;
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 68%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #a5f3fc);
+      border-radius: 20px;
+      box-shadow: 0 0 12px rgba(99,210,255,0.5);
+      animation: breathe 2.2s infinite alternate;
+    }
+
+    @keyframes breathe {
+      0% { opacity: 0.8; width: 65%; }
+      100% { opacity: 1; width: 72%; }
+    }
+
+    .live-stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255,255,255,0.04);
+      padding-top: 12px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--primary);
+    }
+
+    /* ─── CARDS DE TREINO (mantendo visual) ─── */
+    .workout-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .workout-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+      backdrop-filter: blur(2px);
+    }
+
+    .workout-card:hover {
+      border-color: var(--border-active);
+      background: var(--card-hover);
+    }
+
+    .exercise-icon {
+      font-size: 24px;
+      background: rgba(255,255,255,0.05);
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      color: var(--primary);
+    }
+
+    .workout-info {
+      flex: 1;
+    }
+
+    .workout-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .workout-meta {
+      font-size: 12px;
+      color: var(--text-soft);
+      display: flex;
+      gap: 12px;
+    }
+
+    .tag {
+      background: var(--green-dim);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    .chevron {
+      color: var(--text-muted);
+      font-size: 18px;
+    }
+
+    /* ─── FOOTER MICRO ─── */
+    .ai-hint {
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
 </head>
 <body>
-
-<div class="app">
-
+  <div class="app">
+    <!-- HEADER -->
     <div class="header">
-        <div class="logo-block">
-            <div class="logo-text" id="brandName">FitPlan</div>
-            <div class="logo-badge">AI Pro</div>
-        </div>
-        <div class="header-status">
-            <div class="status-dot"></div>
-            Sistema Ativo
-        </div>
+      <div class="logo-block">
+        <span class="logo-text">FITPLAN</span>
+        <span class="logo-badge">PRO AI</span>
+      </div>
+      <div class="header-status">
+        <span class="status-dot"></span>
+        <span>conectado</span>
+      </div>
     </div>
 
-    <div class="training-panel">
-        <div class="training-toggle" onclick="toggleTraining()">
-            <div class="training-toggle-left">
-                <div class="training-icon">⚙️</div>
-                <div>
-                    <div class="training-label">Configurações do Sistema</div>
-                    <div class="training-sublabel">Instruções fixas para a IA</div>
-                </div>
-            </div>
-            <div class="chevron" id="chevron">▾</div>
-        </div>
-        <div class="training-body" id="trainingBody">
-            <div class="field">
-                <label>Diretrizes da IA</label>
-                <textarea id="aiSystemDirectives" rows="3" placeholder="Ex: Sempre incluir panturrilha nos treinos de perna. Priorizar ovos e frango na dieta..."></textarea>
-            </div>
-            <button class="btn-primary" style="background: linear-gradient(135deg, #c2410c, #fb923c); box-shadow: 0 4px 20px rgba(251,146,60,0.2);" onclick="saveAITraining()">
-                <span>💾</span> Salvar Configurações
-            </button>
-        </div>
+    <!-- SEÇÃO MÉTRICA VIVA (SUBSTITUI O GIF) -->
+    <div class="section-label">
+      <i>⚡</i> desempenho em tempo real
     </div>
 
-    <div class="card">
-        <div class="section-label">Dados do Aluno</div>
-
-        <div class="field">
-            <label>Nome Completo</label>
-            <input type="text" id="userName" placeholder="Ex: Jeferson Silva">
+    <div class="live-panel">
+      <div class="live-header">
+        <div class="live-title">
+          <span>🏃‍♂️</span> sessão ativa · manhã
         </div>
-
-        <div class="form-row">
-            <div class="field">
-                <label>Idade</label>
-                <input type="number" id="age" value="27" min="14" max="80">
-            </div>
-            <div class="field">
-                <label>Peso (kg)</label>
-                <input type="number" id="weight" value="70" min="30" max="300">
-            </div>
-            <div class="field">
-                <label>Altura (cm)</label>
-                <input type="number" id="height" value="170" min="120" max="230">
-            </div>
+        <div class="live-badge">
+          <span></span> ao vivo
         </div>
+      </div>
 
-        <div class="divider"></div>
-
-        <div class="section-label">Objetivo</div>
-        <div class="chip-group" id="chipGroup">
-            <div class="chip selected" data-value="Hipertrofia" onclick="selectChip(this)">💪 Hipertrofia</div>
-            <div class="chip" data-value="Emagrecimento" onclick="selectChip(this)">🔥 Emagrecimento</div>
-            <div class="chip" data-value="Definição Muscular" onclick="selectChip(this)">⚡ Definição</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">
+            <span>❤️</span> freq. cardíaca
+          </div>
+          <div class="metric-value">
+            142 <span class="metric-unit">bpm</span>
+            <span class="trend-up">▲8%</span>
+          </div>
         </div>
-
-        <div class="divider"></div>
-
-        <div class="section-label">Mensagem para o Personal</div>
-        <div class="field" style="margin-bottom: 0;">
-            <textarea id="userChatInput" rows="3" placeholder="Fale sobre a divisão que quer, o que comeu, como está se sentindo..."></textarea>
+        <div class="metric-card">
+          <div class="metric-label">
+            <span>🔥</span> calorias
+          </div>
+          <div class="metric-value">
+            328 <span class="metric-unit">kcal</span>
+          </div>
         </div>
+      </div>
+
+      <div class="progress-ring-container">
+        <div class="progress-label">
+          <span>🎯 meta diária</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-fill"></div>
+        </div>
+        <span style="font-weight:600; font-size:14px; color:white;">68%</span>
+      </div>
+
+      <div class="live-stats-row">
+        <div class="stat-item">
+          <span class="stat-dot"></span> ritmo 5'22"/km
+        </div>
+        <div class="stat-item">
+          <span>⚡</span> 840 passos
+        </div>
+        <div class="stat-item">
+          <span>📊</span> vo2max 48
+        </div>
+      </div>
     </div>
 
-    <button class="btn-primary" id="btnAction" onclick="generatePlan()">
-        <span class="btn-icon">🚀</span>
-        Consultar Personal AI
-    </button>
-
-    <div class="chat-panel" id="chatPanel">
-        <div class="chat-header">
-            <div class="chat-avatar">AI</div>
-            <div>
-                <div class="chat-name">Personal Trainer AI</div>
-                <div class="chat-role" id="brandNameSmall">Iron Fitness Club</div>
-            </div>
-        </div>
-        <div class="chat-body" id="chatBody"></div>
+    <!-- TREINOS RECOMENDADOS (MANTÉM ESTRUTURA) -->
+    <div class="section-label">
+      <i>📋</i> treinos de hoje
     </div>
 
-    <div class="tabs-section" id="tabsSection">
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('dietaTab', this)">🥗 Plano Alimentar</button>
-            <button class="tab-btn" onclick="switchTab('treinoTab', this)">💪 Ficha de Treino</button>
+    <div class="workout-grid">
+      <div class="workout-card">
+        <div class="exercise-icon">🏋️</div>
+        <div class="workout-info">
+          <div class="workout-name">Superiores · Push</div>
+          <div class="workout-meta">
+            <span>45 min</span>
+            <span>•</span>
+            <span>6 exercícios</span>
+            <span class="tag">força</span>
+          </div>
         </div>
+        <span class="chevron">›</span>
+      </div>
 
-        <div id="dietaTab" class="tab-content active">
-            <div id="dietaOutput"></div>
+      <div class="workout-card">
+        <div class="exercise-icon">🧘</div>
+        <div class="workout-info">
+          <div class="workout-name">Mobilidade & Core</div>
+          <div class="workout-meta">
+            <span>30 min</span>
+            <span>•</span>
+            <span>8 movimentos</span>
+            <span class="tag">recuperação</span>
+          </div>
         </div>
+        <span class="chevron">›</span>
+      </div>
 
-        <div id="treinoTab" class="tab-content">
-            <div id="treinoOutput"></div>
+      <div class="workout-card">
+        <div class="exercise-icon">🚴</div>
+        <div class="workout-info">
+          <div class="workout-name">Cardio Intervalado</div>
+          <div class="workout-meta">
+            <span>25 min</span>
+            <span>•</span>
+            <span>HIIT</span>
+            <span class="tag">resistência</span>
+          </div>
         </div>
+        <span class="chevron">›</span>
+      </div>
     </div>
 
-    <div class="footer">
-        <div class="footer-logo" id="brandFooter">IRON FITNESS CLUB</div>
-        <div class="footer-sub">PLATAFORMA EXCLUSIVA · POWERED BY AI</div>
+    <div class="ai-hint">
+      <span>✨</span> adaptado por FitPlan AI · próximo treino em 2h
     </div>
-
-</div>
-
-<script>
-    const ACADEMIA = "Iron Fitness Club";
-    let historicoCargas = [];
-    let objetivoSelecionado = "Hipertrofia";
-
-    // Init
-    document.getElementById('brandName').innerText = ACADEMIA;
-    document.getElementById('brandFooter').innerText = ACADEMIA.toUpperCase();
-    document.getElementById('brandNameSmall').innerText = ACADEMIA;
-
-    window.onload = () => {
-        const saved = localStorage.getItem('fitplan_directives');
-        if (saved) document.getElementById('aiSystemDirectives').value = saved;
-    };
-
-    function toggleTraining() {
-        const body = document.getElementById('trainingBody');
-        const chevron = document.getElementById('chevron');
-        body.classList.toggle('open');
-        chevron.classList.toggle('open');
-    }
-
-    function saveAITraining() {
-        const val = document.getElementById('aiSystemDirectives').value.trim();
-        localStorage.setItem('fitplan_directives', val);
-        showToast('Configurações salvas com sucesso!');
-    }
-
-    function selectChip(el) {
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        objetivoSelecionado = el.dataset.value;
-    }
-
-    function switchTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    function registrarCarga(exercicio, inputId) {
-        const val = document.getElementById(inputId).value;
-        if (!val) { showToast('Digite a carga antes de salvar!', 'error'); return; }
-        historicoCargas.push({ exercicio, carga: val, data: new Date().toLocaleDateString('pt-BR') });
-        showToast(`${val}kg registrado para "${exercicio.substring(0,30)}"`);
-    }
-
-    function showToast(msg, type = 'success') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: ${type === 'error' ? '#f87171' : '#4ade80'};
-            color: #020c14; padding: 10px 20px; border-radius: 100px;
-            font-size: 13px; font-weight: 700; z-index: 9999;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            white-space: nowrap; max-width: 90vw;
-        `;
-        toast.innerText = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2800);
-    }
-
-    // Função de requisição à API para renderizar dinamicamente o GIF correto dentro do App
-    async function carregarGifExclusivo(exercicioNome, containerId, btnEl) {
-        const box = document.getElementById(containerId);
-        
-        // Se já estiver aberto, colapsa e fecha
-        if (box.style.display === 'block') {
-            box.style.display = 'none';
-            btnEl.classList.remove('active');
-            btnEl.innerHTML = '▶ Ver execução correta';
-            return;
-        }
-
-        btnEl.innerHTML = '⚡ Localizando GIF...';
-        const query = encodeURIComponent(exercicioNome.toLowerCase() + " fitness bodybuilding");
-        
-        // Chamada à API pública do Giphy para buscar o ID direto do GIF isolado de forma limpa e gratuita
-        const urlApi = `https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=${query}&limit=1&offset=0&rating=g&lang=pt`;
-
-        try {
-            const res = await fetch(urlApi);
-            const data = await res.json();
-            
-            if (data.data && data.data.length > 0) {
-                const gifId = data.data[0].id;
-                // Injeta o player oficial embutido do Giphy sem links externos ou barras poluídas
-                box.innerHTML = `<iframe src="https://giphy.com/embed/${gifId}" width="100%" height="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>`;
-                box.style.display = 'block';
-                box.style.height = '200px';
-                btnEl.classList.add('active');
-                btnEl.innerHTML = '🔼 Fechar animação';
-            } else {
-                showToast('Nenhum GIF isolado encontrado para este exercício.', 'error');
-                btnEl.innerHTML = '▶ Ver execução correta';
-            }
-        } catch (e) {
-            showToast('Erro ao carregar mídia da API.', 'error');
-            btnEl.innerHTML = '▶ Ver execução correta';
-        }
-    }
-
-    function parseTreino(text) {
-        const container = document.getElementById('treinoOutput');
-        container.innerHTML = '';
-        let cardCount = 0;
-
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        const dayWords = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo', 'dia ', 'feira'];
-
-        lines.forEach(linha => {
-            if (linha.includes('---')) return;
-
-            const isDay = dayWords.some(w => linha.toLowerCase().includes(w));
-            if (isDay) {
-                const badge = document.createElement('div');
-                badge.className = 'day-badge';
-                badge.innerText = '📅 ' + linha.replace(/[:-]/g, '').trim();
-                container.appendChild(badge);
-                return;
-            }
-
-            cardCount++;
-            const inputId = `load_${cardCount}`;
-            const boxId = `gif_box_${cardCount}`;
-            const nomeParts = linha.split(',')[0].split('-')[0].trim().replace(/\d+x\d+/gi, '').trim();
-            const setsText = linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : '4 × 10–12 repetições';
-
-            const card = document.createElement('div');
-            card.className = 'exercise-card';
-            card.innerHTML = `
-                <div class="exercise-name">🏋️ ${nomeParts}</div>
-                <div class="exercise-sets">${setsText}</div>
-                
-                <div class="gif-display-box" id="${boxId}"></div>
-                
-                <button class="btn-gif" onclick="carregarGifExclusivo('${nomeParts.replace(/'/g, "\\'")}', '${boxId}', this)">
-                    ▶ Ver execução correta
-                </button>
-                <div class="load-row">
-                    <div class="load-label">Carga</div>
-                    <input type="number" id="${inputId}" class="load-input" value="20">
-                    <div class="load-unit">kg</div>
-                    <button class="btn-save" onclick="registrarCarga('${nomeParts.replace(/'/g, '')}', '${inputId}')">✓ Salvar</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    function parseDieta(text) {
-        const container = document.getElementById('dietaOutput');
-        container.innerHTML = '';
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
-        // API de Imagens do Unsplash utilizando queries dinâmicas de alta performance
-        lines.forEach(linha => {
-            if (linha.includes('---')) return;
-            const lower = linha.toLowerCase();
-            let queryImage = "healthy-food";
-
-            if (lower.includes("ovo") || lower.includes("omelete")) queryImage = "eggs";
-            else if (lower.includes("frango") || lower.includes("grelhado")) queryImage = "chicken-breast";
-            else if (lower.includes("banana")) queryImage = "banana";
-            else if (lower.includes("fruta") || lower.includes("maçã")) queryImage = "fruit";
-            else if (lower.includes("arroz")) queryImage = "rice";
-            else if (lower.includes("feijão")) queryImage = "beans";
-            else if (lower.includes("salada") || lower.includes("brócolis")) queryImage = "salad";
-            else if (lower.includes("peixe") || lower.includes("salmão")) queryImage = "salmon";
-            else if (lower.includes("whey") || lower.includes("suplemento")) queryImage = "protein-shake";
-
-            // Endpoint da API pública e gratuita do Unsplash para carregar imagens limpas sob demanda
-            let imgUrl = `https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80`;
-            if(queryImage !== "healthy-food") {
-                imgUrl = `https://source.unsplash.com/featured/150x150/?${queryImage}`;
-            }
-
-            const card = document.createElement('div');
-            card.className = 'food-card';
-            card.innerHTML = `
-                <img src="${imgUrl}" class="food-thumb" alt="Alimento" onerror="this.src='https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80'" loading="lazy">
-                <div class="food-text">${linha}</div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    async function generatePlan() {
-        const name = document.getElementById('userName').value.trim() || "Aluno";
-        const age = document.getElementById('age').value;
-        const weight = document.getElementById('weight').value;
-        const height = document.getElementById('height').value;
-        const userMsg = document.getElementById('userChatInput').value.trim();
-        const customDirectives = localStorage.getItem('fitplan_directives') || '';
-        const btn = document.getElementById('btnAction');
-
-        btn.disabled = true;
-        btn.innerHTML = '<div class="spinner"></div> Processando com a IA...';
-
-        let prompt = `Você é o Personal Trainer expert da ${ACADEMIA}. Responda de forma profissional e humanizada.
-Ficha: Nome ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${objetivoSelecionado}.
-Mensagem do aluno: "${userMsg}".`;
-
-        if (customDirectives) prompt += `\n\nDiretrizes obrigatórias: ${customDirectives}`;
-
-        prompt += `\n\nREGRA ANATÔMICA: Exercícios de membros inferiores pesados (Agachamento, Leg Press, Extensora) NUNCA no mesmo dia que braços (Bíceps, Tríceps, Ombros).
-Organize por dias da semana com títulos claros (Ex: Segunda-feira: Peito e Tríceps).
-
-Responda com exatamente estes três marcadores:
----RESPOSTA_CHAT---
-(Parágrafo de consultoria humanizada respondendo ao aluno)
----DIETA---
-(Plano alimentar linha por linha, sem marcadores de asterisco ou hashtag)
----TREINO---
-(Ficha estruturada por dias da semana e exercícios, sem asteriscos ou hashtags)`;
-
-        const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`;
-
-        try {
-            const res = await fetch(url);
-            const fullText = await res.text();
-
-            let chatText = '', dietaText = '', treinoText = '';
-
-            if (fullText.includes('---RESPOSTA_CHAT---') && fullText.includes('---DIETA---') && fullText.includes('---TREINO---')) {
-                const [top, bottom] = fullText.split('---DIETA---');
-                chatText = top.split('---RESPOSTA_CHAT---')[1]?.trim() || '';
-                const [dieta, treino] = bottom.split('---TREINO---');
-                dietaText = dieta.trim();
-                treinoText = treino.trim();
-            } else {
-                chatText = 'Plano gerado com sucesso! Confira as abas abaixo.';
-                dietaText = fullText;
-                treinoText = 'Segunda-feira: Peito e Tríceps\nSupino Reto, 4x10\nCrucifixo, 3x12\nTríceps Pulley, 4x12\nTerça-feira: Pernas\nAgachamento Livre, 4x10\nLeg Press, 4x12\nCadeira Extensora, 3x15';
-            }
-
-            document.getElementById('chatBody').innerText = chatText;
-            document.getElementById('chatPanel').style.display = 'block';
-            document.getElementById('tabsSection').style.display = 'block';
-
-            parseDieta(dietaText);
-            parseTreino(treinoText);
-
-        } catch (err) {
-            showToast('Erro ao conectar com a IA. Tente novamente.', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<span class="btn-icon">🚀</span> Consultar Personal AI';
-        }
-    }
-</script>
-
+  </div>
 </body>
 </html>
