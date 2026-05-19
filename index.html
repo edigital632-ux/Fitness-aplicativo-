@@ -1,530 +1,415 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>FitPlan Pro AI • métrica viva</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --black: #050607;
-      --surface: #0d1117;
-      --card: #111820;
-      --card-hover: #161e29;
-      --border: rgba(255,255,255,0.06);
-      --border-active: rgba(99,210,255,0.4);
-      --primary: #63d2ff;
-      --primary-dim: rgba(99,210,255,0.12);
-      --green: #4ade80;
-      --green-dim: rgba(74,222,128,0.1);
-      --orange: #fb923c;
-      --orange-dim: rgba(251,146,60,0.1);
-      --red: #f87171;
-      --text: #f0f4f8;
-      --text-muted: #64748b;
-      --text-soft: #94a3b8;
-      --radius: 14px;
-      --radius-sm: 8px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitPlan Pro AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #050607;
+            --surface: #0d1117;
+            --card: #111820;
+            --card-hover: #161e29;
+            --border: rgba(255,255,255,0.06);
+            --border-active: rgba(99,210,255,0.4);
+            --primary: #63d2ff;
+            --primary-dim: rgba(99,210,255,0.12);
+            --green: #4ade80;
+            --green-dim: rgba(74,222,128,0.1);
+            --orange: #fb923c;
+            --orange-dim: rgba(251,146,60,0.1);
+            --red: #f87171;
+            --text: #f0f4f8;
+            --text-muted: #64748b;
+            --text-soft: #94a3b8;
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--black);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px 16px 60px;
-      background-image:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,210,255,0.06), transparent),
-        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(74,222,128,0.03), transparent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px 16px 60px;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,210,255,0.06), transparent),
+                radial-gradient(ellipse 40% 30% at 80% 80%, rgba(74,222,128,0.03), transparent);
+        }
 
-    .app {
-      max-width: 560px;
-      width: 100%;
-      margin: 0 auto;
-    }
+        .app {
+            max-width: 560px;
+            margin: 0 auto;
+        }
 
-    /* ─── HEADER ─── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 4px;
-      margin-bottom: 36px;
-    }
+        /* ─── HEADER ─── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4px;
+            margin-bottom: 36px;
+        }
 
-    .logo-block {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
+        .logo-block {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
 
-    .logo-text {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 34px;
-      letter-spacing: 2px;
-      color: var(--text);
-      line-height: 1;
-    }
+        .logo-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 34px;
+            letter-spacing: 2px;
+            color: var(--text);
+            line-height: 1;
+        }
 
-    .logo-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--primary);
-      background: var(--primary-dim);
-      border: 1px solid rgba(99,210,255,0.2);
-      padding: 3px 8px;
-      border-radius: 4px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
+        .logo-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--primary);
+            background: var(--primary-dim);
+            border: 1px solid rgba(99,210,255,0.2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
 
-    .header-status {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 8px var(--green);
-      animation: pulse 2s infinite;
-    }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s infinite;
+        }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
 
-    /* ─── SECTION LABEL ─── */
-    .section-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        /* ─── SECTION LABEL ─── */
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .section-label i {
-      font-style: normal;
-      font-size: 13px;
-      color: var(--primary);
-    }
+        .section-label span {
+            font-size: 14px;
+        }
 
-    /* ─── MÉTRICA VIVA (substituto do gif) ─── */
-    .live-panel {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 20px 18px;
-      margin-bottom: 28px;
-      backdrop-filter: blur(2px);
-      box-shadow: 0 20px 30px -15px rgba(0,0,0,0.6);
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
+        /* ─── ALTERNATIVA AO GIF (ANIMAÇÃO CSS) ─── */
+        .gif-alternative {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
 
-    .live-panel::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--primary), var(--green), transparent);
-      opacity: 0.5;
-    }
+        .gif-alternative::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--green), transparent);
+        }
 
-    .live-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 18px;
-    }
+        .live-metrics {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
 
-    .live-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      font-size: 15px;
-      color: var(--text);
-      letter-spacing: 0.3px;
-    }
+        .metric-box {
+            flex: 1;
+            min-width: 70px;
+            background: rgba(13, 17, 23, 0.8);
+            border-radius: var(--radius-sm);
+            padding: 14px 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
 
-    .live-badge {
-      background: rgba(251,146,60,0.18);
-      border: 1px solid rgba(251,146,60,0.35);
-      color: var(--orange);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+        .metric-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+            animation: countPulse 2s infinite;
+        }
 
-    .live-badge span {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      background: var(--orange);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--orange);
-      animation: pulse 1.8s infinite;
-    }
+        @keyframes countPulse {
+            0%, 100% { text-shadow: 0 0 8px rgba(99,210,255,0.5); }
+            50% { text-shadow: 0 0 18px rgba(74,222,128,0.7); }
+        }
 
-    .metric-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
+        .metric-label-small {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
 
-    .metric-card {
-      background: rgba(13, 17, 23, 0.7);
-      border-radius: var(--radius-sm);
-      padding: 14px 12px;
-      border: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      backdrop-filter: blur(4px);
-      transition: border 0.2s;
-    }
+        .animated-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            margin-top: 14px;
+            overflow: hidden;
+        }
 
-    .metric-card:hover {
-      border-color: rgba(255,255,255,0.12);
-      background: #0f1620;
-    }
+        .bar-fill {
+            width: 70%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #7dd3fc);
+            border-radius: 10px;
+            animation: barGlow 2.4s infinite alternate;
+        }
 
-    .metric-label {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text-soft);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
+        @keyframes barGlow {
+            0% { width: 65%; opacity: 0.9; }
+            100% { width: 78%; opacity: 1; box-shadow: 0 0 14px var(--primary); }
+        }
 
-    .metric-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 26px;
-      font-weight: 600;
-      color: white;
-      line-height: 1.1;
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-    }
+        .live-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--orange);
+            font-weight: 600;
+            margin-top: 12px;
+        }
 
-    .metric-unit {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-left: 2px;
-    }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--orange);
+            border-radius: 50%;
+            animation: pulse 1.4s infinite;
+        }
 
-    .trend-up {
-      color: var(--green);
-      font-size: 12px;
-      margin-left: 5px;
-    }
+        /* ─── EQUIPE / IA ─── */
+        .team-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 28px;
+        }
 
-    .progress-ring-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 30px;
-      padding: 10px 14px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
+        .team-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .progress-label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-soft);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+        .avatar-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
 
-    .progress-bar-bg {
-      width: 120px;
-      height: 6px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 20px;
-      overflow: hidden;
-    }
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 2px solid var(--border-active);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--primary);
+        }
 
-    .progress-fill {
-      width: 68%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--primary), #a5f3fc);
-      border-radius: 20px;
-      box-shadow: 0 0 12px rgba(99,210,255,0.5);
-      animation: breathe 2.2s infinite alternate;
-    }
+        .ai-badge {
+            background: var(--primary-dim);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    @keyframes breathe {
-      0% { opacity: 0.8; width: 65%; }
-      100% { opacity: 1; width: 72%; }
-    }
+        /* ─── CARDS DE TREINO ─── */
+        .workout-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
 
-    .live-stats-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--text-muted);
-      border-top: 1px solid rgba(255,255,255,0.04);
-      padding-top: 12px;
-    }
+        .workout-card:hover {
+            border-color: var(--border-active);
+            background: var(--card-hover);
+        }
 
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+        .workout-emoji {
+            font-size: 26px;
+            width: 44px;
+            text-align: center;
+        }
 
-    .stat-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
-      background: var(--primary);
-    }
+        .workout-info {
+            flex: 1;
+        }
 
-    /* ─── CARDS DE TREINO (mantendo visual) ─── */
-    .workout-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin-top: 6px;
-    }
+        .workout-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
 
-    .workout-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      transition: all 0.2s;
-      backdrop-filter: blur(2px);
-    }
+        .workout-detail {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
 
-    .workout-card:hover {
-      border-color: var(--border-active);
-      background: var(--card-hover);
-    }
-
-    .exercise-icon {
-      font-size: 24px;
-      background: rgba(255,255,255,0.05);
-      width: 46px;
-      height: 46px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
-      color: var(--primary);
-    }
-
-    .workout-info {
-      flex: 1;
-    }
-
-    .workout-name {
-      font-weight: 600;
-      font-size: 16px;
-      margin-bottom: 4px;
-    }
-
-    .workout-meta {
-      font-size: 12px;
-      color: var(--text-soft);
-      display: flex;
-      gap: 12px;
-    }
-
-    .tag {
-      background: var(--green-dim);
-      color: var(--green);
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 12px;
-      letter-spacing: 0.4px;
-    }
-
-    .chevron {
-      color: var(--text-muted);
-      font-size: 18px;
-    }
-
-    /* ─── FOOTER MICRO ─── */
-    .ai-hint {
-      margin-top: 28px;
-      font-size: 12px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      justify-content: center;
-      font-family: 'JetBrains Mono', monospace;
-    }
-  </style>
+        .tag {
+            background: var(--green-dim);
+            color: var(--green);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+    </style>
 </head>
 <body>
-  <div class="app">
-    <!-- HEADER -->
-    <div class="header">
-      <div class="logo-block">
-        <span class="logo-text">FITPLAN</span>
-        <span class="logo-badge">PRO AI</span>
-      </div>
-      <div class="header-status">
-        <span class="status-dot"></span>
-        <span>conectado</span>
-      </div>
+    <div class="app">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo-block">
+                <span class="logo-text">FITPLAN</span>
+                <span class="logo-badge">PRO AI</span>
+            </div>
+            <div class="header-status">
+                <span class="status-dot"></span>
+                <span>conectado</span>
+            </div>
+        </div>
+
+        <!-- SEÇÃO QUE TINHA O GIF -> AGORA COM ANIMAÇÃO CSS -->
+        <div class="section-label">
+            <span>📊</span> desempenho ao vivo
+        </div>
+
+        <div class="gif-alternative">
+            <div class="live-metrics">
+                <div class="metric-box">
+                    <div class="metric-number">142</div>
+                    <div class="metric-label-small">bpm</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-number">328</div>
+                    <div class="metric-label-small">kcal</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-number">5.2</div>
+                    <div class="metric-label-small">km</div>
+                </div>
+            </div>
+            <div class="animated-bar">
+                <div class="bar-fill"></div>
+            </div>
+            <div class="live-tag">
+                <span class="live-dot"></span> sincronizado · agora
+            </div>
+        </div>
+
+        <!-- EQUIPE / IA (MANTIDO) -->
+        <div class="section-label">
+            <span>🧠</span> equipe fitplan ai
+        </div>
+
+        <div class="team-section">
+            <div class="team-title">
+                <span>✨</span> seus treinadores IA
+            </div>
+            <div class="avatar-group">
+                <div class="avatar">J</div>
+                <div class="avatar">M</div>
+                <div class="avatar">R</div>
+                <div class="ai-badge">
+                    <span>🤖</span> IA ativa
+                </div>
+            </div>
+            <p style="font-size: 13px; color: var(--text-soft); margin-top: 8px;">
+                Plano ajustado com base no seu sono e recuperação. Recomendação de intensidade: <strong style="color: var(--green);">moderada</strong>.
+            </p>
+        </div>
+
+        <!-- TREINOS (MANTIDO) -->
+        <div class="section-label">
+            <span>🗓️</span> treinos de hoje
+        </div>
+
+        <div class="workout-card">
+            <div class="workout-emoji">🏋️</div>
+            <div class="workout-info">
+                <div class="workout-name">Superiores · Push</div>
+                <div class="workout-detail">45 min <span class="tag">força</span></div>
+            </div>
+        </div>
+
+        <div class="workout-card">
+            <div class="workout-emoji">🧘</div>
+            <div class="workout-info">
+                <div class="workout-name">Mobilidade & Core</div>
+                <div class="workout-detail">30 min <span class="tag">recuperação</span></div>
+            </div>
+        </div>
+
+        <div class="workout-card">
+            <div class="workout-emoji">🚴</div>
+            <div class="workout-info">
+                <div class="workout-name">Cardio Intervalado</div>
+                <div class="workout-detail">25 min <span class="tag">resistência</span></div>
+            </div>
+        </div>
     </div>
-
-    <!-- SEÇÃO MÉTRICA VIVA (SUBSTITUI O GIF) -->
-    <div class="section-label">
-      <i>⚡</i> desempenho em tempo real
-    </div>
-
-    <div class="live-panel">
-      <div class="live-header">
-        <div class="live-title">
-          <span>🏃‍♂️</span> sessão ativa · manhã
-        </div>
-        <div class="live-badge">
-          <span></span> ao vivo
-        </div>
-      </div>
-
-      <div class="metric-grid">
-        <div class="metric-card">
-          <div class="metric-label">
-            <span>❤️</span> freq. cardíaca
-          </div>
-          <div class="metric-value">
-            142 <span class="metric-unit">bpm</span>
-            <span class="trend-up">▲8%</span>
-          </div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">
-            <span>🔥</span> calorias
-          </div>
-          <div class="metric-value">
-            328 <span class="metric-unit">kcal</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="progress-ring-container">
-        <div class="progress-label">
-          <span>🎯 meta diária</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-fill"></div>
-        </div>
-        <span style="font-weight:600; font-size:14px; color:white;">68%</span>
-      </div>
-
-      <div class="live-stats-row">
-        <div class="stat-item">
-          <span class="stat-dot"></span> ritmo 5'22"/km
-        </div>
-        <div class="stat-item">
-          <span>⚡</span> 840 passos
-        </div>
-        <div class="stat-item">
-          <span>📊</span> vo2max 48
-        </div>
-      </div>
-    </div>
-
-    <!-- TREINOS RECOMENDADOS (MANTÉM ESTRUTURA) -->
-    <div class="section-label">
-      <i>📋</i> treinos de hoje
-    </div>
-
-    <div class="workout-grid">
-      <div class="workout-card">
-        <div class="exercise-icon">🏋️</div>
-        <div class="workout-info">
-          <div class="workout-name">Superiores · Push</div>
-          <div class="workout-meta">
-            <span>45 min</span>
-            <span>•</span>
-            <span>6 exercícios</span>
-            <span class="tag">força</span>
-          </div>
-        </div>
-        <span class="chevron">›</span>
-      </div>
-
-      <div class="workout-card">
-        <div class="exercise-icon">🧘</div>
-        <div class="workout-info">
-          <div class="workout-name">Mobilidade & Core</div>
-          <div class="workout-meta">
-            <span>30 min</span>
-            <span>•</span>
-            <span>8 movimentos</span>
-            <span class="tag">recuperação</span>
-          </div>
-        </div>
-        <span class="chevron">›</span>
-      </div>
-
-      <div class="workout-card">
-        <div class="exercise-icon">🚴</div>
-        <div class="workout-info">
-          <div class="workout-name">Cardio Intervalado</div>
-          <div class="workout-meta">
-            <span>25 min</span>
-            <span>•</span>
-            <span>HIIT</span>
-            <span class="tag">resistência</span>
-          </div>
-        </div>
-        <span class="chevron">›</span>
-      </div>
-    </div>
-
-    <div class="ai-hint">
-      <span>✨</span> adaptado por FitPlan AI · próximo treino em 2h
-    </div>
-  </div>
 </body>
 </html>
