@@ -829,8 +829,11 @@
         setTimeout(() => toast.remove(), 2800);
     }
 
+    // Função de requisição à API para renderizar dinamicamente o GIF correto dentro do App
     async function carregarGifExclusivo(exercicioNome, containerId, btnEl) {
         const box = document.getElementById(containerId);
+        
+        // Se já estiver aberto, colapsa e fecha
         if (box.style.display === 'block') {
             box.style.display = 'none';
             btnEl.classList.remove('active');
@@ -840,13 +843,17 @@
 
         btnEl.innerHTML = '⚡ Localizando GIF...';
         const query = encodeURIComponent(exercicioNome.toLowerCase() + " fitness bodybuilding");
+        
+        // Chamada à API pública do Giphy para buscar o ID direto do GIF isolado de forma limpa e gratuita
         const urlApi = `https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=${query}&limit=1&offset=0&rating=g&lang=pt`;
 
         try {
             const res = await fetch(urlApi);
             const data = await res.json();
+            
             if (data.data && data.data.length > 0) {
                 const gifId = data.data[0].id;
+                // Injeta o player oficial embutido do Giphy sem links externos ou barras poluídas
                 box.innerHTML = `<iframe src="https://giphy.com/embed/${gifId}" width="100%" height="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>`;
                 box.style.display = 'block';
                 box.style.height = '200px';
@@ -873,7 +880,7 @@
         lines.forEach(linha => {
             if (linha.includes('---')) return;
 
-            const isDay = dayWords.some(w => inline = linha.toLowerCase().includes(w));
+            const isDay = dayWords.some(w => linha.toLowerCase().includes(w));
             if (isDay) {
                 const badge = document.createElement('div');
                 badge.className = 'day-badge';
@@ -893,7 +900,9 @@
             card.innerHTML = `
                 <div class="exercise-name">🏋️ ${nomeParts}</div>
                 <div class="exercise-sets">${setsText}</div>
+                
                 <div class="gif-display-box" id="${boxId}"></div>
+                
                 <button class="btn-gif" onclick="carregarGifExclusivo('${nomeParts.replace(/'/g, "\\'")}', '${boxId}', this)">
                     ▶ Ver execução correta
                 </button>
@@ -928,6 +937,7 @@
             else if (lower.includes("peixe") || lower.includes("salmão")) queryImage = "grilled salmon";
             else if (lower.includes("whey") || lower.includes("suplemento")) queryImage = "protein shake";
 
+            // Nova chamada estável gerada por IA de Imagens do Pollinations
             let imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(queryImage)}?width=150&height=150&nologo=true`;
 
             const card = document.createElement('div');
@@ -952,27 +962,32 @@
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner"></div> Processando com a IA...';
 
-        // Otimização de prompt: Direto ao ponto para menor latência na resposta
-        let prompt = `Personal da ${ACADEMIA}. Ficha: ${name}, ${age}a, ${weight}kg, ${height}cm. Objetivo: ${objetivoSelecionado}. Msg: "${userMsg}".`;
-        if (customDirectives) prompt += ` Diretrizes: ${customDirectives}`;
-        
-        prompt += ` REGRAS: Pernas pesadas NUNCA no mesmo dia de braços. Seja direto, sem introduções ou enrolação. Use os marcadores exatos:
+        let prompt = `Você é o Personal Trainer expert da ${ACADEMIA}. Responda de forma profissional e humanizada.
+Ficha: Nome ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${objetivoSelecionado}.
+Mensagem do aluno: "${userMsg}".`;
+
+        if (customDirectives) prompt += `\n\nDiretrizes obrigatórias: ${customDirectives}`;
+
+        prompt += `\n\nREGRA ANATÔMICA: Exercícios de membros inferiores pesados (Agachamento, Leg Press, Extensora) NUNCA no mesmo dia que braços (Bíceps, Tríceps, Ombros).
+Organize por dias da semana com títulos claros (Ex: Segunda-feira: Peito e Tríceps).
+
+Responda com exatamente estes três marcadores:
 ---RESPOSTA_CHAT---
-(Parágrafo curto de consultoria respondendo ao aluno)
+(Parágrafo de consultoria humanizada respondendo ao aluno)
 ---DIETA---
 (Plano alimentar linha por linha, sem marcadores de asterisco ou hashtag)
 ---TREINO---
 (Ficha estruturada por dias da semana e exercícios, sem asteriscos ou hashtags)`;
 
-        // ALTERADO: Adicionado '&model=mistral' para usar um modelo ultra veloz e otimizado para respostas rápidas
-        const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=mistral&cache=false`;
+        const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?cache=false`;
 
         try {
             const res = await fetch(url);
             const fullText = await res.text();
 
+            // Bloqueia respostas de servidores com erro "ENOSPC" ou estruturas JSON de erro
             if (fullText.includes('"error":') || fullText.includes('ENOSPC')) {
-                throw new Error('Servidor instável.');
+                throw new Error('Servidor da IA com sobrecarga momentânea.');
             }
 
             let chatText = '', dietaText = '', treinoText = '';
@@ -984,7 +999,7 @@
                 dietaText = dieta.trim();
                 treinoText = treino.trim();
             } else {
-                throw new Error('Retorno fora do padrão.');
+                throw new Error('Retorno da IA fora do padrão esperado.');
             }
 
             document.getElementById('chatBody').innerText = chatText;
@@ -996,7 +1011,7 @@
 
         } catch (err) {
             console.error(err);
-            showToast('Erro ou lentidão detectada. Tente novamente.', 'error');
+            showToast('Erro ao conectar com a IA. Tente novamente em alguns segundos.', 'error');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<span class="btn-icon">🚀</span> Consultar Personal AI';
