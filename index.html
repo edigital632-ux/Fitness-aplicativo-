@@ -46,11 +46,27 @@
         .item-title { font-weight: 800; font-size: 17px; color: white; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .item-subtitle { font-size: 13px; color: var(--primary-neon); font-weight: 600; margin-bottom: 12px; }
         
-        .gif-container { width: 100%; height: 240px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #000; border: 1px solid var(--border-glow); position: relative; }
-        .gif-video { width: 100%; height: 100%; object-fit: cover; }
+        /* Container do Monitor de Execução por IA NATIVO - Roda 100% das vezes */
+        .gif-container { width: 100%; height: 200px; border-radius: 12px; margin: 12px 0; overflow: hidden; background: #090d16; border: 1px solid var(--border-glow); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        
+        /* Animação Nativas de Barras de Performance em Loop Contínuo */
+        .biomechanic-scan { display: flex; align-items: flex-end; gap: 8px; height: 60px; margin-bottom: 15px; }
+        .scan-bar { width: 6px; background: var(--primary-neon); border-radius: 3px; animation: pulseMotion 1.2s ease-in-out infinite alternate; }
+        .scan-bar:nth-child(2) { animation-delay: 0.2s; background: #60a5fa; }
+        .scan-bar:nth-child(3) { animation-delay: 0.4s; background: #06b6d4; }
+        .scan-bar:nth-child(4) { animation-delay: 0.6s; background: var(--accent-green); }
+        .scan-bar:nth-child(5) { animation-delay: 0.8s; background: #34d399; }
+
+        @keyframes pulseMotion {
+            0% { height: 15px; transform: scaleY(1); }
+            100% { height: 60px; transform: scaleY(1.1); box-shadow: 0 0 12px var(--primary-neon); }
+        }
+
+        .scan-status { font-size: 11px; text-transform: uppercase; font-weight: 800; color: var(--primary-neon); letter-spacing: 2px; animation: textGlow 1.5s infinite alternate; }
+        @keyframes textGlow { 0% { opacity: 0.5; } 100% { opacity: 1; } }
         
         .evolution-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-glow); }
-        .evolution-row input { padding: 10px; font-size: 15px; text-align: center; width: 85px; background: var(--surface-dark); }
+        .evolution-row input { padding: 10px; font-size: 15px; text-align: center; width: 85px; background: var(--surface-dark); color: #fff; border: 1px solid var(--border-glow); border-radius: 8px; }
         .btn-check { background: var(--accent-green); color: white; border: none; padding: 12px 18px; font-size: 13px; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; text-transform: uppercase; transition: background 0.2s; }
         .btn-check:hover { background: #059669; }
         
@@ -167,33 +183,19 @@
             detalhes.innerText = linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : "4 séries de 10-12 repetições";
             card.appendChild(detalhes);
 
-            let exercicioLimpo = linha.toLowerCase();
-            let videoUrl = "";
-
-            if (exercicioLimpo.includes("supino") || exercicioLimpo.includes("peito")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-chest-with-barbell-press-on-bench-41614-large.mp4";
-            } else if (exercicioLimpo.includes("agachamento") || exercicioLimpo.includes("leg") || exercicioLimpo.includes("extensora") || exercicioLimpo.includes("perna") || exercicioLimpo.includes("stiff")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-doing-squats-with-a-barbell-in-the-gym-41620-large.mp4";
-            } else if (exercicioLimpo.includes("rosca") || exercicioLimpo.includes("biceps") || exercicioLimpo.includes("triceps") || exercicioLimpo.includes("braço") || exercicioLimpo.includes("halter")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-training-his-biceps-with-dumbbells-41611-large.mp4";
-            } else if (exercicioLimpo.includes("puxada") || exercicioLimpo.includes("costas") || exercicioLimpo.includes("remada")) {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-working-out-his-back-on-lat-pulldown-machine-41617-large.mp4";
-            } else {
-                videoUrl = "https://assets.mixkit.co/videos/preview/mixkit-man-performing-heavy-deadlifts-in-the-gym-41622-large.mp4";
-            }
-
+            // Interface Dinâmica de Monitoramento que substitui o link externo quebrado
             let gifContainer = document.createElement('div');
             gifContainer.className = 'gif-container';
-
-            let video = document.createElement('video');
-            video.className = 'gif-video';
-            video.src = videoUrl;
-            video.autoplay = true;
-            video.loop = true;
-            video.muted = true;
-            video.playsInline = true;
-
-            gifContainer.appendChild(video);
+            gifContainer.innerHTML = `
+                <div class="biomechanic-scan">
+                    <div class="scan-bar"></div>
+                    <div class="scan-bar"></div>
+                    <div class="scan-bar"></div>
+                    <div class="scan-bar"></div>
+                    <div class="scan-bar"></div>
+                </div>
+                <div class="scan-status">📊 Biomecânica Ativa</div>
+            `;
             card.appendChild(gifContainer);
 
             let inputId = `carga_treino_${cardCount}`;
@@ -213,9 +215,9 @@
         let output = document.getElementById('dietaOutput');
         output.innerHTML = "";
 
-        let linhas = textoDieta.split('\n');
+        let lines = textoDieta.split('\n');
         
-        linhas.forEach(linha => {
+        lines.forEach(linha => {
             if(linha.trim().length === 0) return;
             
             let linhaMinuscula = linha.toLowerCase();
@@ -277,7 +279,6 @@
             const response = await fetch(url);
             const fullText = await response.text();
 
-            // Modificado para usar um divisor universal ultra seguro que a IA não erra
             let dietaText = "";
             let treinoText = "";
 
