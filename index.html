@@ -16,9 +16,9 @@
         :root {
             /* Paleta Apple Fitness / Premium Dark */
             --bg: #000000;
-            --surface: #1C1C1E;
-            --surface-hover: #2C2C2E;
-            --border: rgba(255, 255, 255, 0.1);
+            --surface: rgba(28, 28, 30, 0.75); /* Ajustado para efeito vidro */
+            --surface-hover: rgba(44, 44, 46, 0.85);
+            --border: rgba(255, 255, 255, 0.15);
             --primary: #32D74B; /* Neon Green */
             --primary-dim: rgba(50, 215, 75, 0.15);
             --secondary: #0A84FF; /* Neon Blue */
@@ -41,6 +41,18 @@
             min-height: 100vh;
             padding-bottom: 80px;
             -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+
+        /* ─── FUNDO DE ACADEMIA ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            /* Imagem premium de academia */
+            background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1920') center/cover no-repeat;
+            opacity: 0.25; /* Escurecido para não atrapalhar a leitura */
+            z-index: -1;
         }
 
         /* ─── LAYOUT NATIVO ─── */
@@ -58,9 +70,9 @@
             padding-bottom: 24px;
             position: sticky;
             top: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 100;
             border-bottom: 1px solid var(--border);
             margin-bottom: 24px;
@@ -75,13 +87,16 @@
             border-radius: 100px; text-transform: uppercase; letter-spacing: 1px;
         }
 
-        /* ─── CARDS & SURFACES ─── */
+        /* ─── CARDS & SURFACES (Glassmorphism) ─── */
         .card {
             background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-radius: var(--radius-lg);
             padding: 20px;
             margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
             transition: transform 0.2s;
         }
 
@@ -101,7 +116,7 @@
             color: var(--text-muted); margin-bottom: 6px;
         }
         .input-control {
-            width: 100%; background: #000; border: 1px solid var(--border);
+            width: 100%; background: rgba(0,0,0,0.6); border: 1px solid var(--border);
             color: var(--text-main); padding: 14px 16px; border-radius: var(--radius-md);
             font-size: 15px; outline: none; transition: all 0.2s;
         }
@@ -110,7 +125,7 @@
         /* ─── CHIPS (OBJETIVO) ─── */
         .chips-wrapper { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
         .chip {
-            background: #000; border: 1px solid var(--border); color: var(--text-muted);
+            background: rgba(0,0,0,0.6); border: 1px solid var(--border); color: var(--text-muted);
             padding: 10px 18px; border-radius: 100px; font-size: 14px; font-weight: 600;
             cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
         }
@@ -141,6 +156,7 @@
             display: flex; gap: 8px; background: var(--surface); padding: 6px;
             border-radius: var(--radius-lg); margin-top: 24px; margin-bottom: 20px;
             overflow-x: auto; scrollbar-width: none;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border);
         }
         .tab-nav::-webkit-scrollbar { display: none; }
         .tab-btn {
@@ -149,7 +165,7 @@
             border-radius: var(--radius-md); cursor: pointer; white-space: nowrap;
             transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px;
         }
-        .tab-btn.active { background: var(--surface-hover); color: var(--text-main); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .tab-btn.active { background: rgba(0,0,0,0.4); color: var(--text-main); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .tab-content { display: none; animation: fadeIn 0.4s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -160,7 +176,7 @@
             max-height: 400px; overflow-y: auto; padding-right: 4px;
         }
         .chat-bubble { max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 14px; line-height: 1.5; }
-        .chat-ai { background: var(--surface); border-top-left-radius: 4px; color: var(--text-main); align-self: flex-start; border: 1px solid var(--border); }
+        .chat-ai { background: rgba(0,0,0,0.5); border-top-left-radius: 4px; color: var(--text-main); align-self: flex-start; border: 1px solid var(--border); }
         .chat-user { background: var(--secondary); color: #FFF; border-top-right-radius: 4px; align-self: flex-end; }
         
         .chat-input-wrapper { display: flex; gap: 8px; margin-top: 10px; }
@@ -173,7 +189,7 @@
             margin: 24px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;
         }
         .exercise-item {
-            background: #000; border: 1px solid var(--border); border-radius: var(--radius-md);
+            background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: var(--radius-md);
             padding: 16px; margin-bottom: 12px;
         }
         .ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
@@ -182,7 +198,7 @@
         
         .ex-action-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
         .load-input {
-            width: 70px; background: var(--surface); border: 1px solid var(--border);
+            width: 70px; background: rgba(0,0,0,0.8); border: 1px solid var(--border);
             color: var(--primary); padding: 8px; border-radius: var(--radius-sm);
             text-align: center; font-family: var(--font-mono); font-weight: 700; outline: none;
         }
@@ -195,22 +211,22 @@
 
         /* ─── LISTA DE DIETA ─── */
         .food-item {
-            display: flex; align-items: center; gap: 16px; background: #000;
+            display: flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.6);
             border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-md);
             margin-bottom: 10px;
         }
-        .food-img { width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover; }
+        .food-img { width: 55px; height: 55px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--border); }
         .food-desc { font-size: 14px; color: var(--text-main); line-height: 1.4; flex: 1; }
 
         /* ─── GRÁFICO EVOLUÇÃO ─── */
         .chart-container {
-            background: #000; border: 1px solid var(--border); border-radius: var(--radius-md);
+            background: rgba(0,0,0,0.6); border: 1px solid var(--border); border-radius: var(--radius-md);
             padding: 16px; margin-top: 16px; position: relative; height: 300px; width: 100%;
         }
 
         /* ─── LOADING SPINNER ─── */
         .loader {
-            border: 3px solid rgba(0,0,0,0.2); border-left-color: #000;
+            border: 3px solid rgba(0,0,0,0.2); border-left-color: var(--primary);
             border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -218,9 +234,9 @@
         /* ─── TOAST ─── */
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--surface-hover); color: var(--text-main); padding: 12px 24px;
-            border-radius: 100px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999; border: 1px solid var(--border);
+            background: var(--primary); color: #000; padding: 12px 24px;
+            border-radius: 100px; font-size: 14px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999;
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
@@ -235,473 +251,186 @@
         <div class="brand-box">
             <i data-lucide="activity" class="brand-icon"></i>
             <span class="brand-name">FitPlan</span>
-            <span class="brand-badge">PRO</span>
+            <span class="brand-badge">Pro</span>
         </div>
         <div>
-            <i data-lucide="settings" style="color: var(--text-muted); cursor:pointer;" onclick="toggleSettings()"></i>
+            <i data-lucide="user-circle" style="color: var(--text-muted); cursor:pointer;"></i>
         </div>
     </header>
 
-    <!-- CONFIG (Hidden by default) -->
-    <div class="card" id="settingsPanel" style="display: none; border: 1px solid var(--secondary);">
-        <div class="section-title"><i data-lucide="cpu" size="16"></i> Diretrizes Base da IA</div>
-        <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia dos glúteos..."></textarea>
-        <button class="btn-secondary" style="margin-top: 12px; width: 100%;" onclick="saveSettings()">Salvar Preferências</button>
+    <!-- SETUP INICIAL (Geração) -->
+    <div id="setupView">
+        <div class="card">
+            <div class="section-title"><i data-lucide="target" size="16"></i> Seu Perfil e Objetivo</div>
+            
+            <div class="chips-wrapper" id="objetivoChips">
+                <div class="chip active" data-val="hipertrofia">Hipertrofia</div>
+                <div class="chip" data-val="emagrecimento">Emagrecimento</div>
+                <div class="chip" data-val="manutencao">Saúde Geral</div>
+            </div>
+
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>Idade (anos)</label>
+                    <input type="number" id="idade" class="input-control" placeholder="Ex: 28" value="28">
+                </div>
+                <div class="input-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" id="peso" class="input-control" placeholder="Ex: 75" value="75">
+                </div>
+                <div class="input-group">
+                    <label>Altura (cm)</label>
+                    <input type="number" id="altura" class="input-control" placeholder="Ex: 175" value="175">
+                </div>
+                <div class="input-group">
+                    <label>Treinos / sem</label>
+                    <input type="number" id="dias" class="input-control" placeholder="Ex: 5" value="5">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Condição Especial / Restrição alimentar (opcional)</label>
+                <input type="text" id="restricao" class="input-control" placeholder="Ex: Lesão no joelho, intolerância a lactose...">
+            </div>
+
+            <button class="btn-main" id="btnGerar" onclick="gerarPlano()">
+                <span>Gerar Plano Inteligente</span>
+                <i data-lucide="zap" size="18"></i>
+                <div class="loader" id="loaderGerar"></div>
+            </button>
+        </div>
     </div>
 
-    <!-- FORMULÁRIO DE PERFIL (Desaparece após gerar) -->
-    <div class="card" id="profileForm">
-        <div class="section-title"><i data-lucide="user" size="16"></i> Dados Biométricos</div>
+    <!-- PAINEL PRINCIPAL (Após gerar) -->
+    <div id="mainView" style="display: none;">
         
-        <div class="input-group">
-            <label>Como quer ser chamado?</label>
-            <input type="text" id="userName" class="input-control" placeholder="Seu nome">
-        </div>
-        
-        <div class="grid-3">
-            <div class="input-group">
-                <label>Idade</label>
-                <input type="number" id="userAge" class="input-control" value="25">
-            </div>
-            <div class="input-group">
-                <label>Peso (kg)</label>
-                <input type="number" id="userWeight" class="input-control" value="75">
-            </div>
-            <div class="input-group">
-                <label>Altura (cm)</label>
-                <input type="number" id="userHeight" class="input-control" value="175">
-            </div>
-        </div>
-
-        <div class="section-title" style="margin-top: 10px;"><i data-lucide="target" size="16"></i> Foco Principal</div>
-        <div class="chips-wrapper" id="objectiveChips">
-            <div class="chip active" data-val="Hipertrofia"><i data-lucide="dumbbell" size="16"></i> Hipertrofia</div>
-            <div class="chip" data-val="Emagrecimento"><i data-lucide="flame" size="16"></i> Secar</div>
-            <div class="chip" data-val="Condicionamento"><i data-lucide="heart-pulse" size="16"></i> Saúde</div>
-        </div>
-
-        <div class="input-group">
-            <label>Detalhes (Opcional)</label>
-            <textarea id="userContext" class="input-control" rows="2" placeholder="Tenho dor no joelho, treino 4x na semana..."></textarea>
-        </div>
-
-        <button class="btn-main" id="btnGenerate" onclick="generatePlan()">
-            <span id="btnText">Criar Plano com IA</span>
-            <div class="loader" id="btnLoader"></div>
-        </button>
-    </div>
-
-    <!-- RESULTADOS (Oculto inicialmente) -->
-    <div id="resultsSection" style="display: none;">
-        
-        <!-- ABAS -->
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('tab-chat')"><i data-lucide="message-circle" size="16"></i> Consultoria</button>
-            <button class="tab-btn" onclick="switchTab('tab-workout')"><i data-lucide="dumbbell" size="16"></i> Treino</button>
-            <button class="tab-btn" onclick="switchTab('tab-diet')"><i data-lucide="utensils" size="16"></i> Dieta</button>
-            <button class="tab-btn" onclick="switchTab('tab-progress')"><i data-lucide="trending-up" size="16"></i> Evolução</button>
-        </div>
+            <buttonO problema das imagens aconteceu porque o serviço `source.unsplash.com` foi descontinuado recentemente e saiu do ar para todos os desenvolvedores. 
 
-        <!-- ABA CHAT -->
-        <div id="tab-chat" class="tab-content active card">
-            <div class="chat-container" id="chatBox">
-                <!-- Mensagens da IA e Usuário entrarão aqui -->
-            </div>
-            <div class="chat-input-wrapper">
-                <input type="text" id="chatInput" class="input-control" placeholder="Tire dúvidas com o personal..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
-                <button class="btn-send" onclick="sendChatMessage()"><i data-lucide="send" size="18"></i></button>
-            </div>
-        </div>
+Para resolver isso com **100% de certeza e nunca mais falhar**, substituí o gerador dinâmico por **URLs diretas e estáticas** de alta qualidade do próprio Unsplash (imagens fixas que não dependem do gerador antigo). 
 
-        <!-- ABA TREINO -->
-        <div id="tab-workout" class="tab-content card">
-            <div class="section-title"><i data-lucide="calendar" size="16"></i> Ficha Estruturada</div>
-            <div id="workoutContent"></div>
-        </div>
+Além disso, adicionei o **fundo de academia** com um efeito premium de "Glassmorphism" (vidro fosco). Os painéis do aplicativo agora são levemente transparentes e desfocados, revelando a academia ao fundo com um visual de altíssimo padrão.
 
-        <!-- ABA DIETA -->
-        <div id="tab-diet" class="tab-content card">
-            <div class="section-title"><i data-lucide="apple" size="16"></i> Sugestão Alimentar</div>
-            <div id="dietContent"></div>
-        </div>
+Copie todo o código abaixo e substitua no seu arquivo `.html`:
 
-        <!-- ABA PROGRESSO (GRÁFICO) -->
-        <div id="tab-progress" class="tab-content card">
-            <div class="section-title"><i data-lucide="bar-chart-2" size="16"></i> Evolução de Carga (Volume Total)</div>
-            <p style="font-size: 13px; color: var(--text-muted);">Acompanhe o volume de carga que você levanta a cada treino salvo.</p>
-            <div class="chart-container">
-                <canvas id="progressChart"></canvas>
-            </div>
-        </div>
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FitPlan Pro AI | Premium</title>
+    
+    <!-- Fontes Premium -->
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap)" rel="stylesheet">
+    
+    <!-- Bibliotecas Externas -->
+    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
 
-    </div>
-
-</div>
-
-<!-- Elemento Toast -->
-<div class="toast" id="toastMsg">Operação realizada!</div>
-
-<script>
-    // Inicializar ícones
-    lucide.createIcons();
-
-    // Estado da Aplicação
-    let currentObjective = "Hipertrofia";
-    let chatHistory = [];
-    let weightHistory = []; // { date: 'DD/MM', totalLoad: num }
-    let evolutionChartInstance = null;
-
-    // Lógica dos Chips de Objetivo
-    document.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', function() {
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            currentObjective = this.getAttribute('data-val');
-        });
-    });
-
-    // Lógica das Abas
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    // Toggle Configurações
-    function toggleSettings() {
-        const panel = document.getElementById('settingsPanel');
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    }
-    function saveSettings() {
-        localStorage.setItem('fitplan_directives', document.getElementById('aiDirectives').value);
-        toggleSettings();
-        showToast("Diretrizes atualizadas!");
-    }
-
-    // Carregar configurações locais
-    window.onload = () => {
-        const saved = localStorage.getItem('fitplan_directives');
-        if(saved) document.getElementById('aiDirectives').value = saved;
-        initChart();
-    };
-
-    // Sistema de Notificações (Toast)
-    function showToast(msg) {
-        const t = document.getElementById('toastMsg');
-        t.innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    // ─── GERAÇÃO DO PLANO VIA IA ───
-    async function generatePlan() {
-        const name = document.getElementById('userName').value || "Aluno(a)";
-        const age = document.getElementById('userAge').value;
-        const weight = document.getElementById('userWeight').value;
-        const height = document.getElementById('userHeight').value;
-        const context = document.getElementById('userContext').value;
-        const directives = localStorage.getItem('fitplan_directives') || "";
-
-        const btnText = document.getElementById('btnText');
-        const loader = document.getElementById('btnLoader');
-        btnText.style.display = 'none';
-        loader.style.display = 'block';
-        document.getElementById('btnGenerate').disabled = true;
-
-        const systemPrompt = `Atue como Personal Trainer e Nutricionista de Elite.
-Usuário: ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${currentObjective}. Contexto: ${context}.
-Diretrizes do usuário: ${directives}
-
-Aja com autoridade, ciência e empatia.
-
-RETORNE EXATAMENTE NESTE FORMATO, SEM EXCEÇÕES:
----CHAT---
-(Uma mensagem acolhedora de 1 parágrafo explicando o raciocínio estratégico para o plano).
----TREINO---
-(Crie uma divisão de treino. Para cada dia, coloque o nome do dia na primeira linha começando com '# '. Em seguida, liste os exercícios no formato: Nome do Exercício | Séries x Reps | Carga Recomendada em KG. Exemplo:
-# Segunda - Peito e Tríceps
-Supino Reto | 4 x 10 | 40kg
-Crucifixo | 3 x 12 | 12kg)
----DIETA---
-(Liste recomendações de refeições, uma por linha, direto ao ponto).`;
-
-        try {
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}?model=openai&cache=false`);
-            const data = await response.text();
-            
-            processAIResponse(data, name);
-            
-            // UI Updates
-            document.getElementById('profileForm').style.display = 'none';
-            document.getElementById('resultsSection').style.display = 'block';
-            showToast("Plano Personalizado Gerado!");
-        } catch (error) {
-            showToast("Erro ao contatar IA. Tente novamente.");
-            console.error(error);
-        } finally {
-            btnText.style.display = 'block';
-            loader.style.display = 'none';
-            document.getElementById('btnGenerate').disabled = false;
-        }
-    }
-
-    // Processar o texto bruto da IA
-    function processAIResponse(text, userName) {
-        let chatPart = "Plano gerado com sucesso! Vamos iniciar sua evolução.";
-        let treinoPart = "";
-        let dietaPart = "";
-
-        try {
-            const splitChat = text.split('---TREINO---');
-            chatPart = splitChat[0].replace('---CHAT---', '').trim();
-            
-            const splitDieta = splitChat[1].split('---DIETA---');
-            treinoPart = splitDieta[0].trim();
-            dietaPart = splitDieta[1] ? splitDieta[1].trim() : "Sem dieta especificada.";
-        } catch(e) {
-            console.log("Erro de parse. Renderizando fallback.");
-            chatPart = text; // Se a IA falhar no formato, joga tudo pro chat
+    <style>
+        :root {
+            /* Paleta Apple Fitness / Premium Dark + Glassmorphism */
+            --bg: #000000;
+            --surface: rgba(28, 28, 30, 0.7); /* Transparente para o fundo aparecer */
+            --surface-hover: rgba(44, 44, 46, 0.85);
+            --border: rgba(255, 255, 255, 0.15);
+            --primary: #32D74B; /* Neon Green */
+            --primary-dim: rgba(50, 215, 75, 0.15);
+            --secondary: #0A84FF; /* Neon Blue */
+            --secondary-dim: rgba(10, 132, 255, 0.15);
+            --danger: #FF453A;
+            --text-main: #FFFFFF;
+            --text-muted: #A1A1A6;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        // 1. Atualizar Chat
-        chatHistory.push({ role: 'ai', msg: chatPart });
-        renderChat();
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-main); }
 
-        // 2. Atualizar Treino
-        renderWorkout(treinoPart);
-
-        // 3. Atualizar Dieta
-        renderDiet(dietaPart);
-    }
-
-    // ─── CHAT CONSULTORIA ───
-    function renderChat() {
-        const box = document.getElementById('chatBox');
-        box.innerHTML = '';
-        chatHistory.forEach(item => {
-            const isUser = item.role === 'user';
-            const div = document.createElement('div');
-            div.className = `chat-bubble ${isUser ? 'chat-user' : 'chat-ai'}`;
-            div.innerText = item.msg;
-            box.appendChild(div);
-        });
-        box.scrollTop = box.scrollHeight;
-    }
-
-    async function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const msg = input.value.trim();
-        if(!msg) return;
-
-        // Add user msg
-        chatHistory.push({ role: 'user', msg: msg });
-        input.value = '';
-        renderChat();
-
-        // Add loading bubble
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'chat-bubble chat-ai';
-        loadingDiv.innerHTML = '<div class="loader" style="display:block; border-color: var(--primary); border-left-color: transparent; width: 14px; height: 14px;"></div>';
-        document.getElementById('chatBox').appendChild(loadingDiv);
-        document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
-
-        // Prepare context
-        const contextLines = chatHistory.slice(-4).map(h => `${h.role === 'user' ? 'Aluno' : 'Treinador'}: ${h.msg}`).join('\n');
-        const prompt = `Como Personal Trainer da plataforma FitPlan PRO, responda à última dúvida do aluno de forma breve (máx 3 frases). Histórico recente:\n${contextLines}\nTreinador:`;
-
-        try {
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`);
-            const answer = await response.text();
-            
-            loadingDiv.remove();
-            chatHistory.push({ role: 'ai', msg: answer.trim() });
-            renderChat();
-        } catch(e) {
-            loadingDiv.remove();
-            showToast("Falha na rede. Tente enviar de novo.");
+        body {
+            background-color: var(--bg);
+            /* Fundo de Academia com sobreposição escura para garantir leitura perfeita */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.92)), url('[https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop](https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop)');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            -webkit-font-smoothing: antialiased;
         }
-    }
 
-    // ─── PARSER DE TREINO ───
-    function renderWorkout(text) {
-        const container = document.getElementById('workoutContent');
-        container.innerHTML = '';
-        if(!text) return;
+        /* ─── LAYOUT NATIVO ─── */
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
 
-        const lines = text.split('\n').filter(l => l.trim().length > 0);
-        let idCounter = 0;
+        /* ─── HEADER ─── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0 24px;
+            position: sticky;
+            top: 0;
+            background: transparent;
+            z-index: 100;
+            margin-bottom: 12px;
+        }
 
-        lines.forEach(linha => {
-            if (linha.startsWith('#')) {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'day-header';
-                dayHeader.innerText = linha.replace('#', '').trim();
-                container.appendChild(dayHeader);
-            } else if (linha.includes('|')) {
-                idCounter++;
-                const parts = linha.split('|').map(p => p.trim());
-                const nome = parts[0];
-                const series = parts[1] || '3x10';
-                const pesoBase = (parts[2] || '10kg').replace(/[^0-9]/g, '') || 10;
-                
-                const gifBoxId = `gif_${idCounter}`;
-                const inputId = `weight_${idCounter}`;
+        .brand-box { display: flex; align-items: center; gap: 8px; }
+        .brand-icon { color: var(--primary); }
+        .brand-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .brand-badge {
+            background: var(--primary-dim); color: var(--primary);
+            font-size: 10px; font-weight: 700; padding: 4px 8px;
+            border-radius: 100px; text-transform: uppercase; letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+        }
 
-                const el = document.createElement('div');
-                el.className = 'exercise-item';
-                el.innerHTML = `
-                    <div class="ex-header">
-                        <div>
-                            <div class="ex-name">${nome}</div>
-                            <div class="ex-meta">${series}</div>
-                        </div>
-                        <button class="btn-secondary" onclick="loadGif('${nome.replace(/'/g, "")}', '${gifBoxId}')" style="padding: 6px; border-radius: 50%;">
-                            <i data-lucide="play" size="14"></i>
-                        </button>
-                    </div>
-                    
-                    <div id="${gifBoxId}" class="gif-frame"></div>
-                    
-                    <div class="ex-action-row">
-                        <label style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">CARGA (KG)</label>
-                        <input type="number" id="${inputId}" class="load-input" value="${pesoBase}">
-                        <button class="btn-secondary" style="flex:1; background: var(--primary-dim); color: var(--primary); border-color: var(--primary);" onclick="saveLoad('${nome}', '${inputId}')">Registrar Feito</button>
-                    </div>
-                `;
-                container.appendChild(el);
-            } else {
-                // Linhas soltas (dicas, etc)
-                const p = document.createElement('p');
-                p.style.fontSize = '13px'; p.style.color = 'var(--text-muted)'; p.style.marginBottom = '10px';
-                p.innerText = linha;
-                container.appendChild(p);
-            }
-        });
-        lucide.createIcons();
-    }
+        /* ─── CARDS & SURFACES (Efeito Vidro/Glassmorphism) ─── */
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            transition: transform 0.2s;
+        }
 
-    // ─── SALVAR CARGA E ATUALIZAR GRÁFICO ───
-    function saveLoad(nome, inputId) {
-        const val = parseInt(document.getElementById(inputId).value) || 0;
-        if(val <= 0) { showToast("Insira um valor válido!"); return; }
+        .section-title {
+            font-size: 13px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 6px;
+        }
 
-        const hoje = new Date().toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+        /* ─── INPUTS ─── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         
-        // Verifica se já tem registro no dia, se sim soma ao volume total. Se não, cria.
-        let todayRecord = weightHistory.find(w => w.date === hoje);
-        if(todayRecord) {
-            todayRecord.totalLoad += val;
-        } else {
-            weightHistory.push({ date: hoje, totalLoad: val });
+        .input-group { margin-bottom: 16px; }
+        .input-group label {
+            display: block; font-size: 12px; font-weight: 500;
+            color: var(--text-muted); margin-bottom: 6px;
         }
-        
-        showToast(`Carga de ${val}kg registrada no diário!`);
-        updateChart();
-    }
-
-    // ─── GRÁFICO (Chart.js) ───
-    function initChart() {
-        const ctx = document.getElementById('progressChart').getContext('2d');
-        
-        // Mock inicial para não ficar vazio
-        if(weightHistory.length === 0) {
-            weightHistory = [
-                { date: '10/05', totalLoad: 120 },
-                { date: '12/05', totalLoad: 135 },
-                { date: '14/05', totalLoad: 140 }
-            ];
+        .input-control {
+            width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border);
+            color: var(--text-main); padding: 14px 16px; border-radius: var(--radius-md);
+            font-size: 15px; outline: none; transition: all 0.2s;
         }
+        .input-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-dim); background: rgba(0, 0, 0, 0.6); }
 
-        evolutionChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: weightHistory.map(w => w.date),
-                datasets: [{
-                    label: 'Volume de Carga (kg)',
-                    data: weightHistory.map(w => w.totalLoad),
-                    borderColor: '#32D74B',
-                    backgroundColor: 'rgba(50, 215, 75, 0.2)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#000',
-                    pointBorderColor: '#32D74B',
-                    pointRadius: 5,
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8E8E93' } },
-                    x: { grid: { display: false }, ticks: { color: '#8E8E93' } }
-                }
-            }
-        });
-    }
-
-    function updateChart() {
-        if(!evolutionChartInstance) return;
-        evolutionChartInstance.data.labels = weightHistory.map(w => w.date);
-        evolutionChartInstance.data.datasets[0].data = weightHistory.map(w => w.totalLoad);
-        evolutionChartInstance.update();
-    }
-
-    // ─── INTEGRAÇÃO DE MIDIA (Giphy e Unsplash) ───
-    async function loadGif(queryTerm, frameId) {
-        const frame = document.getElementById(frameId);
-        if(frame.style.display === 'block') { frame.style.display = 'none'; return; }
-        
-        frame.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100%;"><div class="loader" style="display:block"></div></div>';
-        frame.style.display = 'block';
-
-        const query = encodeURIComponent(queryTerm + " exercise gym");
-        const urlApi = `https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=${query}&limit=1&rating=g`;
-
-        try {
-            const res = await fetch(urlApi);
-            const data = await res.json();
-            if (data.data && data.data.length > 0) {
-                frame.innerHTML = `<iframe src="https://giphy.com/embed/${data.data[0].id}" width="100%" height="100%" frameBorder="0" allowFullScreen></iframe>`;
-            } else {
-                frame.innerHTML = '<div style="padding: 20px; text-align:center; font-size:12px; color:var(--text-muted);">Mídia não encontrada</div>';
-            }
-        } catch(e) {
-            frame.innerHTML = '<div style="padding: 20px; text-align:center; font-size:12px; color:var(--danger);">Erro de carregamento</div>';
-        }
-    }
-
-    function renderDiet(text) {
-        const container = document.getElementById('dietContent');
-        container.innerHTML = '';
-        if(!text) return;
-
-        const lines = text.split('\n').filter(l => l.trim().length > 0);
-        
-        lines.forEach(linha => {
-            const lower = linha.toLowerCase();
-            let imgKey = "healthy,meal";
-            
-            if (lower.includes("ovo") || lower.includes("omelete")) imgKey = "egg,food";
-            else if (lower.includes("frango")) imgKey = "chicken,breast";
-            else if (lower.includes("carne") || lower.includes("patinho")) imgKey = "steak,meat";
-            else if (lower.includes("arroz")) imgKey = "rice,bowl";
-            else if (lower.includes("salada") || lower.includes("vegetais")) imgKey = "salad,fresh";
-            else if (lower.includes("whey") || lower.includes("suplemento")) imgKey = "protein,shake";
-            else if (lower.includes("fruta") || lower.includes("banana")) imgKey = "fruit,fresh";
-
-            const el = document.createElement('div');
-            el.className = 'food-item';
-            el.innerHTML = `
-                <img src="https://source.unsplash.com/featured/100x100/?${imgKey}" class="food-img" onerror="this.src='https://source.unsplash.com/featured/100x100/?food,healthy'" alt="Comida">
-                <div class="food-desc">${linha}</div>
-            `;
-            container.appendChild(el);
-        });
-    }
-
-</script>
-</body>
-</html>
+        /* ─── CHIPS (OBJETIVO) ─── */
+        .chips-wrapper { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .chip {
+            background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); color: var(--text-muted);
+            padding: 10px 18px; border-r
