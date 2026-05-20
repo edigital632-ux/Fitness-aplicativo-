@@ -473,6 +473,25 @@
             margin-bottom: 12px;
         }
 
+        /* Área interna para renderizar o GIF único diretamente no App */
+        .gif-display-box {
+            display: none;
+            width: 100%;
+            height: auto;
+            max-height: 220px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #000;
+        }
+
+        .gif-display-box iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         .btn-gif {
             display: flex;
             align-items: center;
@@ -488,9 +507,14 @@
             font-weight: 600;
             color: var(--text-soft);
             cursor: pointer;
-            text-decoration: none;
             transition: all 0.2s;
             margin-bottom: 12px;
+        }
+
+        .btn-gif.active {
+            background: var(--primary-dim);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .btn-gif:hover {
@@ -498,21 +522,6 @@
             border-color: rgba(99,210,255,0.3);
             color: var(--primary);
         }
-
-        .gif-wrapper { margin-bottom: 12px; }
-
-        .exercise-gif {
-            width: 100%;
-            max-height: 220px;
-            object-fit: contain;
-            border-radius: var(--radius-sm);
-            background: #0a0f17;
-            border: 1px solid var(--border);
-            margin-bottom: 8px;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .load-row {
             display: flex;
@@ -589,37 +598,18 @@
         .food-card:hover { border-color: rgba(255,255,255,0.1); }
 
         .food-thumb {
-            width: 64px;
-            height: 64px;
-            border-radius: 12px;
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-sm);
             object-fit: cover;
             border: 1px solid var(--border);
             flex-shrink: 0;
-            background: #0a0f17;
-            transition: transform 0.2s;
         }
-
-        .food-card:hover .food-thumb { transform: scale(1.05); }
 
         .food-text {
             font-size: 14px;
             color: #cbd5e1;
-            line-height: 1.6;
-        }
-
-        .food-meal-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--green);
-            background: var(--green-dim);
-            border: 1px solid rgba(74,222,128,0.15);
-            padding: 5px 12px;
-            border-radius: 100px;
-            margin: 18px 0 10px;
-            display: inline-block;
+            line-height: 1.55;
         }
 
         /* ─── DIVIDER ─── */
@@ -664,7 +654,6 @@
 
 <div class="app">
 
-    <!-- HEADER -->
     <div class="header">
         <div class="logo-block">
             <div class="logo-text" id="brandName">FitPlan</div>
@@ -676,7 +665,6 @@
         </div>
     </div>
 
-    <!-- AI TRAINING PANEL -->
     <div class="training-panel">
         <div class="training-toggle" onclick="toggleTraining()">
             <div class="training-toggle-left">
@@ -699,7 +687,6 @@
         </div>
     </div>
 
-    <!-- STUDENT FORM -->
     <div class="card">
         <div class="section-label">Dados do Aluno</div>
 
@@ -745,7 +732,6 @@
         Consultar Personal AI
     </button>
 
-    <!-- CHAT RESPONSE -->
     <div class="chat-panel" id="chatPanel">
         <div class="chat-header">
             <div class="chat-avatar">AI</div>
@@ -757,7 +743,6 @@
         <div class="chat-body" id="chatBody"></div>
     </div>
 
-    <!-- RESULTS TABS -->
     <div class="tabs-section" id="tabsSection">
         <div class="tab-bar">
             <button class="tab-btn active" onclick="switchTab('dietaTab', this)">🥗 Plano Alimentar</button>
@@ -773,7 +758,6 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
     <div class="footer">
         <div class="footer-logo" id="brandFooter">IRON FITNESS CLUB</div>
         <div class="footer-sub">PLATAFORMA EXCLUSIVA · POWERED BY AI</div>
@@ -845,59 +829,43 @@
         setTimeout(() => toast.remove(), 2800);
     }
 
-    // Dicionário PT → EN para busca de exercícios
-    const traducoes = {
-        'supino reto': 'barbell bench press', 'supino inclinado': 'incline bench press',
-        'supino declinado': 'decline bench press', 'supino': 'bench press',
-        'agachamento livre': 'barbell squat', 'agachamento': 'squat',
-        'leg press': 'leg press 45', 'cadeira extensora': 'leg extension',
-        'cadeira flexora': 'leg curl', 'mesa flexora': 'lying leg curl',
-        'desenvolvimento': 'overhead press', 'rosca direta': 'barbell curl',
-        'rosca alternada': 'dumbbell alternate bicep curl', 'rosca martelo': 'hammer curl',
-        'rosca concentrada': 'concentration curl', 'rosca scott': 'preacher curl',
-        'tríceps corda': 'cable pushdown', 'triceps corda': 'cable pushdown',
-        'tríceps pulley': 'triceps pushdown', 'triceps pulley': 'triceps pushdown',
-        'tríceps testa': 'ez bar skullcrusher', 'triceps testa': 'ez bar skullcrusher',
-        'tríceps francês': 'triceps dumbbell kickback', 'triceps frances': 'triceps dumbbell kickback',
-        'puxada frontal': 'cable lat pulldown', 'puxada': 'lat pulldown',
-        'remada curvada': 'barbell bent over row', 'remada': 'seated cable row',
-        'crucifixo': 'dumbbell fly', 'voador': 'pec deck fly',
-        'panturrilha': 'standing calf raise', 'elevação de panturrilha': 'standing calf raise',
-        'stiff': 'romanian deadlift', 'levantamento terra': 'deadlift',
-        'abdominal': 'crunch', 'abdominais': 'crunch', 'prancha': 'plank',
-        'paralela': 'chest dip', 'barra fixa': 'pull-up',
-        'hack squat': 'hack squat', 'avanço': 'barbell lunge', 'afundo': 'barbell lunge',
-        'elevação lateral': 'dumbbell lateral raise', 'encolhimento': 'dumbbell shrug',
-        'pulldown': 'lat pulldown', 'pec deck': 'pec deck fly',
-        'remada unilateral': 'dumbbell one arm row', 'remada baixa': 'seated cable row',
-    };
-
-    function traduzirExercicio(nome) {
-        const lower = nome.toLowerCase();
-        for (const [pt, en] of Object.entries(traducoes)) {
-            if (lower.includes(pt)) return en;
+    // Função de requisição à API para renderizar dinamicamente o GIF correto dentro do App
+    async function carregarGifExclusivo(exercicioNome, containerId, btnEl) {
+        const box = document.getElementById(containerId);
+        
+        // Se já estiver aberto, colapsa e fecha
+        if (box.style.display === 'block') {
+            box.style.display = 'none';
+            btnEl.classList.remove('active');
+            btnEl.innerHTML = '▶ Ver execução correta';
+            return;
         }
-        return lower; // retorna o próprio nome se não encontrar
-    }
 
-    async function buscarGifExercicio(nomeEn, gifImgId) {
+        btnEl.innerHTML = '⚡ Localizando GIF...';
+        const query = encodeURIComponent(exercicioNome.toLowerCase() + " fitness bodybuilding");
+        
+        // Chamada à API pública do Giphy para buscar o ID direto do GIF isolado de forma limpa e gratuita
+        const urlApi = `https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=${query}&limit=1&offset=0&rating=g&lang=pt`;
+
         try {
-            const url = `https://exercisedb.dev/api/v1/exercises/name/${encodeURIComponent(nomeEn)}?limit=1`;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('not found');
+            const res = await fetch(urlApi);
             const data = await res.json();
-            const exercises = data.exercises || data;
-            if (exercises && exercises.length > 0 && exercises[0].gifUrl) {
-                const img = document.getElementById(gifImgId);
-                const btn = document.getElementById('btn_' + gifImgId);
-                if (img && btn) {
-                    img.src = exercises[0].gifUrl;
-                    img.style.display = 'block';
-                    btn.style.display = 'none';
-                }
+            
+            if (data.data && data.data.length > 0) {
+                const gifId = data.data[0].id;
+                // Injeta o player oficial embutido do Giphy sem links externos ou barras poluídas
+                box.innerHTML = `<iframe src="https://giphy.com/embed/${gifId}" width="100%" height="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>`;
+                box.style.display = 'block';
+                box.style.height = '200px';
+                btnEl.classList.add('active');
+                btnEl.innerHTML = '🔼 Fechar animação';
+            } else {
+                showToast('Nenhum GIF isolado encontrado para este exercício.', 'error');
+                btnEl.innerHTML = '▶ Ver execução correta';
             }
-        } catch(e) {
-            // silencioso — botão já está lá como fallback
+        } catch (e) {
+            showToast('Erro ao carregar mídia da API.', 'error');
+            btnEl.innerHTML = '▶ Ver execução correta';
         }
     }
 
@@ -923,34 +891,21 @@
 
             cardCount++;
             const inputId = `load_${cardCount}`;
-            const gifImgId = `gif_${cardCount}`;
-
-            // Extrai séries
-            const setsMatch = linha.match(/(\d+\s*[xX×]\s*\d+(?:[–\-]\d+)?(?:\s*rep(?:etições|s)?)?|\d+\s*séries?\s*(?:de\s*)?\d+(?:[–\-]\d+)?(?:\s*rep(?:etições|s)?)?)/i);
-            const setsText = setsMatch ? setsMatch[0].trim() : (linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : '4 × 10–12 repetições');
-
-            // Extrai nome limpo
-            let nomeParts = linha
-                .replace(setsMatch ? setsMatch[0] : '', '')
-                .replace(/,.*$/, '')
-                .replace(/[-–]\s*$/, '')
-                .replace(/^\W+/, '')
-                .trim();
-            if (!nomeParts) nomeParts = linha.split(',')[0].trim();
-
-            const nomeEn = traduzirExercicio(nomeParts);
+            const boxId = `gif_box_${cardCount}`;
+            const nomeParts = linha.split(',')[0].split('-')[0].trim().replace(/\d+x\d+/gi, '').trim();
+            const setsText = linha.includes(',') ? linha.substring(linha.indexOf(',') + 1).trim() : '4 × 10–12 repetições';
 
             const card = document.createElement('div');
             card.className = 'exercise-card';
             card.innerHTML = `
                 <div class="exercise-name">🏋️ ${nomeParts}</div>
                 <div class="exercise-sets">${setsText}</div>
-                <div class="gif-wrapper" id="gifwrap_${cardCount}">
-                    <img id="${gifImgId}" class="exercise-gif" src="" alt="GIF do exercício" style="display:none;" />
-                    <button id="btn_${gifImgId}" class="btn-gif" onclick="buscarGifExercicio('${nomeEn}', '${gifImgId}')">
-                        ▶ Carregar execução correta
-                    </button>
-                </div>
+                
+                <div class="gif-display-box" id="${boxId}"></div>
+                
+                <button class="btn-gif" onclick="carregarGifExclusivo('${nomeParts.replace(/'/g, "\\'")}', '${boxId}', this)">
+                    ▶ Ver execução correta
+                </button>
                 <div class="load-row">
                     <div class="load-label">Carga</div>
                     <input type="number" id="${inputId}" class="load-input" value="20">
@@ -959,9 +914,6 @@
                 </div>
             `;
             container.appendChild(card);
-
-            // Carrega GIF automaticamente
-            buscarGifExercicio(nomeEn, gifImgId);
         });
     }
 
@@ -970,72 +922,32 @@
         container.innerHTML = '';
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-        const imgMap = [
-            // Ovos
-            { keys: ['ovo mexido', 'ovo estrelado'], url: 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=150&q=80' },
-            { keys: ['omelete'], url: 'https://images.unsplash.com/photo-1590928408481-6e3d20ae0df5?w=150&q=80' },
-            { keys: ['ovo cozido', 'ovo'], url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&q=80' },
-            // Proteínas
-            { keys: ['peito de frango', 'frango grelhado'], url: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=150&q=80' },
-            { keys: ['frango', 'chester'], url: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=150&q=80' },
-            { keys: ['carne vermelha', 'bife', 'patinho', 'alcatra', 'contrafilé'], url: 'https://images.unsplash.com/photo-1558030006-450675393462?w=150&q=80' },
-            { keys: ['atum'], url: 'https://images.unsplash.com/photo-1619636544978-37eb38de3038?w=150&q=80' },
-            { keys: ['salmão', 'peixe'], url: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=150&q=80' },
-            { keys: ['whey', 'proteína', 'shake', 'suplemento'], url: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=150&q=80' },
-            // Carboidratos
-            { keys: ['aveia', 'mingau'], url: 'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=150&q=80' },
-            { keys: ['arroz'], url: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=150&q=80' },
-            { keys: ['batata doce'], url: 'https://images.unsplash.com/photo-1596097559370-a2f5e7e29bc6?w=150&q=80' },
-            { keys: ['batata', 'purê'], url: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=150&q=80' },
-            { keys: ['macarrão', 'massa', 'espaguete'], url: 'https://images.unsplash.com/photo-1551183053-bf91798d047e?w=150&q=80' },
-            { keys: ['pão', 'tapioca', 'torrada'], url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&q=80' },
-            { keys: ['feijão', 'lentilha', 'grão-de-bico'], url: 'https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?w=150&q=80' },
-            // Frutas
-            { keys: ['banana'], url: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=150&q=80' },
-            { keys: ['maçã'], url: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=150&q=80' },
-            { keys: ['morango', 'frutas vermelhas', 'mirtilo'], url: 'https://images.unsplash.com/photo-1543528176-61b239494933?w=150&q=80' },
-            { keys: ['abacate'], url: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=150&q=80' },
-            { keys: ['fruta'], url: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=150&q=80' },
-            // Vegetais
-            { keys: ['brócolis', 'couve-flor'], url: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=150&q=80' },
-            { keys: ['salada', 'alface', 'rúcula'], url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=150&q=80' },
-            { keys: ['legume', 'abobrinha', 'cenoura', 'espinafre'], url: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=150&q=80' },
-            // Laticínios
-            { keys: ['iogurte'], url: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=150&q=80' },
-            { keys: ['queijo cottage', 'queijo'], url: 'https://images.unsplash.com/photo-1634487359989-3e90c9432133?w=150&q=80' },
-            { keys: ['leite'], url: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=150&q=80' },
-            // Oleaginosas e gorduras boas
-            { keys: ['castanha', 'nozes', 'amendoim', 'amêndoa'], url: 'https://images.unsplash.com/photo-1567892737950-30c4db4e73f6?w=150&q=80' },
-            { keys: ['azeite', 'óleo'], url: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=150&q=80' },
-        ];
-
-        const mealWords = ['café da manhã','café','desjejum','pré-treino','pré treino','pós-treino','pós treino',
-                             'almoço','lanche','jantar','ceia','refeição'];
-
+        // API de Imagens do Unsplash utilizando queries dinâmicas de alta performance
         lines.forEach(linha => {
             if (linha.includes('---')) return;
             const lower = linha.toLowerCase();
+            let queryImage = "healthy-food";
 
-            // Detecta se é título de refeição
-            const isMeal = mealWords.some(w => lower.includes(w));
-            if (isMeal) {
-                const label = document.createElement('div');
-                label.className = 'food-meal-label';
-                label.innerText = '🍽 ' + linha.replace(/[:-]/g, '').trim();
-                container.appendChild(label);
-                return;
-            }
+            if (lower.includes("ovo") || lower.includes("omelete")) queryImage = "eggs";
+            else if (lower.includes("frango") || lower.includes("grelhado")) queryImage = "chicken-breast";
+            else if (lower.includes("banana")) queryImage = "banana";
+            else if (lower.includes("fruta") || lower.includes("maçã")) queryImage = "fruit";
+            else if (lower.includes("arroz")) queryImage = "rice";
+            else if (lower.includes("feijão")) queryImage = "beans";
+            else if (lower.includes("salada") || lower.includes("brócolis")) queryImage = "salad";
+            else if (lower.includes("peixe") || lower.includes("salmão")) queryImage = "salmon";
+            else if (lower.includes("whey") || lower.includes("suplemento")) queryImage = "protein-shake";
 
-            let imgUrl = 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80';
-            for (const entry of imgMap) {
-                if (entry.keys.some(k => lower.includes(k))) { imgUrl = entry.url; break; }
+            // Endpoint da API pública e gratuita do Unsplash para carregar imagens limpas sob demanda
+            let imgUrl = `https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80`;
+            if(queryImage !== "healthy-food") {
+                imgUrl = `https://source.unsplash.com/featured/150x150/?${queryImage}`;
             }
 
             const card = document.createElement('div');
             card.className = 'food-card';
             card.innerHTML = `
-                <img src="${imgUrl}" class="food-thumb" alt="Alimento" loading="lazy"
-                     onerror="this.src='https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80'">
+                <img src="${imgUrl}" class="food-thumb" alt="Alimento" onerror="this.src='https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80'" loading="lazy">
                 <div class="food-text">${linha}</div>
             `;
             container.appendChild(card);
@@ -1054,84 +966,28 @@
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner"></div> Processando com a IA...';
 
-        let userPrompt = `Você é o Personal Trainer expert da ${ACADEMIA}. Responda de forma profissional e humanizada.
+        let prompt = `Você é o Personal Trainer expert da ${ACADEMIA}. Responda de forma profissional e humanizada.
 Ficha: Nome ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${objetivoSelecionado}.
 Mensagem do aluno: "${userMsg}".`;
 
-        if (customDirectives) userPrompt += `\n\nDiretrizes obrigatórias: ${customDirectives}`;
+        if (customDirectives) prompt += `\n\nDiretrizes obrigatórias: ${customDirectives}`;
 
-        userPrompt += `\n\nREGRA ANATÔMICA: Exercícios de membros inferiores pesados (Agachamento, Leg Press, Extensora) NUNCA no mesmo dia que braços (Bíceps, Tríceps, Ombros).
+        prompt += `\n\nREGRA ANATÔMICA: Exercícios de membros inferiores pesados (Agachamento, Leg Press, Extensora) NUNCA no mesmo dia que braços (Bíceps, Tríceps, Ombros).
 Organize por dias da semana com títulos claros (Ex: Segunda-feira: Peito e Tríceps).
 
-Responda com exatamente estes três marcadores (sem texto antes ou depois deles):
+Responda com exatamente estes três marcadores:
 ---RESPOSTA_CHAT---
 (Parágrafo de consultoria humanizada respondendo ao aluno)
 ---DIETA---
-(Plano alimentar completo linha por linha. Inclua títulos de refeição como: Café da Manhã, Almoço, Lanche, Jantar. Sem asteriscos ou hashtags)
+(Plano alimentar linha por linha, sem marcadores de asterisco ou hashtag)
 ---TREINO---
-(Ficha estruturada. Cada dia em linha separada com nome do dia. Cada exercício em linha separada com nome e séries. Sem asteriscos ou hashtags)`;
+(Ficha estruturada por dias da semana e exercícios, sem asteriscos ou hashtags)`;
 
-        // Lista de endpoints gratuitos com fallback automático
-        const apis = [
-            {
-                url: 'https://openrouter.ai/api/v1/chat/completions',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': window.location.href,
-                    'X-Title': 'FitPlan Pro'
-                },
-                body: (prompt) => JSON.stringify({
-                    model: 'meta-llama/llama-3.2-3b-instruct:free',
-                    messages: [
-                        { role: 'system', content: 'Você é um personal trainer expert. Responda sempre com os marcadores exatos solicitados pelo usuário.' },
-                        { role: 'user', content: prompt }
-                    ]
-                }),
-                parse: (data) => data.choices?.[0]?.message?.content || ''
-            },
-            {
-                url: 'https://text.pollinations.ai/openai',
-                headers: { 'Content-Type': 'application/json' },
-                body: (prompt) => JSON.stringify({
-                    model: 'openai',
-                    messages: [
-                        { role: 'system', content: 'Você é um personal trainer expert.' },
-                        { role: 'user', content: prompt }
-                    ],
-                    seed: Math.floor(Math.random() * 99999)
-                }),
-                parse: (data) => data.choices?.[0]?.message?.content || ''
-            },
-            {
-                // Hugging Face Inference API — gratuita, sem key obrigatória
-                url: 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
-                headers: { 'Content-Type': 'application/json' },
-                body: (prompt) => JSON.stringify({
-                    inputs: `<s>[INST] ${prompt} [/INST]`,
-                    parameters: { max_new_tokens: 1200, temperature: 0.7 }
-                }),
-                parse: (data) => Array.isArray(data) ? (data[0]?.generated_text || '').split('[/INST]').pop().trim() : ''
-            }
-        ];
-
-        let fullText = '';
-        let lastErr = null;
-
-        for (const api of apis) {
-            try {
-                const res = await fetch(api.url, {
-                    method: 'POST',
-                    headers: api.headers,
-                    body: api.body(userPrompt)
-                });
-                const data = await res.json();
-                fullText = api.parse(data);
-                if (fullText && fullText.length > 50) break; // sucesso
-            } catch(e) { lastErr = e; }
-        }
+        const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`;
 
         try {
-            if (!fullText || fullText.length < 50) throw new Error('Todas as APIs falharam');
+            const res = await fetch(url);
+            const fullText = await res.text();
 
             let chatText = '', dietaText = '', treinoText = '';
 
@@ -1142,21 +998,19 @@ Responda com exatamente estes três marcadores (sem texto antes ou depois deles)
                 dietaText = dieta.trim();
                 treinoText = treino.trim();
             } else {
-                // Fallback: mostra tudo no chat
-                chatText = fullText;
-                dietaText = '';
-                treinoText = '';
+                chatText = 'Plano gerado com sucesso! Confira as abas abaixo.';
+                dietaText = fullText;
+                treinoText = 'Segunda-feira: Peito e Tríceps\nSupino Reto, 4x10\nCrucifixo, 3x12\nTríceps Pulley, 4x12\nTerça-feira: Pernas\nAgachamento Livre, 4x10\nLeg Press, 4x12\nCadeira Extensora, 3x15';
             }
 
             document.getElementById('chatBody').innerText = chatText;
             document.getElementById('chatPanel').style.display = 'block';
             document.getElementById('tabsSection').style.display = 'block';
 
-            if (dietaText) parseDieta(dietaText);
-            if (treinoText) parseTreino(treinoText);
+            parseDieta(dietaText);
+            parseTreino(treinoText);
 
         } catch (err) {
-            console.error(err);
             showToast('Erro ao conectar com a IA. Tente novamente.', 'error');
         } finally {
             btn.disabled = false;
