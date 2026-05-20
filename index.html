@@ -829,11 +829,8 @@
         setTimeout(() => toast.remove(), 2800);
     }
 
-    // Função de requisição à API para renderizar dinamicamente o GIF correto dentro do App
     async function carregarGifExclusivo(exercicioNome, containerId, btnEl) {
         const box = document.getElementById(containerId);
-        
-        // Se já estiver aberto, colapsa e fecha
         if (box.style.display === 'block') {
             box.style.display = 'none';
             btnEl.classList.remove('active');
@@ -843,17 +840,13 @@
 
         btnEl.innerHTML = '⚡ Localizando GIF...';
         const query = encodeURIComponent(exercicioNome.toLowerCase() + " fitness bodybuilding");
-        
-        // Chamada à API pública do Giphy para buscar o ID direto do GIF isolado de forma limpa e gratuita
         const urlApi = `https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=${query}&limit=1&offset=0&rating=g&lang=pt`;
 
         try {
             const res = await fetch(urlApi);
             const data = await res.json();
-            
             if (data.data && data.data.length > 0) {
                 const gifId = data.data[0].id;
-                // Injeta o player oficial embutido do Giphy sem links externos ou barras poluídas
                 box.innerHTML = `<iframe src="https://giphy.com/embed/${gifId}" width="100%" height="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>`;
                 box.style.display = 'block';
                 box.style.height = '200px';
@@ -880,7 +873,7 @@
         lines.forEach(linha => {
             if (linha.includes('---')) return;
 
-            const isDay = dayWords.some(w => linha.toLowerCase().includes(w));
+            const isDay = dayWords.some(w => inline = linha.toLowerCase().includes(w));
             if (isDay) {
                 const badge = document.createElement('div');
                 badge.className = 'day-badge';
@@ -900,9 +893,7 @@
             card.innerHTML = `
                 <div class="exercise-name">🏋️ ${nomeParts}</div>
                 <div class="exercise-sets">${setsText}</div>
-                
                 <div class="gif-display-box" id="${boxId}"></div>
-                
                 <button class="btn-gif" onclick="carregarGifExclusivo('${nomeParts.replace(/'/g, "\\'")}', '${boxId}', this)">
                     ▶ Ver execução correta
                 </button>
@@ -922,32 +913,27 @@
         container.innerHTML = '';
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-        // API de Imagens do Unsplash utilizando queries dinâmicas de alta performance
         lines.forEach(linha => {
             if (linha.includes('---')) return;
-            const lower = linha.toLowerCase();
-            let queryImage = "healthy-food";
+            const lower = inline = linha.toLowerCase();
+            let queryImage = "healthy food";
 
             if (lower.includes("ovo") || lower.includes("omelete")) queryImage = "eggs";
-            else if (lower.includes("frango") || lower.includes("grelhado")) queryImage = "chicken-breast";
+            else if (lower.includes("frango") || lower.includes("grelhado")) queryImage = "grilled chicken breast";
             else if (lower.includes("banana")) queryImage = "banana";
-            else if (lower.includes("fruta") || lower.includes("maçã")) queryImage = "fruit";
-            else if (lower.includes("arroz")) queryImage = "rice";
-            else if (lower.includes("feijão")) queryImage = "beans";
-            else if (lower.includes("salada") || lower.includes("brócolis")) queryImage = "salad";
-            else if (lower.includes("peixe") || lower.includes("salmão")) queryImage = "salmon";
-            else if (lower.includes("whey") || lower.includes("suplemento")) queryImage = "protein-shake";
+            else if (lower.includes("fruta") || lower.includes("maçã")) queryImage = "fresh fruit";
+            else if (lower.includes("arroz")) queryImage = "cooked white rice";
+            else if (lower.includes("feijão")) queryImage = "black beans";
+            else if (lower.includes("salada") || lower.includes("brócolis")) queryImage = "fresh green salad";
+            else if (lower.includes("peixe") || lower.includes("salmão")) queryImage = "grilled salmon";
+            else if (lower.includes("whey") || lower.includes("suplemento")) queryImage = "protein shake";
 
-            // Endpoint da API pública e gratuita do Unsplash para carregar imagens limpas sob demanda
-            let imgUrl = `https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80`;
-            if(queryImage !== "healthy-food") {
-                imgUrl = `https://source.unsplash.com/featured/150x150/?${queryImage}`;
-            }
+            let imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(queryImage)}?width=150&height=150&nologo=true`;
 
             const card = document.createElement('div');
             card.className = 'food-card';
             card.innerHTML = `
-                <img src="${imgUrl}" class="food-thumb" alt="Alimento" onerror="this.src='https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=150&q=80'" loading="lazy">
+                <img src="${imgUrl}" class="food-thumb" alt="Alimento" onerror="this.src='https://image.pollinations.ai/prompt/healthy%20food?width=150&height=150'" loading="lazy">
                 <div class="food-text">${linha}</div>
             `;
             container.appendChild(card);
@@ -966,28 +952,28 @@
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner"></div> Processando com a IA...';
 
-        let prompt = `Você é o Personal Trainer expert da ${ACADEMIA}. Responda de forma profissional e humanizada.
-Ficha: Nome ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${objetivoSelecionado}.
-Mensagem do aluno: "${userMsg}".`;
-
-        if (customDirectives) prompt += `\n\nDiretrizes obrigatórias: ${customDirectives}`;
-
-        prompt += `\n\nREGRA ANATÔMICA: Exercícios de membros inferiores pesados (Agachamento, Leg Press, Extensora) NUNCA no mesmo dia que braços (Bíceps, Tríceps, Ombros).
-Organize por dias da semana com títulos claros (Ex: Segunda-feira: Peito e Tríceps).
-
-Responda com exatamente estes três marcadores:
+        // Otimização de prompt: Direto ao ponto para menor latência na resposta
+        let prompt = `Personal da ${ACADEMIA}. Ficha: ${name}, ${age}a, ${weight}kg, ${height}cm. Objetivo: ${objetivoSelecionado}. Msg: "${userMsg}".`;
+        if (customDirectives) prompt += ` Diretrizes: ${customDirectives}`;
+        
+        prompt += ` REGRAS: Pernas pesadas NUNCA no mesmo dia de braços. Seja direto, sem introduções ou enrolação. Use os marcadores exatos:
 ---RESPOSTA_CHAT---
-(Parágrafo de consultoria humanizada respondendo ao aluno)
+(Parágrafo curto de consultoria respondendo ao aluno)
 ---DIETA---
 (Plano alimentar linha por linha, sem marcadores de asterisco ou hashtag)
 ---TREINO---
 (Ficha estruturada por dias da semana e exercícios, sem asteriscos ou hashtags)`;
 
-        const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`;
+        // ALTERADO: Adicionado '&model=mistral' para usar um modelo ultra veloz e otimizado para respostas rápidas
+        const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=mistral&cache=false`;
 
         try {
             const res = await fetch(url);
             const fullText = await res.text();
+
+            if (fullText.includes('"error":') || fullText.includes('ENOSPC')) {
+                throw new Error('Servidor instável.');
+            }
 
             let chatText = '', dietaText = '', treinoText = '';
 
@@ -998,9 +984,7 @@ Responda com exatamente estes três marcadores:
                 dietaText = dieta.trim();
                 treinoText = treino.trim();
             } else {
-                chatText = 'Plano gerado com sucesso! Confira as abas abaixo.';
-                dietaText = fullText;
-                treinoText = 'Segunda-feira: Peito e Tríceps\nSupino Reto, 4x10\nCrucifixo, 3x12\nTríceps Pulley, 4x12\nTerça-feira: Pernas\nAgachamento Livre, 4x10\nLeg Press, 4x12\nCadeira Extensora, 3x15';
+                throw new Error('Retorno fora do padrão.');
             }
 
             document.getElementById('chatBody').innerText = chatText;
@@ -1011,7 +995,8 @@ Responda com exatamente estes três marcadores:
             parseTreino(treinoText);
 
         } catch (err) {
-            showToast('Erro ao conectar com a IA. Tente novamente.', 'error');
+            console.error(err);
+            showToast('Erro ou lentidão detectada. Tente novamente.', 'error');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<span class="btn-icon">🚀</span> Consultar Personal AI';
