@@ -373,13 +373,10 @@
 <script>
     lucide.createIcons();
 
-    // Chave de API Oficial do Gemini integrada
-    const GEMINI_API_KEY = "AIzaSyCPQOogSw9lAMPBzyvy1gJ3-iQRcz9orBI";
-
     // Estado Geral da Aplicação
     let currentObjective = "Hipertrofia";
     let chatHistory = [];
-    let weightHistory = []; 
+    let weightHistory = [];
     let evolutionChartInstance = null;
     let rawAIText = ""; // Armazena plano cru para exportação
 
@@ -436,7 +433,7 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // ─── CRIAÇÃO DO PLANO E REQUISIÇÃO COMPLETA AO GEMINI ───
+    // ─── CRIAÇÃO DO PLANO E REQUISIÇÃO COMPLETA AO GEMINI VIA POLLINATIONS ───
     async function generatePlan() {
         const name = document.getElementById('userName').value || "Aluno(a)";
         const age = document.getElementById('userAge').value;
@@ -451,7 +448,6 @@
         loader.style.display = 'block';
         document.getElementById('btnGenerate').disabled = true;
 
-        // Comando atualizado solicitando macros estruturados na última linha
         const systemPrompt = `Atue como Personal Trainer e Nutricionista de Elite.
 Usuário: ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${currentObjective}. Contexto: ${context}.
 Diretrizes do usuário: ${directives}
@@ -472,17 +468,17 @@ Crucifixo | 3 x 12 | 12kg)
 Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
 
         try {
-            // CORREÇÃO: Alterado de gemini-2.5-flash para gemini-1.5-flash
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            // Rota atualizada para usar o gateway público estruturado com o modelo oficial gemini
+            const response = await fetch(`https://text.pollinations.ai/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt }] }]
+                    messages: [{ role: "user", content: systemPrompt }],
+                    model: "gemini"
                 })
             });
             
-            const result = await response.json();
-            rawAIText = result.candidates[0].content.parts[0].text;
+            rawAIText = await response.text();
             
             processAIResponse(rawAIText, name);
             
@@ -518,7 +514,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             macrosPart = splitMacros[1] ? splitMacros[1].trim() : "";
         } catch(e) {
             console.log("Aviso: Formato de parse adaptativo.");
-            chatPart = text; 
+            chatPart = text;
         }
 
         chatHistory.push({ role: 'ai', msg: chatPart });
@@ -531,7 +527,6 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
     // Processador de Calorias e Macros
     function parseAndShowMacros(macroStr) {
         if(!macroStr) return;
-        // Ex do formato esperado: Kcal: 2100 | Carb: 250g | Prot: 160g | Gord: 70g
         const parts = macroStr.split('|');
         parts.forEach(p => {
             const low = p.toLowerCase();
@@ -542,7 +537,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         });
     }
 
-    // ─── CHAT CONSULTORIA CONTINUADA ───
+    // ─── CHAT CONSULTORIA CONTINUADA VIA POLLINATIONS ───
     function renderChat() {
         const box = document.getElementById('chatBox');
         box.innerHTML = '';
@@ -575,17 +570,16 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         const prompt = `Como Personal Trainer da plataforma FitPlan PRO, responda à última dúvida do aluno de forma breve (máx 3 frases). Histórico recente:\n${contextLines}\nTreinador:`;
 
         try {
-            // CORREÇÃO: Alterado de gemini-2.5-flash para gemini-1.5-flash
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            const response = await fetch(`https://text.pollinations.ai/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
+                    messages: [{ role: "user", content: prompt }],
+                    model: "gemini"
                 })
             });
 
-            const result = await response.json();
-            const answer = result.candidates[0].content.parts[0].text;
+            const answer = await response.text();
             
             loadingDiv.remove();
             chatHistory.push({ role: 'ai', msg: answer.trim() });
@@ -660,7 +654,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
     // Lógica do Cronômetro de Descanso (60 Segundos)
     function startRestTimer(timerId) {
         const timerElement = document.getElementById(timerId);
-        if(timerElement.classList.contains('running')) return; // Evita duplo clique
+        if(timerElement.classList.contains('running')) return;
 
         timerElement.classList.add('running');
         let timeLeft = 60;
@@ -675,7 +669,6 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
                 timerElement.classList.remove('running');
                 textSpan.innerText = "Descanso";
                 showToast("Fim do descanso! Hora de treinar!");
-                // Pequena vibração nativa se disponível em celulares
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }
         }, 1000);
@@ -695,7 +688,6 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             weightHistory.push({ date: hoje, totalLoad: val });
         }
         
-        // Persiste a lista atualizada
         localStorage.setItem('fitplan_weight_history', JSON.stringify(weightHistory));
         
         showToast(`Carga de ${val}kg gravada no histórico!`);
@@ -817,7 +809,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         });
     }
 
-    // EXPORTAR VIA INTEGRANTE DE WHATSAPP
+    // EXPORTAR VIA WHATSAPP
     function exportToWhatsApp() {
         if(!rawAIText) { showToast("Gere um plano primeiro!"); return; }
         const formattedText = encodeURIComponent(`*Meu Plano de Evolução de Treino/Dieta via FitPlan Pro*\n\n${rawAIText}`);
