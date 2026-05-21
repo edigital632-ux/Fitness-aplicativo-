@@ -374,26 +374,59 @@
     lucide.createIcons();
 
     // Groq API - Gratuita e ultra-rápida (llama-3.3-70b)
-    const GROQ_API_KEY = [[103,115,107,95,119,112,98,56],[77,90,73,104,87,87,112,51],[100,112,114,67,122,106,80,52],[87,71,100,121,98,51,70,89],[104,100,117,74,84,65,107,114],[116,87,78,102,100,77,56,73],[90,101,105,70,102,86,119,73]].map(a=>a.map(c=>String.fromCharCode(c)).join(''\)).join(''\);
+    const GROQ_API_KEY = [[103,115,107,95,119,112,98,56],[77,90,73,104,87,87,112,51],[100,112,114,67,122,106,80,52],[87,71,100,121,98,51,70,89],[104,100,117,74,84,65,107,114],[116,87,78,102,100,77,56,73],[90,101,105,70,102,86,119,73]].map(a=>a.map(c=>String.fromCharCode(c)).join("")).join("");
     const GROQ_MODEL = "llama-3.3-70b-versatile";
 
-    async function callGroq(prompt) {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${GROQ_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: GROQ_MODEL,
-                messages: [{ role: "user", content: prompt }],
-                max_tokens: 2048,
-                temperature: 0.7
-            })
-        });
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-        return data.choices[0].message.content;
+    async function callGroq(prompt, retries = 3) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 30000);
+
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${GROQ_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: GROQ_MODEL,
+                        messages: [{ role: "user", content: prompt }],
+                        max_tokens: 4096,
+                        temperature: 0.7
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeout);
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    const msg = err.error?.message || `HTTP ${response.status}`;
+                    if (response.status === 429 && attempt < retries) {
+                        showToast(`Limite de requisições. Tentando novamente (${attempt}/${retries})...`);
+                        await new Promise(r => setTimeout(r, 2000 * attempt));
+                        continue;
+                    }
+                    throw new Error(msg);
+                }
+
+                const data = await response.json();
+                if (!data.choices || !data.choices[0]) throw new Error("Resposta inválida da IA.");
+                return data.choices[0].message.content;
+
+            } catch (e) {
+                if (e.name === "AbortError") {
+                    if (attempt < retries) {
+                        showToast(`Timeout. Tentando novamente (${attempt}/${retries})...`);
+                        continue;
+                    }
+                    throw new Error("A IA demorou demais. Verifique sua internet.");
+                }
+                if (attempt === retries) throw e;
+                await new Promise(r => setTimeout(r, 1500 * attempt));
+            }
+        }
     }
 
     // Estado Geral da Aplicação
@@ -492,16 +525,22 @@ Crucifixo | 3 x 12 | 12kg)
 Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
 
         try {
+            showToast("Gerando seu plano... aguarde ⚡");
             rawAIText = await callGroq(systemPrompt);
-            
+
+            if (!rawAIText || rawAIText.trim().length < 50) {
+                throw new Error("Resposta da IA vazia ou inválida.");
+            }
+
             processAIResponse(rawAIText, name);
-            
+
             document.getElementById('profileForm').style.display = 'none';
             document.getElementById('resultsSection').style.display = 'block';
-            showToast("Plano Avançado Prontinho!");
+            showToast("✅ Plano Avançado Prontinho!");
         } catch (error) {
-            console.error(error);
-            showToast("Erro de conexão. Tente novamente.");
+            console.error("Erro ao gerar plano:", error);
+            const msg = error.message || "Erro desconhecido.";
+            showToast("❌ " + msg);
         } finally {
             btnText.style.display = 'block';
             loader.style.display = 'none';
@@ -591,9 +630,13 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             chatHistory.push({ role: 'ai', msg: answer.trim() });
             renderChat();
         } catch(e) {
-            console.error(e);
+            console.error("Erro no chat:", e);
             loadingDiv.remove();
-            showToast("Falha de envio. Conecte à internet.");
+            const msg = e.message || "Falha de envio.";
+            showToast("❌ " + msg);
+            // Recoloca a mensagem do usuário para tentar de novo
+            chatHistory.pop();
+            renderChat();
         }
     }
 
