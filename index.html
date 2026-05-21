@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FitPlan Pro AI | Premium</title>
+    <title>FitPlan Pro AI | Local & Private Premium</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     
@@ -58,9 +58,16 @@
         .brand-icon { color: var(--primary); }
         .brand-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
         .brand-badge {
-            background: var(--primary-dim); color: var(--primary);
+            background: rgba(10, 132, 255, 0.2); color: var(--secondary);
             font-size: 10px; font-weight: 700; padding: 4px 8px;
             border-radius: 100px; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .ai-status-banner {
+            font-size: 12px; font-weight: 600; padding: 10px 14px;
+            border-radius: var(--radius-sm); margin-bottom: 16px;
+            background: #111; border: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
 
         .card {
@@ -99,7 +106,7 @@
             display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s;
         }
         .btn-main:active { transform: scale(0.98); }
-        .btn-main:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .btn-secondary {
             background: var(--surface-hover); color: var(--text-main);
@@ -164,6 +171,9 @@
         
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--surface-hover); color: var(--text-main); padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 9999; border: 1px solid var(--border); }
         .toast.show { transform: translateX(-50%) translateY(0); }
+
+        .setup-instructions { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-top: 10px; display: none; background: #111; padding: 12px; border-radius: var(--radius-md); border: 1px dashed var(--danger); }
+        .setup-instructions code { color: var(--danger); font-family: var(--font-mono); background: #000; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -171,18 +181,30 @@
 <div class="app-container">
     <header class="header">
         <div class="brand-box">
-            <i data-lucide="activity" class="brand-icon"></i>
+            <i data-lucide="shield-check" class="brand-icon"></i>
             <span class="brand-name">FitPlan</span>
-            <span class="brand-badge">PRO</span>
+            <span class="brand-badge">LOCAL AI</span>
         </div>
         <div>
             <i data-lucide="settings" style="color: var(--text-muted); cursor:pointer;" onclick="toggleSettings()"></i>
         </div>
     </header>
 
-    <div class="card" id="settingsPanel" style="display: none; border: 1px solid var(--secondary);">
+    <div class="ai-status-banner">
+        <div id="aiStatus">🔍 A verificar suporte de IA Local no seu navegador...</div>
+        <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="toggleInstructions()">Ajuda</button>
+    </div>
+
+    <div class="setup-instructions" id="instructionsPanel">
+        <strong>Como ativar a IA interna do seu navegador Chrome:</strong><br>
+        1. Aceda a <code>chrome://flags/#optimization-guide-on-device-model</code> e mude para "Enabled Bypass...".<br>
+        2. Aceda a <code>chrome://flags/#prompt-api-for-gemini-nano</code> e mude para "Enabled".<br>
+        3. Reinicie o Chrome. A IA passará a processar tudo de forma 100% privada e gratuita dentro do seu próprio computador!
+    </div>
+
+    <div class="card" id="settingsPanel" style="display: none; border: 1px solid var(--secondary); margin-top: 12px;">
         <div class="section-title"><i data-lucide="cpu" size="16"></i> Diretrizes Base da IA</div>
-        <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia dos glúteos..."></textarea>
+        <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia..."></textarea>
         <button class="btn-secondary" style="margin-top: 12px; width: 100%;" onclick="saveSettings()">Salvar Preferências</button>
     </div>
 
@@ -222,7 +244,7 @@
         </div>
 
         <button class="btn-main" id="btnGenerate" onclick="generatePlan()">
-            <span id="btnText">Criar Plano com IA</span>
+            <span id="btnText">Criar Plano com IA Local</span>
             <div class="loader" id="btnLoader"></div>
         </button>
     </div>
@@ -231,7 +253,7 @@
         
         <div class="action-bar-top">
             <button class="btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="exportToWhatsApp()"><i data-lucide="share-2" size="12"></i> WhatsApp</button>
-            <button class="btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="window.print()"><i data-lucide="printer" size="12"></i> PDF / Imprimir</button>
+            <button class="btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="window.print()"><i data-lucide="printer" size="12"></i> PDF</button>
         </div>
 
         <div class="tab-nav">
@@ -244,7 +266,7 @@
         <div id="tab-chat" class="tab-content active card">
             <div class="chat-container" id="chatBox"></div>
             <div class="chat-input-wrapper">
-                <input type="text" id="chatInput" class="input-control" placeholder="Tire dúvidas com o personal..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <input type="text" id="chatInput" class="input-control" placeholder="Fale em privado com o personal..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
                 <button class="btn-send" onclick="sendChatMessage()"><i data-lucide="send" size="18"></i></button>
             </div>
         </div>
@@ -268,8 +290,7 @@
         </div>
 
         <div id="tab-progress" class="tab-content card">
-            <div class="section-title"><i data-lucide="bar-chart-2" size="16"></i> Evolução de Carga (Volume Total de Hoje)</div>
-            <p style="font-size: 13px; color: var(--text-muted);">Acompanhe o volume acumulado que você salva no seu diário persistente.</p>
+            <div class="section-title"><i data-lucide="bar-chart-2" size="16"></i> Evolução de Carga (Volume Total)</div>
             <div class="chart-container">
                 <canvas id="progressChart"></canvas>
             </div>
@@ -284,17 +305,15 @@
 <script>
     lucide.createIcons();
 
-    // Chave ofuscada com conversão segura (Base64). Resolve qualquer erro de indexação.
-    const GEMINI_API_KEY = atob('QUl6YVN5Q2kyeE0xeDNXUWtYSXNNVW9SQTk5aHczU0NQbVNBbzI0');
-
     // Variáveis de Estado
     let currentObjective = "Hipertrofia";
     let chatHistory = [];
     let weightHistory = []; 
     let evolutionChartInstance = null;
     let rawAIText = ""; 
+    let aiSession = null; // Sessão persistente da IA local do navegador
 
-    // Seleção de Chips
+    // Seleção de Foco
     document.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', function() {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -303,7 +322,6 @@
         });
     });
 
-    // Troca de Abas Corrigida (Evita o erro global de event)
     function switchTab(btnElement, tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -311,18 +329,24 @@
         if (btnElement) btnElement.classList.add('active');
     }
 
-    // Configurações Locais
     function toggleSettings() {
         const panel = document.getElementById('settingsPanel');
         panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
     }
+
+    function toggleInstructions() {
+        const panel = document.getElementById('instructionsPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
     function saveSettings() {
         localStorage.setItem('fitplan_directives', document.getElementById('aiDirectives').value);
         toggleSettings();
-        showToast("Diretrizes Salvas com Sucesso!");
+        showToast("Diretrizes guardadas localmente!");
     }
 
-    window.onload = () => {
+    // Inicialização e Verificação Automática da IA do Navegador
+    window.onload = async () => {
         const savedDirectives = localStorage.getItem('fitplan_directives');
         if(savedDirectives) document.getElementById('aiDirectives').value = savedDirectives;
 
@@ -337,7 +361,28 @@
             ];
         }
         initChart();
+        await verifyAndInitBrowserAI();
     };
+
+    async function verifyAndInitBrowserAI() {
+        const statusEl = document.getElementById('aiStatus');
+        
+        // Verifica se a Prompt API nativa (window.ai) está ativa no navegador
+        if (typeof ai !== 'undefined' && ai.assistant) {
+            try {
+                const capabilities = await ai.assistant.capabilities();
+                if (capabilities.available !== 'no') {
+                    statusEl.innerHTML = '<span style="color: var(--primary); font-weight: bold;">● IA do Navegador Pronta (100% Privada e Grátis)</span>';
+                    return true;
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        statusEl.innerHTML = '<span style="color: var(--danger); font-weight: bold;">● IA do Navegador Inativa. Ative os recursos experimentais.</span>';
+        document.getElementById('instructionsPanel').style.display = 'block';
+        return false;
+    }
 
     function showToast(msg) {
         const t = document.getElementById('toastMsg');
@@ -346,7 +391,7 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // Geração do Plano de Treino
+    // Geração do Plano de Treino utilizando a IA Local do Navegador
     async function generatePlan() {
         const name = document.getElementById('userName').value || "Aluno(a)";
         const age = document.getElementById('userAge').value;
@@ -355,6 +400,12 @@
         const context = document.getElementById('userContext').value;
         const directives = localStorage.getItem('fitplan_directives') || "";
 
+        if (typeof ai === 'undefined' || !ai.assistant) {
+            showToast("Erro: Ative a IA do navegador antes de prosseguir.");
+            toggleInstructions();
+            return;
+        }
+
         const btnText = document.getElementById('btnText');
         const loader = document.getElementById('btnLoader');
         btnText.style.display = 'none';
@@ -362,39 +413,40 @@
         document.getElementById('btnGenerate').disabled = true;
 
         const systemPrompt = `Atue como Personal Trainer e Nutricionista de Elite.
-Usuário: ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${currentObjective}. Contexto: ${context}.
-Diretrizes do usuário: ${directives}
+Usuário: ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${currentObjective}. Contexto: ${context}. Diretrizes adicionais: ${directives}.
 
-Aja com autoridade, ciência e empatia.
-RETORNE EXATAMENTE NESTE FORMATO, SEM EXCEÇÕES:
+Siga RIGOROSAMENTE a estrutura abaixo:
 ---CHAT---
-(Uma mensagem acolhedora de 1 parágrafo)
+(Mensagem curta de motivação inicial)
 ---TREINO---
-(Crie a divisão de treino. Para cada dia: # Nome do Dia. Em seguida: Exercício | Séries x Reps | Carga em KG)
+# Treino Superior
+Supino Reto | 4x10 | 20kg
+Puxada Frente | 4x10 | 40kg
+# Treino Inferior
+Agachamento | 4x10 | 30kg
 ---DIETA---
-(Liste refeições, uma por linha)
+Refeição 1: Ovos mexidos e fruta
+Refeição 2: Frango, arroz e salada
 ---MACROS---
-Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
+Kcal: 2100 | Carb: 210g | Prot: 150g | Gord: 70g`;
 
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+            // Cria a sessão com as instruções do sistema locais
+            aiSession = await ai.assistant.create({
+                systemPrompt: "Você é um personal trainer focado em musculação que responde de forma estruturada."
             });
-            
-            const result = await response.json();
-            if(!result.candidates) throw new Error("Erro na resposta da API");
-            rawAIText = result.candidates[0].content.parts[0].text;
+
+            // Executa o prompt localmente no hardware da máquina
+            rawAIText = await aiSession.prompt(systemPrompt);
             
             processAIResponse(rawAIText);
             
             document.getElementById('profileForm').style.display = 'none';
             document.getElementById('resultsSection').style.display = 'block';
-            showToast("Plano Avançado Prontinho!");
+            showToast("Plano Avançado Estruturado Localmente!");
         } catch (error) {
             console.error(error);
-            showToast("Erro de conexão. Tente novamente.");
+            showToast("A IA falhou ao responder localmente. Verifique as configurações.");
         } finally {
             btnText.style.display = 'block';
             loader.style.display = 'none';
@@ -402,9 +454,9 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         }
     }
 
-    // Processamento Seguro (Expressões Regulares previnem o erro "Cannot read property 'split'")
+    // Separação de Conteúdo por Expressão Regular
     function processAIResponse(text) {
-        let chatPart = "Seu plano foi estruturado. Vamos começar.";
+        let chatPart = "Seu plano foi estruturado. Vamos começar!";
         let treinoPart = "";
         let dietaPart = "";
         let macrosPart = "";
@@ -420,7 +472,6 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             if (dietaMatch) dietaPart = dietaMatch[1].trim();
             if (macrosMatch) macrosPart = macrosMatch[1].trim();
             
-            // Fallbacks de segurança se o regex não pegar
             if(!chatPart) chatPart = text;
         } catch(e) {
             console.error("Erro no Parse:", e);
@@ -439,10 +490,10 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         const parts = macroStr.split('|');
         parts.forEach(p => {
             const low = p.toLowerCase();
-            if(low.includes('kcal')) document.getElementById('macroKcal').innerText = p.split(':')[1].trim();
-            if(low.includes('carb')) document.getElementById('macroCarb').innerText = p.split(':')[1].trim();
-            if(low.includes('prot')) document.getElementById('macroProt').innerText = p.split(':')[1].trim();
-            if(low.includes('gord')) document.getElementById('macroGord').innerText = p.split(':')[1].trim();
+            if(low.includes('kcal')) document.getElementById('macroKcal').innerText = p.split(':')[1]?.trim() || '--';
+            if(low.includes('carb')) document.getElementById('macroCarb').innerText = p.split(':')[1]?.trim() || '--';
+            if(low.includes('prot')) document.getElementById('macroProt').innerText = p.split(':')[1]?.trim() || '--';
+            if(low.includes('gord')) document.getElementById('macroGord').innerText = p.split(':')[1]?.trim() || '--';
         });
     }
 
@@ -459,10 +510,11 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         box.scrollTop = box.scrollHeight;
     }
 
+    // Chat Privado e Local (Conversa contínua)
     async function sendChatMessage() {
         const input = document.getElementById('chatInput');
         const msg = input.value.trim();
-        if(!msg) return;
+        if(!msg || !aiSession) return;
 
         chatHistory.push({ role: 'user', msg: msg });
         input.value = '';
@@ -474,26 +526,16 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         document.getElementById('chatBox').appendChild(loadingDiv);
         document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
 
-        const contextLines = chatHistory.slice(-4).map(h => `${h.role === 'user' ? 'Aluno' : 'Treinador'}: ${h.msg}`).join('\n');
-        const prompt = `Como Personal Trainer da plataforma FitPlan PRO, responda à última dúvida do aluno de forma breve (máx 3 frases). Histórico recente:\n${contextLines}\nTreinador:`;
-
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            const result = await response.json();
-            if(!result.candidates) throw new Error("Erro na API");
-            
-            const answer = result.candidates[0].content.parts[0].text;
+            // Reutiliza a sessão local mantendo o contexto
+            const answer = await aiSession.prompt(`Responda ao utilizador de forma curta (máx 2 frases) sobre o treino/dieta atual dele: ${msg}`);
             loadingDiv.remove();
             chatHistory.push({ role: 'ai', msg: answer.trim() });
             renderChat();
         } catch(e) {
             console.error(e);
             loadingDiv.remove();
-            showToast("Falha de envio. Conecte à internet.");
+            showToast("Sessão expirou. Recarregue o plano.");
         }
     }
 
@@ -538,7 +580,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
                     <div class="ex-action-row">
                         <label style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">CARGA (KG)</label>
                         <input type="number" id="${inputId}" class="load-input" value="${pesoBase}">
-                        <button class="btn-secondary" style="flex:1; background: var(--primary-dim); color: var(--primary); border-color: var(--primary);" onclick="saveLoad('${nome}', '${inputId}')">Registrar Feito</button>
+                        <button class="btn-secondary" style="flex:1; background: var(--primary-dim); color: var(--primary); border-color: var(--primary);" onclick="saveLoad('${nome}', '${inputId}')">Registar Feito</button>
                         
                         <div class="timer-badge" id="${timerId}" onclick="startRestTimer('${timerId}')">
                             <i data-lucide="timer" size="12"></i> <span>Descanso</span>
@@ -572,7 +614,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
                 clearInterval(interval);
                 timerElement.classList.remove('running');
                 textSpan.innerText = "Descanso";
-                showToast("Fim do descanso! Hora de treinar!");
+                showToast("Fim do descanso! Próxima série!");
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }
         }, 1000);
@@ -582,7 +624,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         const val = parseInt(document.getElementById(inputId).value) || 0;
         if(val <= 0) { showToast("Insira uma carga válida!"); return; }
 
-        const hoje = new Date().toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+        const hoje = new Date().toLocaleDateString('pt-PT', {day: '2-digit', month: '2-digit'});
         
         let todayRecord = weightHistory.find(w => w.date === hoje);
         if(todayRecord) {
@@ -592,12 +634,12 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         }
         
         localStorage.setItem('fitplan_weight_history', JSON.stringify(weightHistory));
-        showToast(`Carga de ${val}kg gravada no histórico!`);
+        showToast(`Carga guardada localmente!`);
         updateChart();
     }
 
     function clearHistory() {
-        if(confirm("Deseja mesmo limpar todo seu histórico de cargas salvas?")) {
+        if(confirm("Eliminar histórico de cargas guardado na memória do browser?")) {
             weightHistory = [];
             localStorage.removeItem('fitplan_weight_history');
             updateChart();
@@ -611,9 +653,8 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             type: 'line',
             data: {
                 labels: weightHistory.map(w => w.date),
-                animations: { tension: { duration: 1000, easing: 'linear' } },
                 datasets: [{
-                    label: 'Volume Total (kg)',
+                    label: 'Volume Acumulado (kg)',
                     data: weightHistory.map(w => w.totalLoad),
                     borderColor: '#32D74B',
                     backgroundColor: 'rgba(50, 215, 75, 0.15)',
@@ -658,10 +699,10 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             if (data.data && data.data.length > 0) {
                 frame.innerHTML = `<iframe src="https://giphy.com/embed/${data.data[0].id}" width="100%" height="100%" frameBorder="0" allowFullScreen></iframe>`;
             } else {
-                frame.innerHTML = '<div style="padding: 20px; text-align:center; font-size:12px; color:var(--text-muted);">Mídia não encontrada</div>';
+                frame.innerHTML = '<div style="padding: 20px; text-align:center; font-size:12px; color:var(--text-muted);">Média não encontrada</div>';
             }
         } catch(e) {
-            frame.innerHTML = '<div style="padding: 20px; text-align:center; font-size:12px; color:var(--danger);">Erro de carregamento</div>';
+            frame.innerHTML = '<div style="padding: 20px; text-align:center; font-size:12px; color:var(--danger);">Erro de rede</div>';
         }
     }
 
@@ -688,10 +729,10 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             if (lower.includes("ovo") || lower.includes("omelete")) imgSrc = imagensComida.ovo;
             else if (lower.includes("frango") || lower.includes("peito")) imgSrc = imagensComida.frango;
             else if (lower.includes("carne") || lower.includes("patinho") || lower.includes("bife")) imgSrc = imagensComida.carne;
-            else if (lower.includes("arroz") || lower.includes("batata") || lower.includes("macarrão") || lower.includes("carboidrato")) imgSrc = imagensComida.arroz;
-            else if (lower.includes("salada") || lower.includes("vegetais") || lower.includes("brócolis")) imgSrc = imagensComida.salada;
-            else if (lower.includes("whey") || lower.includes("suplemento") || lower.includes("shake")) imgSrc = imagensComida.whey;
-            else if (lower.includes("fruta") || lower.includes("banana") || lower.includes("maçã")) imgSrc = imagensComida.fruta;
+            else if (lower.includes("arroz") || lower.includes("batata") || lower.includes("macarrão")) imgSrc = imagensComida.arroz;
+            else if (lower.includes("salada") || lower.includes("vegetais")) imgSrc = imagensComida.salada;
+            else if (lower.includes("whey") || lower.includes("shake")) imgSrc = imagensComida.whey;
+            else if (lower.includes("fruta") || lower.includes("banana")) imgSrc = imagensComida.fruta;
 
             const el = document.createElement('div');
             el.className = 'food-item';
@@ -702,7 +743,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
 
     function exportToWhatsApp() {
         if(!rawAIText) { showToast("Gere um plano primeiro!"); return; }
-        const formattedText = encodeURIComponent(`*Meu Plano de Evolução de Treino/Dieta via FitPlan Pro*\n\n${rawAIText}`);
+        const formattedText = encodeURIComponent(`*Meu Plano FitPlan Pro Privado*\n\n${rawAIText}`);
         window.open(`https://api.whatsapp.com/send?text=${formattedText}`, '_blank');
     }
 </script>
