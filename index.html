@@ -373,8 +373,28 @@
 <script>
     lucide.createIcons();
 
-    // Chave de API Oficial do Gemini integrada
-    const GEMINI_API_KEY = "AIzaSyDvLmh3FT4pVJ2QgTe88C46DfeumXK2g-M";
+    // Groq API - Gratuita e ultra-rápida (llama-3.3-70b)
+    const GROQ_API_KEY = "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"; // groq.com -> Free
+    const GROQ_MODEL = "llama-3.3-70b-versatile";
+
+    async function callGroq(prompt) {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: GROQ_MODEL,
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 2048,
+                temperature: 0.7
+            })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        return data.choices[0].message.content;
+    }
 
     // Estado Geral da Aplicação
     let currentObjective = "Hipertrofia";
@@ -436,7 +456,7 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // ─── CRIAÇÃO DO PLANO E REQUISIÇÃO COMPLETA AO GEMINI ───
+    // ─── CRIAÇÃO DO PLANO E REQUISIÇÃO COMPLETA AO GROQ (LLAMA) ───
     async function generatePlan() {
         const name = document.getElementById('userName').value || "Aluno(a)";
         const age = document.getElementById('userAge').value;
@@ -472,16 +492,7 @@ Crucifixo | 3 x 12 | 12kg)
 Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
 
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt }] }]
-                })
-            });
-            
-            const result = await response.json();
-            rawAIText = result.candidates[0].content.parts[0].text;
+            rawAIText = await callGroq(systemPrompt);
             
             processAIResponse(rawAIText, name);
             
@@ -574,16 +585,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
         const prompt = `Como Personal Trainer da plataforma FitPlan PRO, responda à última dúvida do aluno de forma breve (máx 3 frases). Histórico recente:\n${contextLines}\nTreinador:`;
 
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
-            });
-
-            const result = await response.json();
-            const answer = result.candidates[0].content.parts[0].text;
+            const answer = await callGroq(prompt);
             
             loadingDiv.remove();
             chatHistory.push({ role: 'ai', msg: answer.trim() });
