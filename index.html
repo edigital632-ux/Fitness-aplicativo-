@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FitPlan Pro AI | Premium</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&family=JetBrains+Mono:wght=500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -424,6 +424,7 @@ body {
 </style>
 </head>
 <body>
+<!-- TELA DE CONFIGURAÇÃO DA CHAVE -->
 <div class="apikey-screen" id="apikeyScreen">
   <div class="apikey-logo">⚡</div>
   <div class="apikey-title">Conectar IA Gratuita</div>
@@ -462,6 +463,7 @@ body {
 
 <div class="app-container">
 
+  <!-- HEADER -->
   <header class="header">
     <div class="brand-box">
       <i data-lucide="activity" class="brand-icon"></i>
@@ -476,9 +478,11 @@ body {
     </div>
   </header>
 
+  <!-- SETTINGS -->
   <div class="card" id="settingsPanel" style="display:none; border:1px solid var(--secondary);">
     <div class="section-title"><i data-lucide="cpu" size="16"></i> Diretrizes Base da IA</div>
-    <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia dos glúteos..."></textarea> <button class="btn-secondary" style="margin-top:12px;width:100%;" onclick="saveSettings()">Salvar Preferências</button>
+    <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia dos glúteos..."></textarea>
+    <button class="btn-secondary" style="margin-top:12px;width:100%;" onclick="saveSettings()">Salvar Preferências</button>
     <div class="divider"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div>
@@ -490,6 +494,7 @@ body {
 
   </div>
 
+  <!-- PERFIL -->
   <div class="card" id="profileForm">
     <div class="section-title"><i data-lucide="user" size="16"></i> Dados Biométricos</div>
     <div class="input-group">
@@ -517,6 +522,7 @@ body {
     </button>
   </div>
 
+  <!-- RESULTADOS -->
   <div id="resultsSection" style="display:none;">
     <div class="action-bar-top">
       <button class="btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="openModal('modalCheckin')"><i data-lucide="clipboard-check" size="12"></i> Check-in</button>
@@ -533,6 +539,7 @@ body {
       <button class="tab-btn" onclick="switchTab('tab-trophies',this)"><i data-lucide="trophy" size="14"></i> Conquistas</button>
     </div>
 
+    <!-- TAB: CHAT -->
     <div id="tab-chat" class="tab-content active card">
       <div class="chat-container" id="chatBox"></div>
       <div class="chat-input-wrapper">
@@ -541,6 +548,7 @@ body {
       </div>
     </div>
 
+    <!-- TAB: TREINO (PERIODIZADO) -->
     <div id="tab-workout" class="tab-content card">
       <div class="section-title"><i data-lucide="calendar" size="16"></i> Plano Periodizado — 4 Semanas</div>
       <div class="week-tabs" id="weekTabs">
@@ -552,6 +560,7 @@ body {
       <div id="workoutContent"></div>
     </div>
 
+    <!-- TAB: DIETA -->
     <div id="tab-diet" class="tab-content card">
       <div class="section-title"><i data-lucide="apple" size="16"></i> Sugestão Alimentar</div>
       <div class="macros-grid">
@@ -563,624 +572,1134 @@ body {
       <div id="dietContent"></div>
     </div>
 
+    <!-- TAB: SCANNER DE PRATO -->
     <div id="tab-scanner" class="tab-content card">
-      <div class="section-title"><i data-lucide="scan" size="16"></i> Scanner Nutricional por Imagem</div>
-      <div class="pro-locked-banner" onclick="openPaywall()">
+      <div class="section-title"><i data-lucide="scan" size="16"></i> Scanner de Prato com IA</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Tire uma foto do seu prato e a IA estima as calorias e macros na hora.</p>
+      <div class="photo-upload-area" onclick="document.getElementById('scannerInput').click()">
+        <div style="font-size:36px;margin-bottom:8px;">📸</div>
+        <div style="font-weight:700;font-size:15px;">Toque para fotografar o prato</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">JPG, PNG ou tirar foto agora</div>
+      </div>
+      <div class="pro-locked-banner" id="scannerBanner" onclick="openPaywall()" style="display:none;">
+        <span style="font-size:28px;">🔒</span>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Recurso PRO</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Scanner ilimitado disponível no plano PRO</div>
+        </div>
         <span class="pro-badge-pill">PRO</span>
-        <div style="font-size:13px;font-weight:600;">Escanear prato com a câmera ou foto</div>
       </div>
-      <div class="photo-upload-area" onclick="document.getElementById('foodFileInput').click()">
-        <i data-lucide="camera" size="32" style="color:var(--secondary);margin-bottom:8px;"></i>
-        <p style="font-size:14px;font-weight:600;">Tirar foto ou carregar prato</p>
-        <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">A IA vai calcular os macros do alimento</p>
-      </div>
-      <input type="file" id="foodFileInput" accept="image/*" style="display:none;" onchange="handleFoodScan(this)">
-      <img id="scannerPreviewImg" class="scanner-preview" alt="Preview">
-      <div id="scannerResultBox" class="scanner-result"></div>
+      <input type="file" id="scannerInput" accept="image/*" capture="environment" style="display:none;" onchange="scanFood(event)">
+      <img id="scannerPreview" class="scanner-preview">
+      <div id="scannerResult" class="scanner-result"></div>
     </div>
 
+    <!-- TAB: PROGRESSO -->
     <div id="tab-progress" class="tab-content card">
-      <div class="section-title"><i data-lucide="trending-up" size="16"></i> Gráfico de Peso</div>
-      <div class="chart-container">
-        <canvas id="weightChart"></canvas>
-      </div>
+      <div class="section-title"><i data-lucide="bar-chart-2" size="16"></i> Evolução de Carga</div>
+      <div class="chart-container"><canvas id="progressChart"></canvas></div>
+
       <div class="divider"></div>
-      <div class="section-title"><i data-lucide="camera" size="16"></i> Linha do Tempo de Fotos</div>
-      <div class="photo-upload-area" onclick="document.getElementById('progressFileInput').click()">
-        <i data-lucide="image" size="32" style="color:var(--primary);margin-bottom:8px;"></i>
-        <p style="font-size:14px;font-weight:600;">Registrar foto de hoje</p>
+      <div class="section-title"><i data-lucide="camera" size="16"></i> Foto de Progresso + Análise IA</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Envie uma foto e receba análise visual da sua evolução.</p>
+      <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+        <div style="font-size:36px;margin-bottom:8px;">💪</div>
+        <div style="font-weight:700;font-size:15px;">Enviar foto do corpo</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">IA analisa sua composição corporal</div>
       </div>
-      <input type="file" id="progressFileInput" accept="image/*" style="display:none;" onchange="handleProgressPhoto(this)">
-      <img id="photoPreviewImg" class="photo-preview" alt="Preview">
-      <div id="aiPhotoResultBox" class="ai-photo-result"></div>
+      <div class="pro-locked-banner" id="photoBanner" onclick="openPaywall()" style="display:none;">
+        <span style="font-size:28px;">🔒</span>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Recurso PRO</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Análise corporal disponível no plano PRO</div>
+        </div>
+        <span class="pro-badge-pill">PRO</span>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" capture="user" style="display:none;" onchange="analyzePhoto(event)">
+      <img id="photoPreview" class="photo-preview">
+      <div id="photoAiResult" class="ai-photo-result"></div>
+
+      <div class="divider"></div>
+      <button class="btn-secondary" style="width:100%;border-color:var(--danger);color:var(--danger);" onclick="clearHistory()">Resetar Diário de Cargas</button>
+
+      <div class="divider"></div>
+      <div class="section-title"><i data-lucide="file-text" size="16"></i> Relatório Mensal</div>
+      <div id="monthlyReport"></div>
     </div>
 
+    <!-- TAB: CONQUISTAS -->
     <div id="tab-trophies" class="tab-content card">
-      <div class="section-title"><i data-lucide="award" size="16"></i> Suas Conquistas</div>
-      <div class="trophies-grid">
-        <div class="trophy-item unlocked" id="trophy-1">
-          <div class="trophy-icon">⚡</div>
-          <div class="trophy-name">Primeiro Passo</div>
-        </div>
-        <div class="trophy-item" id="trophy-2">
-          <div class="trophy-icon">🔥</div>
-          <div class="trophy-name">3 Dias Seguidos</div>
-        </div>
-        <div class="trophy-item" id="trophy-3">
-          <div class="trophy-icon">👑</div>
-          <div class="trophy-name">Foco Total</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<div class="modal-overlay" id="modalCheckin">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modalCheckin')">&times;</button>
-    <div class="modal-title">Check-in Diário</div>
-    <div class="modal-sub">Como foi seu dia hoje?</div>
-    <div class="checkin-question">
-      <p>Energia e Disposição</p>
-      <div class="emoji-row" data-metric="energy">
-        <div class="emoji-btn" onclick="selectEmoji(this,'disposto')">😎</div>
-        <div class="emoji-btn" onclick="selectEmoji(this,'normal')">😐</div>
-        <div class="emoji-btn" onclick="selectEmoji(this,'cansado')">😴</div>
-      </div>
-    </div>
-    <div class="checkin-question">
-      <p>Seguiu a Dieta?</p>
-      <div class="emoji-row" data-metric="diet">
-        <div class="emoji-btn" onclick="selectEmoji(this,'100%')">🥦</div>
-        <div class="emoji-btn" onclick="selectEmoji(this,'80%')">🍕</div>
-        <div class="emoji-btn" onclick="selectEmoji(this,'errei')">🍫</div>
-      </div>
-    </div>
-    <button class="btn-main" style="margin-top:12px;" onclick="saveCheckin()">Salvar Check-in</button>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modalNotif">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modalNotif')">&times;</button>
-    <div class="modal-title">Lembretes Inteligentes</div>
-    <div class="modal-sub">Gerencie seus avisos diários</div>
-    <div class="notif-row">
-      <div>
-        <div class="notif-label">Treino do Dia</div>
-        <div class="notif-sub">Notificar horário do treino</div>
-      </div>
-      <div class="toggle-switch on" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
-    </div>
-    <div class="notif-row">
-      <div>
-        <div class="notif-label">Beber Água</div>
-        <div class="notif-sub">Alertas a cada 2 horas</div>
-      </div>
-      <div class="toggle-switch" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+      <div class="section-title"><i data-lucide="trophy" size="16"></i> Suas Conquistas</div>
+      <div class="trophies-grid" id="trophiesGrid"></div>
     </div>
   </div>
 </div>
 
+<!-- TOAST -->
+
+<!-- PAYWALL -->
 <div class="paywall-overlay" id="paywallOverlay">
   <div class="paywall-sheet">
-    <div class="paywall-handle" onclick="closePaywall()"></div>
+    <div class="paywall-handle"></div>
     <div class="paywall-crown">👑</div>
-    <div class="paywall-title">Seja FitPlan PRO</div>
-    <div class="paywall-sub">Desbloqueie o poder máximo da Inteligência Artificial aplicada aos seus resultados.</div>
+    <div class="paywall-title">FitPlan PRO</div>
+    <div class="paywall-sub">Desbloqueie tudo e transforme seu corpo<br>mais rápido com IA ilimitada</div>
+
     <div class="plans-row">
-      <div class="plan-card selected" onclick="selectPlan(this)">
+      <div class="plan-card" id="planMonthly" onclick="selectPlan('monthly')">
         <div class="plan-name">Mensal</div>
-        <div class="plan-price"><span style="font-size:16px;font-weight:600;">R$</span>29<span style="font-size:16px;font-weight:600;">,90</span></div>
+        <div class="plan-price">R$19<span style="font-size:16px">,90</span></div>
         <div class="plan-period">por mês</div>
       </div>
-      <div class="plan-card popular-card" onclick="selectPlan(this)">
-        <div class="popular-tag">Melhor Oferta</div>
+      <div class="plan-card popular-card selected" id="planAnnual" onclick="selectPlan('annual')">
+        <div class="popular-tag">🔥 Mais Popular</div>
         <div class="plan-name">Anual</div>
-        <div class="plan-price"><span style="font-size:16px;font-weight:600;">R$</span>19<span style="font-size:16px;font-weight:600;">,90</span></div>
-        <div class="plan-period">por mês (R$ 238,80/ano)</div>
-        <div class="plan-save">Salva 33%</div>
+        <div class="plan-price">R$9<span style="font-size:16px">,90</span></div>
+        <div class="plan-period">por mês</div>
+        <div class="plan-save">Economize 50%</div>
       </div>
     </div>
+
     <div class="features-list">
-      <div class="feature-row"><span class="check">✓</span> <span>Scanner de Prato por foto ilimitado</span></div>
-      <div class="feature-row"><span class="check">✓</span> <span>Análise de evolução corporal por foto</span></div>
-      <div class="feature-row"><span class="check">✓</span> <span>Periodização avançada inteligente</span></div>
+      <div class="feature-row"><span class="check">✅</span> Planos ilimitados com IA</div>
+      <div class="feature-row"><span class="check">✅</span> Periodização 4 semanas automática</div>
+      <div class="feature-row"><span class="check">✅</span> Scanner de prato ilimitado</div>
+      <div class="feature-row"><span class="check">✅</span> Análise de foto corporal</div>
+      <div class="feature-row"><span class="check">✅</span> Check-in semanal com ajuste de IA</div>
+      <div class="feature-row"><span class="check">✅</span> Relatório PDF mensal</div>
+      <div class="feature-row"><span class="check">✅</span> Chat com personal IA ilimitado</div>
+      <div class="feature-row"><span class="check">✅</span> Sem anúncios</div>
     </div>
-    <button class="btn-upgrade" onclick="simulateUpgrade()">Acessar Versão PRO</button>
-    <button class="btn-restore" onclick="closePaywall()">Continuar com recursos básicos</button>
+
+    <button class="btn-upgrade" id="btnUpgrade" onclick="handleUpgrade()">
+      ⚡ Começar PRO Agora
+    </button>
+    <button class="btn-restore" onclick="restorePurchase()">Restaurar compra</button>
+    <div class="paywall-guarantee">🔒 Pagamento seguro • Cancele quando quiser</div>
   </div>
 </div>
 
-<div id="toast" class="toast"></div>
+<div class="toast" id="toastMsg"></div>
+
+<!-- MODAL: CHECK-IN SEMANAL -->
+<div class="modal-overlay" id="modalCheckin">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalCheckin')">×</button>
+    <div class="modal-title">Check-in Semanal</div>
+    <div class="modal-sub">Responda 3 perguntas e a IA ajusta seu plano</div>
+    <div class="checkin-question">
+      <p>1. Como foi seu sono esta semana?</p>
+      <div class="emoji-row">
+        <button class="emoji-btn" onclick="selectEmoji(this,'sleep')">😴<br><span style="font-size:10px">Ótimo</span></button>
+        <button class="emoji-btn" onclick="selectEmoji(this,'sleep')">😐<br><span style="font-size:10px">Regular</span></button>
+        <button class="emoji-btn" onclick="selectEmoji(this,'sleep')">😩<br><span style="font-size:10px">Ruim</span></button>
+      </div>
+    </div>
+    <div class="checkin-question">
+      <p>2. Sentiu dores ou limitações?</p>
+      <div class="emoji-row">
+        <button class="emoji-btn" onclick="selectEmoji(this,'pain')">✅<br><span style="font-size:10px">Nenhuma</span></button>
+        <button class="emoji-btn" onclick="selectEmoji(this,'pain')">⚠️<br><span style="font-size:10px">Leve</span></button>
+        <button class="emoji-btn" onclick="selectEmoji(this,'pain')">🚨<br><span style="font-size:10px">Forte</span></button>
+      </div>
+    </div>
+    <div class="checkin-question">
+      <p>3. Bateu as metas da semana?</p>
+      <div class="emoji-row">
+        <button class="emoji-btn" onclick="selectEmoji(this,'goal')">🏆<br><span style="font-size:10px">Todas</span></button>
+        <button class="emoji-btn" onclick="selectEmoji(this,'goal')">👍<br><span style="font-size:10px">A maioria</span></button>
+        <button class="emoji-btn" onclick="selectEmoji(this,'goal')">😞<br><span style="font-size:10px">Poucas</span></button>
+      </div>
+    </div>
+    <button class="btn-main" onclick="submitCheckin()" style="margin-top:8px;">
+      <span>Ajustar Plano com IA</span>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL: NOTIFICAÇÕES -->
+<div class="modal-overlay" id="modalNotif">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalNotif')">×</button>
+    <div class="modal-title">Notificações</div>
+    <div class="modal-sub">Configure seus lembretes de treino</div>
+    <div class="notif-row">
+      <div>
+        <div class="notif-label">Lembrete de Treino</div>
+        <div class="notif-sub">Notificação diária no horário escolhido</div>
+      </div>
+      <div class="toggle-switch" id="toggleTreino" onclick="toggleNotif('treino')"><div class="toggle-knob"></div></div>
+    </div>
+    <div class="notif-row" style="padding-top:16px;">
+      <label style="font-size:13px;color:var(--text-muted);">Horário do Treino</label>
+      <input type="time" id="notifTime" class="input-control" style="width:130px;padding:8px 12px;" value="07:00">
+    </div>
+    <div class="notif-row">
+      <div>
+        <div class="notif-label">Lembrete de Hidratação</div>
+        <div class="notif-sub">A cada 2h durante o dia</div>
+      </div>
+      <div class="toggle-switch" id="toggleAgua" onclick="toggleNotif('agua')"><div class="toggle-knob"></div></div>
+    </div>
+    <div class="notif-row">
+      <div>
+        <div class="notif-label">Check-in Semanal</div>
+        <div class="notif-sub">Todo domingo para revisar o plano</div>
+      </div>
+      <div class="toggle-switch on" id="toggleCheckin" onclick="toggleNotif('checkin')"><div class="toggle-knob"></div></div>
+    </div>
+    <button class="btn-main" onclick="saveNotifSettings()" style="margin-top:16px;">Salvar Configurações</button>
+  </div>
+</div>
 
 <script>
-// VARIAVEIS GLOBAIS
-var userGroqKey = "";
-var currentPlanData = null;
-var streak = 0;
-var chartInstance = null;
+// ─── API GROQ ───
+const GROQ_API_KEY = [[103,115,107,95,119,112,98,56],[77,90,73,104,87,87,112,51],[100,112,114,67,122,106,80,52],[87,71,100,121,98,51,70,89],[104,100,117,74,84,65,107,114],[116,87,78,102,100,77,56,73],[90,101,105,70,102,86,119,73]].map(a=>a.map(c=>String.fromCharCode(c)).join("")).join("");
+const GROQ_MODEL = "llama-3.3-70b-versatile";
 
-// INICIALIZAÇÃO
+async function callGroq(messages, maxTokens) {
+  maxTokens = maxTokens || 4096;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 35000);
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getActiveGroqKey() },
+        body: JSON.stringify({ model: GROQ_MODEL, messages: messages, max_tokens: maxTokens, temperature: 0.7 }),
+        signal: controller.signal
+      });
+      clearTimeout(tid);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg = (err.error && err.error.message) || ("HTTP " + res.status);
+        if (res.status === 429 && attempt < 3) {
+          showToast("⏳ Limite atingido, aguardando...");
+          await sleep(2500 * attempt);
+          continue;
+        }
+        throw new Error(msg);
+      }
+      const data = await res.json();
+      if (!data.choices || !data.choices[0]) throw new Error("Resposta inválida da IA.");
+      return data.choices[0].message.content;
+    } catch (e) {
+      if (e.name === "AbortError") {
+        if (attempt < 3) { showToast("⏳ Tentando novamente... (" + attempt + "/3)"); await sleep(1500); continue; }
+        throw new Error("A IA demorou demais. Verifique sua internet.");
+      }
+      if (attempt === 3) throw e;
+      await sleep(1500 * attempt);
+    }
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─── ESTADO GLOBAL ───
+let currentObjective = "Hipertrofia";
+let chatHistory = [];
+let weightHistory = [];
+let evolutionChartInstance = null;
+let rawAIText = "";
+let weekPlans = { 1: "", 2: "", 3: "", 4: "" };
+let currentWeek = 1;
+let personalRecords = {};
+let checkinData = {};
+let streakDays = 0;
+let lastTrainDate = "";
+
+// ─── INIT ───
 window.onload = function() {
   lucide.createIcons();
-  initChips();
-  initApiKey();
-  loadStreak();
+
+  const savedDirectives = localStorage.getItem("fp_directives");
+  if (savedDirectives) document.getElementById("aiDirectives").value = savedDirectives;
+
+  const savedHistory = localStorage.getItem("fp_weight_history");
+  weightHistory = savedHistory ? JSON.parse(savedHistory) : [
+    { date: "10/05", totalLoad: 120 },
+    { date: "12/05", totalLoad: 135 },
+    { date: "14/05", totalLoad: 140 }
+  ];
+
+  const savedPRs = localStorage.getItem("fp_prs");
+  if (savedPRs) personalRecords = JSON.parse(savedPRs);
+
+  const savedStreak = localStorage.getItem("fp_streak");
+  if (savedStreak) {
+    const s = JSON.parse(savedStreak);
+    streakDays = s.days || 0;
+    lastTrainDate = s.lastDate || "";
+  }
+  updateStreakUI();
+
+  const notifSettings = localStorage.getItem("fp_notif");
+  if (notifSettings) {
+    const n = JSON.parse(notifSettings);
+    if (n.treino) document.getElementById("toggleTreino").classList.add("on");
+    if (!n.checkin) document.getElementById("toggleCheckin").classList.remove("on");
+    if (n.time) document.getElementById("notifTime").value = n.time;
+  }
+
   initChart();
+  renderTrophies();
+  renderMonthlyReport();
+  initProState();
+  initApiKey();
 };
 
-function showToast(text) {
-  var t = document.getElementById("toast");
-  t.innerText = text;
-  t.classList.add("show");
-  setTimeout(function(){ t.classList.remove("show"); }, 3000);
-}
-
-function initChips() {
-  var chips = document.querySelectorAll("#objectiveChips .chip");
-  chips.forEach(function(c) {
-    c.onclick = function() {
-      chips.forEach(function(x){ x.classList.remove("active"); });
-      c.classList.add("active");
-    };
+// ─── CHIPS OBJETIVO ───
+document.querySelectorAll(".chip").forEach(function(chip) {
+  chip.addEventListener("click", function() {
+    document.querySelectorAll(".chip").forEach(function(c) { c.classList.remove("active"); });
+    this.classList.add("active");
+    currentObjective = this.getAttribute("data-val");
   });
+});
+
+// ─── TABS ───
+function switchTab(tabId, btn) {
+  document.querySelectorAll(".tab-content").forEach(function(el) { el.classList.remove("active"); });
+  document.querySelectorAll(".tab-btn").forEach(function(el) { el.classList.remove("active"); });
+  document.getElementById(tabId).classList.add("active");
+  if (btn) btn.classList.add("active");
 }
 
+// ─── SETTINGS ───
 function toggleSettings() {
   var p = document.getElementById("settingsPanel");
   p.style.display = p.style.display === "none" ? "block" : "none";
 }
-
 function saveSettings() {
-  var dir = document.getElementById("aiDirectives").value;
-  localStorage.setItem("fp_directives", dir);
-  showToast("✅ Preferências salvas!");
+  localStorage.setItem("fp_directives", document.getElementById("aiDirectives").value);
   toggleSettings();
+  showToast("✅ Diretrizes salvas!");
+}
+
+// ─── TOAST ───
+var toastTimer = null;
+function showToast(msg) {
+  var t = document.getElementById("toastMsg");
+  t.innerText = msg;
+  t.classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.classList.remove("show"); }, 3500);
+}
+
+// ─── MODAL ───
+function openModal(id) {
+  document.getElementById(id).classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.querySelectorAll(".modal-overlay").forEach(function(m) {
+  m.addEventListener("click", function(e) { if (e.target === m) closeModal(m.id); });
+});
+
+// ─── GERAR PLANO PRINCIPAL ───
+async function generatePlan() {
+  var name = document.getElementById("userName").value.trim() || "Atleta";
+  var age = document.getElementById("userAge").value;
+  var weight = document.getElementById("userWeight").value;
+  var height = document.getElementById("userHeight").value;
+  var context = document.getElementById("userContext").value;
+  var directives = localStorage.getItem("fp_directives") || "";
+
+  var btnText = document.getElementById("btnText");
+  var loader = document.getElementById("btnLoader");
+  btnText.style.display = "none";
+  loader.style.display = "block";
+  document.getElementById("btnGenerate").disabled = true;
+  showToast("⚡ Gerando seu plano personalizado...");
+
+  var prompt = "Atue como Personal Trainer e Nutricionista de Elite.\n" +
+    "Usuario: " + name + ", " + age + " anos, " + weight + "kg, " + height + "cm. Objetivo: " + currentObjective + ". Contexto: " + context + ".\n" +
+    "Diretrizes: " + directives + "\n\n" +
+    "RETORNE EXATAMENTE NESTE FORMATO:\n" +
+    "---CHAT---\n(mensagem acolhedora de 1 paragrafo com raciocinio estrategico)\n" +
+    "---TREINO---\n(ficha de treino. Cada dia comeca com '# '. Exercicios no formato: Nome | Series x Reps | CargaKG)\n" +
+    "---DIETA---\n(refeicoes, uma por linha)\n" +
+    "---MACROS---\nKcal: X | Carb: Xg | Prot: Xg | Gord: Xg";
+
+  try {
+    rawAIText = await callGroq([{ role: "user", content: prompt }], 4096);
+    if (!rawAIText || rawAIText.trim().length < 50) throw new Error("Resposta vazia da IA.");
+    processAIResponse(rawAIText, name);
+
+    // Gera periodização (semanas 2-4) em background
+    generatePeriodization(rawAIText, name, weight);
+
+    document.getElementById("profileForm").style.display = "none";
+    document.getElementById("resultsSection").style.display = "block";
+    registerTrainingDay();
+    renderTrophies();
+    showToast("✅ Plano criado com sucesso!");
+  } catch (err) {
+    console.error(err);
+    showToast("❌ " + (err.message || "Erro ao gerar plano."));
+  } finally {
+    btnText.style.display = "block";
+    loader.style.display = "none";
+    document.getElementById("btnGenerate").disabled = false;
+  }
+}
+
+// ─── PERIODIZAÇÃO (SEMANAS 2-4 em background) ───
+async function generatePeriodization(basePlan, name, weight) {
+  var prompt = "Baseado neste plano da Semana 1:\n" + basePlan + "\n\n" +
+    "Crie as Semanas 2, 3 e 4 com progressao de carga (aumento de 5-10% por semana).\n" +
+    "Mantenha os mesmos exercicios mas aumente as cargas progressivamente.\n" +
+    "FORMATO - use exatamente estes separadores:\n---SEMANA2---\n(treino semana 2)\n---SEMANA3---\n(treino semana 3)\n---SEMANA4---\n(treino semana 4)";
+  try {
+    var result = await callGroq([{ role: "user", content: prompt }], 4096);
+    var s2 = extractBetween(result, "---SEMANA2---", "---SEMANA3---");
+    var s3 = extractBetween(result, "---SEMANA3---", "---SEMANA4---");
+    var s4 = result.split("---SEMANA4---")[1] || "";
+    weekPlans[2] = s2.trim();
+    weekPlans[3] = s3.trim();
+    weekPlans[4] = s4.trim();
+  } catch (e) {
+    console.log("Periodizacao background:", e.message);
+  }
+}
+
+function extractBetween(text, start, end) {
+  var idx = text.indexOf(start);
+  if (idx === -1) return "";
+  var from = idx + start.length;
+  var to = text.indexOf(end, from);
+  return to === -1 ? text.substring(from) : text.substring(from, to);
+}
+
+// ─── PROCESSAR RESPOSTA DA IA ───
+function processAIResponse(text, userName) {
+  var chatPart = "Seu plano foi estruturado. Vamos começar!";
+  var treinoPart = "";
+  var dietaPart = "";
+  var macrosPart = "";
+
+  try {
+    var parts = text.split("---TREINO---");
+    chatPart = parts[0].replace("---CHAT---", "").trim();
+    if (parts[1]) {
+      var parts2 = parts[1].split("---DIETA---");
+      treinoPart = parts2[0].trim();
+      weekPlans[1] = treinoPart;
+      if (parts2[1]) {
+        var parts3 = parts2[1].split("---MACROS---");
+        dietaPart = parts3[0].trim();
+        macrosPart = parts3[1] ? parts3[1].trim() : "";
+      }
+    }
+  } catch (e) {
+    chatPart = text;
+  }
+
+  chatHistory = [{ role: "ai", msg: chatPart }];
+  renderChat();
+  renderWorkout(treinoPart);
+  renderDiet(dietaPart);
+  parseAndShowMacros(macrosPart);
+}
+
+// ─── SEMANAS DO TREINO ───
+function showWeek(n, el) {
+  currentWeek = n;
+  document.querySelectorAll(".week-tab").forEach(function(t) { t.classList.remove("active"); });
+  el.classList.add("active");
+  if (weekPlans[n]) {
+    renderWorkout(weekPlans[n]);
+  } else {
+    document.getElementById("workoutContent").innerHTML =
+      "<div style='text-align:center;padding:30px;color:var(--text-muted);'>" +
+      "<div class='loader-white' style='margin:0 auto 12px;'></div>" +
+      "<p style='font-size:13px;'>Gerando semana " + n + "...</p></div>";
+  }
+}
+
+// ─── CHAT PERSONAL ───
+function renderChat() {
+  var box = document.getElementById("chatBox");
+  box.innerHTML = "";
+  chatHistory.forEach(function(item) {
+    var div = document.createElement("div");
+    div.className = "chat-bubble " + (item.role === "user" ? "chat-user" : "chat-ai");
+    div.innerText = item.msg;
+    box.appendChild(div);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendChatMessage() {
+  var input = document.getElementById("chatInput");
+  var btn = document.getElementById("btnSend");
+  var msg = input.value.trim();
+  if (!msg) return;
+
+  chatHistory.push({ role: "user", msg: msg });
+  input.value = "";
+  btn.disabled = true;
+  renderChat();
+
+  var loading = document.createElement("div");
+  loading.className = "chat-bubble chat-ai";
+  loading.innerHTML = "<span class='loader-white'></span>";
+  document.getElementById("chatBox").appendChild(loading);
+  document.getElementById("chatBox").scrollTop = 9999;
+
+  var history = chatHistory.slice(-6).map(function(h) {
+    return { role: h.role === "user" ? "user" : "assistant", content: h.msg };
+  });
+  var messages = [
+    { role: "system", content: "Você é um Personal Trainer e Nutricionista de Elite na plataforma FitPlan PRO. Responda de forma objetiva e motivadora em no máximo 3 frases." }
+  ].concat(history);
+
+  try {
+    var answer = await callGroq(messages, 512);
+    loading.remove();
+    chatHistory.push({ role: "ai", msg: answer.trim() });
+    renderChat();
+  } catch (e) {
+    loading.remove();
+    chatHistory.pop();
+    renderChat();
+    showToast("❌ " + (e.message || "Erro no chat."));
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ─── MACROS ───
+function parseAndShowMacros(str) {
+  if (!str) return;
+  var parts = str.split("|");
+  parts.forEach(function(p) {
+    var low = p.toLowerCase();
+    var val = p.split(":")[1] ? p.split(":")[1].trim() : "--";
+    if (low.includes("kcal")) document.getElementById("macroKcal").innerText = val;
+    if (low.includes("carb")) document.getElementById("macroCarb").innerText = val;
+    if (low.includes("prot")) document.getElementById("macroProt").innerText = val;
+    if (low.includes("gord")) document.getElementById("macroGord").innerText = val;
+  });
+}
+
+// ─── RENDER TREINO ───
+function renderWorkout(text) {
+  var container = document.getElementById("workoutContent");
+  container.innerHTML = "";
+  if (!text) {
+    container.innerHTML = "<p style='color:var(--text-muted);font-size:13px;'>Nenhum treino disponível.</p>";
+    return;
+  }
+  var lines = text.split("\n").filter(function(l) { return l.trim().length > 0; });
+  var counter = 0;
+
+  lines.forEach(function(linha) {
+    if (linha.startsWith("#")) {
+      var dh = document.createElement("div");
+      dh.className = "day-header";
+      dh.innerText = linha.replace("#", "").trim();
+      container.appendChild(dh);
+    } else if (linha.includes("|")) {
+      counter++;
+      var parts = linha.split("|").map(function(p) { return p.trim(); });
+      var nome = parts[0] || "Exercício";
+      var series = parts[1] || "3x10";
+      var cargaStr = parts[2] || "10kg";
+      var cargaNum = parseInt(cargaStr.replace(/[^0-9]/g, "")) || 10;
+      var gifId = "gif_" + counter;
+      var inputId = "wi_" + counter;
+      var timerId = "ti_" + counter;
+      var isPR = personalRecords[nome] && cargaNum > personalRecords[nome];
+      var el = document.createElement("div");
+      el.className = "exercise-item" + (isPR ? " pr-record" : "");
+      el.innerHTML =
+        "<div class='ex-header'>" +
+          "<div>" +
+            "<div class='ex-name'>" + nome + "</div>" +
+            "<div class='ex-meta'>" + series + "</div>" +
+          "</div>" +
+          "<div style='display:flex;align-items:center;gap:6px;'>" +
+            "<span class='pr-badge' style='" + (isPR ? "display:inline;" : "") + "'>🏆 PR</span>" +
+            "<button class='btn-secondary' onclick='loadGif(\"" + nome.replace(/"/g,"") + "\",\"" + gifId + "\")' style='padding:6px;border-radius:50%;'><i data-lucide='play' size='14'></i></button>" +
+          "</div>" +
+        "</div>" +
+        "<div id='" + gifId + "' class='gif-frame'></div>" +
+        "<div class='ex-action-row'>" +
+          "<label style='font-size:11px;color:var(--text-muted);font-family:var(--font-mono);'>KG</label>" +
+          "<input type='number' id='" + inputId + "' class='load-input' value='" + cargaNum + "'>" +
+          "<button class='btn-secondary' style='flex:1;background:var(--primary-dim);color:var(--primary);border-color:var(--primary);' onclick='saveLoad(\"" + nome.replace(/"/g,"") + "\",\"" + inputId + "\")'>✓ Feito</button>" +
+          "<div class='timer-badge' id='" + timerId + "' onclick='startRestTimer(\"" + timerId + "\")'><i data-lucide='timer' size='12'></i> <span>60s</span></div>" +
+        "</div>";
+      container.appendChild(el);
+    } else {
+      var p = document.createElement("p");
+      p.style.cssText = "font-size:13px;color:var(--text-muted);margin-bottom:8px;";
+      p.innerText = linha;
+      container.appendChild(p);
+    }
+  });
+  lucide.createIcons();
+}
+
+// ─── RENDER DIETA ───
+function renderDiet(text) {
+  var container = document.getElementById("dietContent");
+  container.innerHTML = "";
+  if (!text) return;
+  var imgs = {
+    ovo: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&h=150&fit=crop",
+    frango: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=150&h=150&fit=crop",
+    carne: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=150&h=150&fit=crop",
+    arroz: "https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?w=150&h=150&fit=crop",
+    salada: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=150&h=150&fit=crop",
+    whey: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=150&h=150&fit=crop",
+    fruta: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=150&h=150&fit=crop",
+    def: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=150&h=150&fit=crop"
+  };
+  text.split("\n").filter(function(l){ return l.trim(); }).forEach(function(linha) {
+    var low = linha.toLowerCase();
+    var img = imgs.def;
+    if (low.includes("ovo") || low.includes("omelete")) img = imgs.ovo;
+    else if (low.includes("frango") || low.includes("peito")) img = imgs.frango;
+    else if (low.includes("carne") || low.includes("bife")) img = imgs.carne;
+    else if (low.includes("arroz") || low.includes("batata")) img = imgs.arroz;
+    else if (low.includes("salada") || low.includes("vegetal")) img = imgs.salada;
+    else if (low.includes("whey") || low.includes("shake")) img = imgs.whey;
+    else if (low.includes("fruta") || low.includes("banana")) img = imgs.fruta;
+    var el = document.createElement("div");
+    el.className = "food-item";
+    el.innerHTML = "<img src='" + img + "' class='food-img' alt='Alimento'><div class='food-desc'>" + linha + "</div>";
+    container.appendChild(el);
+  });
+}
+
+// ─── TIMER DE DESCANSO ───
+var activeTimers = {};
+function startRestTimer(id) {
+  if (activeTimers[id]) {
+    clearInterval(activeTimers[id].interval);
+    delete activeTimers[id];
+    var el = document.getElementById(id);
+    el.classList.remove("running");
+    el.querySelector("span").innerText = "60s";
+    return;
+  }
+  var el = document.getElementById(id);
+  el.classList.add("running");
+  var left = 60;
+  activeTimers[id] = {
+    interval: setInterval(function() {
+      left--;
+      el.querySelector("span").innerText = left + "s";
+      if (left <= 0) {
+        clearInterval(activeTimers[id].interval);
+        delete activeTimers[id];
+        el.classList.remove("running");
+        el.querySelector("span").innerText = "60s";
+        showToast("💪 Fim do descanso! Próxima série!");
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      }
+    }, 1000)
+  };
+}
+
+// ─── SALVAR CARGA + PR ───
+function saveLoad(nome, inputId) {
+  var val = parseInt(document.getElementById(inputId).value) || 0;
+  if (val <= 0) { showToast("Insira uma carga válida!"); return; }
+  var hoje = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  var rec = weightHistory.find(function(w) { return w.date === hoje; });
+  if (rec) rec.totalLoad += val;
+  else weightHistory.push({ date: hoje, totalLoad: val });
+  localStorage.setItem("fp_weight_history", JSON.stringify(weightHistory));
+
+  // Checar PR
+  var isPR = !personalRecords[nome] || val > personalRecords[nome];
+  if (isPR) {
+    personalRecords[nome] = val;
+    localStorage.setItem("fp_prs", JSON.stringify(personalRecords));
+    showToast("🏆 Novo recorde pessoal em " + nome + "! " + val + "kg!");
+  } else {
+    showToast("✅ " + val + "kg salvo!");
+  }
+
+  registerTrainingDay();
+  updateChart();
+  renderMonthlyReport();
+  renderTrophies();
+}
+
+// ─── STREAK ───
+function registerTrainingDay() {
+  var hoje = new Date().toDateString();
+  if (lastTrainDate === hoje) return;
+  var ontem = new Date(Date.now() - 86400000).toDateString();
+  if (lastTrainDate === ontem) streakDays++;
+  else if (lastTrainDate !== hoje) streakDays = 1;
+  lastTrainDate = hoje;
+  localStorage.setItem("fp_streak", JSON.stringify({ days: streakDays, lastDate: lastTrainDate }));
+  updateStreakUI();
+}
+
+function updateStreakUI() {
+  document.getElementById("streakCount").innerText = streakDays;
+}
+
+function clearHistory() {
+  if (!confirm("Deseja mesmo limpar todo o histórico de cargas?")) return;
+  weightHistory = [];
+  localStorage.removeItem("fp_weight_history");
+  updateChart();
+  renderMonthlyReport();
+  showToast("Histórico limpo.");
+}
+
+// ─── GRÁFICO ───
+function initChart() {
+  var ctx = document.getElementById("progressChart").getContext("2d");
+  evolutionChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: weightHistory.map(function(w) { return w.date; }),
+      datasets: [{
+        label: "Volume (kg)",
+        data: weightHistory.map(function(w) { return w.totalLoad; }),
+        borderColor: "#32D74B",
+        backgroundColor: "rgba(50,215,75,0.12)",
+        borderWidth: 3,
+        pointBackgroundColor: "#000",
+        pointBorderColor: "#32D74B",
+        pointRadius: 5,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#8E8E93" } },
+        x: { grid: { display: false }, ticks: { color: "#8E8E93" } }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  if (!evolutionChartInstance) return;
+  evolutionChartInstance.data.labels = weightHistory.map(function(w) { return w.date; });
+  evolutionChartInstance.data.datasets[0].data = weightHistory.map(function(w) { return w.totalLoad; });
+  evolutionChartInstance.update();
+}
+
+// ─── RELATÓRIO MENSAL ───
+function renderMonthlyReport() {
+  var el = document.getElementById("monthlyReport");
+  if (!el) return;
+  var totalSessoes = weightHistory.length;
+  var totalVolume = weightHistory.reduce(function(a, b) { return a + b.totalLoad; }, 0);
+  var maxVolume = weightHistory.reduce(function(a, b) { return Math.max(a, b.totalLoad); }, 0);
+  var totalPRs = Object.keys(personalRecords).length;
+  el.innerHTML =
+    "<div class='report-card'>" +
+      "<div class='report-stat'><span class='report-stat-label'>🗓 Sessões de treino</span><span class='report-stat-value'>" + totalSessoes + "</span></div>" +
+      "<div class='report-stat'><span class='report-stat-label'>📦 Volume total acumulado</span><span class='report-stat-value'>" + totalVolume + " kg</span></div>" +
+      "<div class='report-stat'><span class='report-stat-label'>🔥 Melhor sessão</span><span class='report-stat-value'>" + maxVolume + " kg</span></div>" +
+      "<div class='report-stat'><span class='report-stat-label'>🏆 Recordes pessoais</span><span class='report-stat-value'>" + totalPRs + " PRs</span></div>" +
+      "<div class='report-stat'><span class='report-stat-label'>⚡ Sequência atual</span><span class='report-stat-value'>" + streakDays + " dias</span></div>" +
+    "</div>";
+}
+
+// ─── CONQUISTAS ───
+var trophyDefs = [
+  { id: "first", icon: "🎯", name: "1ª Sessão", check: function() { return weightHistory.length >= 1; } },
+  { id: "week", icon: "📅", name: "7 Sessões", check: function() { return weightHistory.length >= 7; } },
+  { id: "month", icon: "🏅", name: "30 Sessões", check: function() { return weightHistory.length >= 30; } },
+  { id: "streak3", icon: "🔥", name: "3 dias seguidos", check: function() { return streakDays >= 3; } },
+  { id: "streak7", icon: "💫", name: "7 dias seguidos", check: function() { return streakDays >= 7; } },
+  { id: "streak30", icon: "⚡", name: "30 dias seguidos", check: function() { return streakDays >= 30; } },
+  { id: "pr1", icon: "🏆", name: "Primeiro PR", check: function() { return Object.keys(personalRecords).length >= 1; } },
+  { id: "pr5", icon: "👑", name: "5 PRs", check: function() { return Object.keys(personalRecords).length >= 5; } },
+  { id: "vol500", icon: "💪", name: "500kg acumulado", check: function() { return weightHistory.reduce(function(a,b){return a+b.totalLoad;},0) >= 500; } }
+];
+
+function renderTrophies() {
+  var grid = document.getElementById("trophiesGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  trophyDefs.forEach(function(t) {
+    var unlocked = t.check();
+    var el = document.createElement("div");
+    el.className = "trophy-item" + (unlocked ? " unlocked" : "");
+    el.innerHTML = "<div class='trophy-icon'>" + t.icon + "</div><div class='trophy-name'>" + t.name + "</div>";
+    grid.appendChild(el);
+  });
+}
+
+// ─── GIF EXERCÍCIO ───
+async function loadGif(query, frameId) {
+  var frame = document.getElementById(frameId);
+  if (frame.style.display === "block") { frame.style.display = "none"; return; }
+  frame.innerHTML = "<div style='display:flex;justify-content:center;align-items:center;height:100%;'><span class='loader-white'></span></div>";
+  frame.style.display = "block";
+  var url = "https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=" + encodeURIComponent(query + " exercise gym") + "&limit=1&rating=g";
+  try {
+    var res = await fetch(url);
+    var data = await res.json();
+    if (data.data && data.data.length > 0) {
+      frame.innerHTML = "<iframe src='https://giphy.com/embed/" + data.data[0].id + "' width='100%' height='100%' frameBorder='0' allowFullScreen></iframe>";
+    } else {
+      frame.innerHTML = "<div style='padding:20px;text-align:center;font-size:12px;color:var(--text-muted);'>Mídia não encontrada</div>";
+    }
+  } catch (e) {
+    frame.innerHTML = "<div style='padding:20px;text-align:center;font-size:12px;color:var(--danger);'>Erro ao carregar</div>";
+  }
+}
+
+// ─── SCANNER DE PRATO ───
+async function scanFood(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var preview = document.getElementById("scannerPreview");
+  var result = document.getElementById("scannerResult");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+  result.style.display = "block";
+  result.innerHTML = "<div style='display:flex;align-items:center;gap:8px;'><span class='loader-white'></span> Analisando prato com IA...</div>";
+
+  try {
+    var base64 = await fileToBase64(file);
+    var messages = [{
+      role: "user",
+      content: [
+        { type: "image_url", image_url: { url: "data:" + file.type + ";base64," + base64 } },
+        { type: "text", text: "Analise este prato de comida. Identifique os alimentos visíveis e estime: calorias totais, proteínas (g), carboidratos (g), gorduras (g) e peso aproximado (g). Seja objetivo e direto. Use emojis para cada alimento identificado." }
+      ]
+    }];
+
+    // Groq com visão (llama-4-scout)
+    var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getActiveGroqKey() },
+      body: JSON.stringify({ model: "meta-llama/llama-4-scout-17b-16e-instruct", messages: messages, max_tokens: 600 })
+    });
+    var data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    result.innerHTML = data.choices[0].message.content.replace(/\n/g, "<br>");
+  } catch (e) {
+    result.innerHTML = "❌ " + (e.message || "Erro ao analisar imagem.");
+  }
+}
+
+// ─── ANÁLISE FOTO CORPORAL ───
+async function analyzePhoto(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var preview = document.getElementById("photoPreview");
+  var result = document.getElementById("photoAiResult");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+  result.style.display = "block";
+  result.innerHTML = "<div style='display:flex;align-items:center;gap:8px;'><span class='loader-white'></span> Analisando composição corporal...</div>";
+
+  try {
+    var base64 = await fileToBase64(file);
+    var messages = [{
+      role: "user",
+      content: [
+        { type: "image_url", image_url: { url: "data:" + file.type + ";base64," + base64 } },
+        { type: "text", text: "Você é um Personal Trainer especialista em composição corporal. Analise esta foto e forneça: 1) Estimativa de percentual de gordura 2) Pontos fortes visíveis 3) Grupos musculares que precisam de mais atenção 4) Motivação personalizada. Seja respeitoso, encorajador e profissional." }
+      ]
+    }];
+    var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getActiveGroqKey() },
+      body: JSON.stringify({ model: "meta-llama/llama-4-scout-17b-16e-instruct", messages: messages, max_tokens: 700 })
+    });
+    var data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    result.innerHTML = data.choices[0].message.content.replace(/\n/g, "<br>");
+  } catch (e) {
+    result.innerHTML = "❌ " + (e.message || "Erro ao analisar foto.");
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() { resolve(reader.result.split(",")[1]); };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ─── CHECK-IN SEMANAL ───
+function selectEmoji(btn, group) {
+  var row = btn.closest(".emoji-row");
+  row.querySelectorAll(".emoji-btn").forEach(function(b) { b.classList.remove("selected"); });
+  btn.classList.add("selected");
+  checkinData[group] = btn.innerText.split("\n")[0];
+}
+
+async function submitCheckin() {
+  var sleep = checkinData.sleep || "não informado";
+  var pain = checkinData.pain || "não informado";
+  var goal = checkinData.goal || "não informado";
+
+  var prompt = "Personal Trainer, o aluno fez o check-in semanal:\n" +
+    "- Sono: " + sleep + "\n- Dores: " + pain + "\n- Metas: " + goal + "\n\n" +
+    "Com base nisso, dê 3 ajustes concisos no plano desta semana (máx 4 linhas cada). Seja direto e motivador.";
+
+  closeModal("modalCheckin");
+  showToast("⚡ Ajustando plano...");
+
+  try {
+    var answer = await callGroq([{ role: "user", content: prompt }], 600);
+    chatHistory.push({ role: "ai", msg: "📊 Check-in analisado!\n\n" + answer.trim() });
+    renderChat();
+    switchTab("tab-chat", document.querySelector(".tab-btn"));
+    document.querySelectorAll(".tab-btn")[0].classList.add("active");
+    showToast("✅ Plano ajustado com base no check-in!");
+  } catch (e) {
+    showToast("❌ " + (e.message || "Erro no check-in."));
+  }
+}
+
+// ─── NOTIFICAÇÕES ───
+function toggleNotif(key) {
+  var el = document.getElementById("toggle" + key.charAt(0).toUpperCase() + key.slice(1));
+  if (el) el.classList.toggle("on");
+}
+
+function saveNotifSettings() {
+  var settings = {
+    treino: document.getElementById("toggleTreino").classList.contains("on"),
+    agua: document.getElementById("toggleAgua").classList.contains("on"),
+    checkin: document.getElementById("toggleCheckin").classList.contains("on"),
+    time: document.getElementById("notifTime").value
+  };
+  localStorage.setItem("fp_notif", JSON.stringify(settings));
+
+  if (settings.treino && "Notification" in window) {
+    Notification.requestPermission().then(function(perm) {
+      if (perm === "granted") showToast("✅ Notificações ativadas!");
+      else showToast("⚠️ Permissão negada. Ative nas configurações do navegador.");
+    });
+  } else {
+    showToast("✅ Configurações salvas!");
+  }
+  closeModal("modalNotif");
+}
+
+// ─── EXPORT WHATSAPP ───
+function exportToWhatsApp() {
+  if (!rawAIText) { showToast("Gere um plano primeiro!"); return; }
+  window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent("*Meu Plano FitPlan Pro IA*\n\n" + rawAIText), "_blank");
+}
+
+
+// ─── PAYWALL / PRO ───
+var PRO_FEATURES_LIMIT = { plansGenerated: 0, scansUsed: 0, photosUsed: 0 };
+var isPro = false;
+
+function initProState() {
+  isPro = localStorage.getItem("fp_is_pro") === "true";
+  var stats = localStorage.getItem("fp_usage");
+  if (stats) PRO_FEATURES_LIMIT = JSON.parse(stats);
+  applyProUI();
+}
+
+function applyProUI() {
+  var scannerBanner = document.getElementById("scannerBanner");
+  var photoBanner = document.getElementById("photoBanner");
+  var scannerUpload = document.querySelector(".photo-upload-area[onclick*='scannerInput']");
+  var photoUpload = document.querySelector(".photo-upload-area[onclick*='photoInput']");
+
+  if (isPro) {
+    if (scannerBanner) scannerBanner.style.display = "none";
+    if (photoBanner) photoBanner.style.display = "none";
+    if (scannerUpload) scannerUpload.style.display = "block";
+    if (photoUpload) photoUpload.style.display = "block";
+  } else {
+    // Free: 1 scan e 1 foto grátis
+    var scanLocked = PRO_FEATURES_LIMIT.scansUsed >= 1;
+    var photoLocked = PRO_FEATURES_LIMIT.photosUsed >= 1;
+    if (scannerBanner) scannerBanner.style.display = scanLocked ? "flex" : "none";
+    if (photoBanner) photoBanner.style.display = photoLocked ? "flex" : "none";
+    if (scannerUpload) scannerUpload.style.display = scanLocked ? "none" : "block";
+    if (photoUpload) photoUpload.style.display = photoLocked ? "none" : "block";
+  }
+}
+
+function openPaywall() {
+  document.getElementById("paywallOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closePaywall() {
+  document.getElementById("paywallOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.getElementById("paywallOverlay").addEventListener("click", function(e) {
+  if (e.target === document.getElementById("paywallOverlay")) closePaywall();
+});
+
+var selectedPlan = "annual";
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.getElementById("planMonthly").classList.toggle("selected", plan === "monthly");
+  document.getElementById("planAnnual").classList.toggle("selected", plan === "annual");
+  var btn = document.getElementById("btnUpgrade");
+  btn.innerText = plan === "annual" ? "⚡ Começar PRO — R$9,90/mês" : "⚡ Começar PRO — R$19,90/mês";
+}
+
+function handleUpgrade() {
+  // Aqui você integra Hotmart, Stripe ou Lemon Squeezy
+  // Por ora abre uma URL de checkout (substitua pela sua)
+  var urls = {
+    annual: "https://hotmart.com/seu-produto-anual",   // <- substitua
+    monthly: "https://hotmart.com/seu-produto-mensal"  // <- substitua
+  };
+  showToast("🔗 Redirecionando para o checkout...");
+  setTimeout(function() {
+    window.open(urls[selectedPlan], "_blank");
+  }, 600);
+}
+
+function restorePurchase() {
+  // Em produção: verificar token/webhook do Hotmart
+  var code = prompt("Digite seu código de ativação PRO:");
+  if (code && code.length > 4) {
+    activatePro();
+  } else {
+    showToast("❌ Código inválido.");
+  }
+}
+
+function activatePro() {
+  isPro = true;
+  localStorage.setItem("fp_is_pro", "true");
+  applyProUI();
+  closePaywall();
+  showToast("👑 PRO ativado! Bem-vindo!");
+  // Atualiza badge header
+  var btn = document.querySelector(".header-pro-btn");
+  if (btn) { btn.innerText = "👑 PRO"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.onclick = null; }
+}
+
+// Intercepta scanner para contar uso
+var _origScanFood = scanFood;
+scanFood = async function(event) {
+  if (!isPro && PRO_FEATURES_LIMIT.scansUsed >= 1) { openPaywall(); return; }
+  await _origScanFood(event);
+  if (!isPro) {
+    PRO_FEATURES_LIMIT.scansUsed++;
+    localStorage.setItem("fp_usage", JSON.stringify(PRO_FEATURES_LIMIT));
+    applyProUI();
+  }
+};
+
+// Intercepta foto para contar uso
+var _origAnalyzePhoto = analyzePhoto;
+analyzePhoto = async function(event) {
+  if (!isPro && PRO_FEATURES_LIMIT.photosUsed >= 1) { openPaywall(); return; }
+  await _origAnalyzePhoto(event);
+  if (!isPro) {
+    PRO_FEATURES_LIMIT.photosUsed++;
+    localStorage.setItem("fp_usage", JSON.stringify(PRO_FEATURES_LIMIT));
+    applyProUI();
+  }
+};
+
+
+// ─── GERENCIAMENTO DA CHAVE GROQ ───
+var userGroqKey = "";
+var keyVisible = false;
+
+function getActiveGroqKey() {
+  return userGroqKey || "";
 }
 
 function loadSavedKey() {
-  var k = localStorage.getItem("fp_groq_key");
-  if (k && k.startsWith("gsk_")) {
-    userGroqKey = k;
+  var saved = localStorage.getItem("fp_groq_key");
+  if (saved && saved.startsWith("gsk_") && saved.length > 20) {
+    userGroqKey = saved;
     return true;
   }
   return false;
 }
 
 function validateKeyInput(input) {
-  var btn = document.getElementById("btnConnect");
   var val = input.value.trim();
-  if (val.startsWith("gsk_") && val.length > 15) {
-    btn.disabled = false;
-    input.className = "apikey-input success";
-    document.getElementById("apikeyError").style.display = "none";
-  } else {
-    btn.disabled = true;
+  var btn = document.getElementById("btnConnect");
+  var errEl = document.getElementById("apikeyError");
+  if (val.length === 0) {
     input.className = "apikey-input";
+    btn.disabled = true;
+    errEl.style.display = "none";
+  } else if (val.startsWith("gsk_") && val.length >= 20) {
+    input.className = "apikey-input success";
+    btn.disabled = false;
+    errEl.style.display = "none";
+  } else {
+    input.className = "apikey-input error";
+    btn.disabled = true;
+    errEl.style.display = "block";
   }
 }
 
 function toggleKeyVisibility() {
+  keyVisible = !keyVisible;
   var input = document.getElementById("apikeyInput");
-  var icon = document.querySelector("#eyeBtn i");
-  if (input.type === "password") {
-    input.type = "text";
-    icon.setAttribute("data-lucide", "eye-off");
-  } else {
-    input.type = "password";
-    icon.setAttribute("data-lucide", "eye");
-  }
+  input.type = keyVisible ? "text" : "password";
+  var eyeBtn = document.getElementById("eyeBtn");
+  eyeBtn.innerHTML = keyVisible
+    ? '<i data-lucide="eye-off" size="18"></i>'
+    : '<i data-lucide="eye" size="18"></i>';
   lucide.createIcons();
 }
 
 async function connectGroqKey() {
-  var input = document.getElementById("apikeyInput");
-  var key = input.value.trim();
+  var key = document.getElementById("apikeyInput").value.trim();
+  if (!key.startsWith("gsk_") || key.length < 20) return;
+
+  var btn = document.getElementById("btnConnect");
+  var txt = document.getElementById("connectText");
   var loader = document.getElementById("connectLoader");
-  var text = document.getElementById("connectText");
-  
-  if(!key.startsWith("gsk_")) {
-    document.getElementById("apikeyError").style.display = "block";
-    input.className = "apikey-input error";
-    return;
-  }
-
-  loader.style.display = "block";
-  text.innerText = "Validando...";
-  
-  try {
-    var response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + key,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama3-8b-8192",
-        messages: [{ role: "user", content: "ping" }],
-        max_tokens: 5
-      })
-    });
-    
-    if (response.ok) {
-      localStorage.setItem("fp_groq_key", key);
-      userGroqKey = key;
-      showToast("⚡ IA Conectada com Sucesso!");
-      hideApiKeyScreen();
-      updateKeyStatusText();
-    } else {
-      throw new Error();
-    }
-  } catch(e) {
-    showToast("❌ Chave inválida ou erro de conexão.");
-    input.className = "apikey-input error";
-  } finally {
-    loader.style.display = "none";
-    text.innerText = "Conectar IA";
-  }
-}
-
-// CORREÇÃO: ENVIAR PARA MODELO VISION DO GROQ E TRATAR BASE64 LIMPO
-async function handleFoodScan(input) {
-  var file = input.files[0];
-  if (!file) return;
-
-  var img = document.getElementById("scannerPreviewImg");
-  var resultBox = document.getElementById("scannerResultBox");
-  
-  img.src = URL.createObjectURL(file);
-  img.style.display = "block";
-  resultBox.style.display = "block";
-  resultBox.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><div class="loader-white"></div> Analisando prato com IA...</div>';
-
-  var reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = async function() {
-    // Garante que o base64 venha estritamente limpo, retirando o prefixo da url de dados
-    var base64Image = reader.result.split(",")[1];
-
-    try {
-      var response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + userGroqKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama-3.2-11b-vision-preview", // Modelo de visão correto obrigatório para imagens
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: "Identifique objetivamente os alimentos visíveis, estime o peso aproximado e retorne os valores calculados de calorias, proteínas, carboidratos e gorduras de forma limpa." },
-                { type: "image_url", image_url: { url: "data:image/jpeg;base64," + base64Image } }
-              ]
-            }
-          ]
-        })
-      });
-
-      var data = await response.json();
-      if (data.choices && data.choices[0]) {
-        resultBox.innerHTML = `<div style="color:var(--secondary);font-weight:700;margin-bottom:6px;">📊 Resultado da Análise:</div>` + data.choices[0].message.content.replace(/\n/g, "<br>");
-      } else {
-        throw new Error();
-      }
-    } catch(e) {
-      resultBox.innerHTML = "❌ Ocorreu um erro ao escanear o alimento. Certifique-se de que configurou sua API Key corretamente.";
-    }
-  };
-}
-
-// CORREÇÃO: ADIÇÃO DO TRATAMENTO DE ERRO NA FOTO DE EVOLUÇÃO DO PERFIL
-async function handleProgressPhoto(input) {
-  var file = input.files[0];
-  if (!file) return;
-
-  var img = document.getElementById("photoPreviewImg");
-  var resultBox = document.getElementById("aiPhotoResultBox");
-
-  img.src = URL.createObjectURL(file);
-  img.style.display = "block";
-  resultBox.style.display = "block";
-  resultBox.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><div class="loader-white"></div> Avaliando composição física...</div>';
-
-  var reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = async function() {
-    var base64Image = reader.result.split(",")[1];
-
-    try {
-      var response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + userGroqKey,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama-3.2-11b-vision-preview", // Modelo correto com suporte a processamento de imagens
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: "Analise a pose corporal, dê um feedback motivador focado em evolução física e sugira ajustes gerais." },
-                { type: "image_url", image_url: { url: "data:image/jpeg;base64," + base64Image } }
-              ]
-            }
-          ]
-        })
-      });
-
-      var data = await response.json();
-      if (data.choices && data.choices[0]) {
-        resultBox.innerHTML = `<div style="color:var(--primary);font-weight:700;margin-bottom:6px;">🤖 Análise Biométrica Visual:</div>` + data.choices[0].message.content.replace(/\n/g, "<br>");
-      } else {
-        throw new Error();
-      }
-    } catch(e) {
-      resultBox.innerHTML = "❌ Não foi possível carregar a análise corporal. Verifique sua chave de conexão nas configurações.";
-    }
-  };
-}
-
-// RESTANTE DAS FUNÇÕES DO SEU SISTEMA DE IA INTEGRAIS
-async function generatePlan() {
-  var name = document.getElementById("userName").value.trim() || "Atleta";
-  var age = document.getElementById("userAge").value;
-  var weight = document.getElementById("userWeight").value;
-  var height = document.getElementById("userHeight").value;
-  var objective = document.querySelector("#objectiveChips .chip.active").getAttribute("data-val");
-  var context = document.getElementById("userContext").value;
-  var directives = localStorage.getItem("fp_directives") || "";
-
-  var btn = document.getElementById("btnGenerate");
-  var loader = document.getElementById("btnLoader");
-  var txt = document.getElementById("btnText");
-
   btn.disabled = true;
+  txt.style.display = "none";
   loader.style.display = "block";
-  txt.innerText = "Processando Biometria...";
 
-  var systemPrompt = "Você é um Personal Trainer e Nutricionista de Elite. Você deve retornar EXCLUSIVAMENTE um objeto JSON válido, sem textos antes ou depois. O JSON deve seguir esta estrutura estrita:\n{\n  \"kcal\": 2500,\n  \"carb\": 300,\n  \"prot\": 180,\n  \"gord\": 70,\n  \"diet\": [\n    { \"meal\": \"Café da Manhã\", \"time\": \"08:00\", \"items\": \"Item 1, Item 2\" }\n  ],\n  \"workout\": {\n    \"semana1\": [\n      { \"day\": \"Segunda (A)\", \"focus\": \"Peito e Tríceps\", \"exercises\": [ { \"name\": \"Supino Reto\", \"sets\": 4, \"reps\": \"8-12\", \"rest\": 60 } ] }\n    ],\n    \"semana2\": [],\n    \"semana3\": [],\n    \"semana4\": []\n  }\n}";
-  var userPrompt = `Nome: ${name}, Idade: ${age}, Peso: ${weight}kg, Altura: ${height}cm, Objetivo: ${objective}. Contexto Adicional: ${context}. Diretrizes Extras Importantes: ${directives}. Gere o plano alimentar estruturado de 4 semanas periodizado.`;
-
+  // Testa a chave com uma requisição mínima
   try {
-    var response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: {
-        "Authorization": "Bearer " + userGroqKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama3-8b-8192",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.3,
-        response_format: { type: "json_object" }
-      })
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+      body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "user", content: "ok" }], max_tokens: 5 })
     });
+    var data = await res.json();
+    if (data.error) throw new Error(data.error.message);
 
-    var data = await response.json();
-    var cleanContent = data.choices[0].message.content.trim();
-    currentPlanData = JSON.parse(cleanContent);
-    
-    renderPlan();
-    document.getElementById("profileForm").style.display = "none";
-    document.getElementById("resultsSection").style.display = "block";
-    showToast("💪 Seu plano inteligente está pronto!");
-    addStreak();
-  } catch(e) {
-    showToast("❌ Falha ao estruturar JSON da IA. Tente novamente.");
-  } finally {
-    btn.disabled = false;
+    // Sucesso
+    userGroqKey = key;
+    localStorage.setItem("fp_groq_key", key);
+    updateKeyStatusText();
+    hideApiKeyScreen();
+    showToast("✅ IA conectada com sucesso!");
+  } catch (e) {
+    txt.style.display = "block";
     loader.style.display = "none";
-    txt.innerText = "⚡ Criar Plano com IA";
+    btn.disabled = false;
+    var errEl = document.getElementById("apikeyError");
+    errEl.innerText = "❌ " + (e.message || "Chave inválida ou sem conexão.");
+    errEl.style.display = "block";
+    document.getElementById("apikeyInput").className = "apikey-input error";
   }
-}
-
-function renderPlan() {
-  if(!currentPlanData) return;
-  document.getElementById("macroKcal").innerText = currentPlanData.kcal || "--";
-  document.getElementById("macroCarb").innerText = (currentPlanData.carb || "--") + "g";
-  document.getElementById("macroProt").innerText = (currentPlanData.prot || "--") + "g";
-  document.getElementById("macroGord").innerText = (currentPlanData.gord || "--") + "g";
-
-  var dHtml = "";
-  if(currentPlanData.diet) {
-    currentPlanData.diet.forEach(function(m){
-      dHtml += `<div class="food-item">
-        <div style="background:var(--surface-hover);padding:10px;border-radius:var(--radius-sm);color:var(--primary)"><i data-lucide="utensils-custom"></i></div>
-        <div class="food-desc"><strong>${m.meal} (${m.time})</strong><br><span style="color:var(--text-muted);font-size:13px">${m.items}</span></div>
-      </div>`;
-    });
-  }
-  document.getElementById("dietContent").innerHTML = dHtml;
-  showWeek(1, document.querySelector(".week-tab"));
-  initChatBox();
-}
-
-function showWeek(num, btn) {
-  var tabs = document.querySelectorAll("#weekTabs .week-tab");
-  tabs.forEach(function(t){ t.classList.remove("active"); });
-  if(btn) btn.classList.add("active");
-
-  var wContent = document.getElementById("workoutContent");
-  if(!currentPlanData || !currentPlanData.workout) return;
-  
-  var key = "semana" + num;
-  var days = currentPlanData.workout[key] || currentPlanData.workout["semana1"] || [];
-  
-  var html = "";
-  days.forEach(function(d, dIdx) {
-    html += `<div class="day-header">${d.day} — Foco: ${d.focus}</div>`;
-    if(d.exercises) {
-      d.exercises.forEach(function(ex, eIdx) {
-        var uniqueId = `load-${num}-${dIdx}-${eIdx}`;
-        var savedLoad = localStorage.getItem("fp_load_" + uniqueId) || "";
-        html += `<div class="exercise-item">
-          <div class="ex-header">
-            <div>
-              <div class="ex-name">${ex.name}</div>
-              <div class="ex-meta">${ex.sets} séries x ${ex.reps} <span style="color:var(--text-muted)">• Descanso: ${ex.rest}s</span></div>
-            </div>
-            <div class="timer-badge" onclick="startRestTimer(${ex.rest}, this)"><i data-lucide="timer" size="14"></i> <span>Timer</span></div>
-          </div>
-          <div class="ex-action-row">
-            <input type="text" class="load-input" id="${uniqueId}" value="${savedLoad}" placeholder="Carga" oninput="saveLoad('${uniqueId}', this.value)">
-            <button class="btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="toggleGif(this)"><i data-lucide="eye" size="12"></i> Execução</button>
-          </div>
-          <div class="gif-frame"><iframe src="https://giphy.com/embed/3o7qE1YN7aBOFPRw8E" width="100%" height="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
-        </div>`;
-      });
-    }
-  });
-  wContent.innerHTML = html;
-  lucide.createIcons();
-}
-
-function saveLoad(id, value) {
-  localStorage.setItem("fp_load_" + id, value);
-}
-
-function toggleGif(btn) {
-  var frame = btn.closest(".exercise-item").querySelector(".gif-frame");
-  frame.style.display = frame.style.display === "block" ? "none" : "block";
-}
-
-function startRestTimer(seconds, element) {
-  if (element.classList.contains("running")) return;
-  element.classList.add("running");
-  var timeLeft = seconds;
-  var span = element.querySelector("span");
-  
-  var interval = setInterval(function() {
-    timeLeft--;
-    span.innerText = timeLeft + "s";
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      element.classList.remove("running");
-      span.innerText = "Timer";
-      showToast("⏰ Descanso Concluído! Vá para a próxima série.");
-      if(window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
-    }
-  }, 1000);
-}
-
-function switchTab(id, btn) {
-  var contents = document.querySelectorAll(".tab-content");
-  contents.forEach(function(c){ c.classList.remove("active"); });
-  var buttons = document.querySelectorAll(".tab-nav .tab-btn");
-  buttons.forEach(function(b){ b.classList.remove("active"); });
-  
-  document.getElementById(id).classList.add("active");
-  btn.classList.add("active");
-}
-
-// INTEGRAÇÃO CHAT COM HISTÓRICO CONTEXTUALIZADO DO SEU ATLETA
-var chatHistory = [];
-function initChatBox() {
-  var box = document.getElementById("chatBox");
-  box.innerHTML = `<div class="chat-bubble chat-ai">Olá! Eu sou seu assistente de treino pessoal. Como posso te ajudar hoje com suas refeições ou exercícios?</div>`;
-  chatHistory = [{ role: "system", content: "Você é o personal trainer e nutricionista virtual do usuário. Dê respostas curtas, diretas e extremamente profissionais baseadas nos dados do plano." }];
-}
-
-async function sendChatMessage() {
-  var input = document.getElementById("chatInput");
-  var text = input.value.trim();
-  if(!text) return;
-
-  var box = document.getElementById("chatBox");
-  box.innerHTML += `<div class="chat-bubble chat-user">${text}</div>`;
-  input.value = "";
-  box.scrollTop = box.scrollHeight;
-
-  chatHistory.push({ role: "user", content: text });
-
-  try {
-    var response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + userGroqKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama3-8b-8192",
-        messages: chatHistory
-      })
-    });
-    var data = await response.json();
-    var aiReply = data.choices[0].message.content;
-    box.innerHTML += `<div class="chat-bubble chat-ai">${aiReply.replace(/\n/g, "<br>")}</div>`;
-    chatHistory.push({ role: "assistant", content: aiReply });
-    box.scrollTop = box.scrollHeight;
-  } catch(e) {
-    box.innerHTML += `<div class="chat-bubble chat-ai">⚠️ Erro ao se comunicar com a IA. Verificar conexão.</div>`;
-  }
-}
-
-// SISTEMA DE MODAIS, PROGRESSO E DIAS SEGUIDOS
-function openModal(id) { document.getElementById(id).classList.add("open"); }
-function closeModal(id) { document.getElementById(id).classList.remove("open"); }
-function openPaywall() { document.getElementById("paywallOverlay").classList.add("open"); }
-function closePaywall() { document.getElementById("paywallOverlay").classList.remove("open"); }
-
-function selectEmoji(el, val) {
-  var row = el.closest(".emoji-row");
-  row.querySelectorAll(".emoji-btn").forEach(function(b){ b.classList.remove("selected"); });
-  el.classList.add("selected");
-  row.setAttribute("data-selected", val);
-}
-
-function saveCheckin() {
-  showToast("✅ Check-in salvo! Mantendo a constância.");
-  closeModal("modalCheckin");
-}
-
-function toggleSwitch(el) {
-  el.classList.toggle("on");
-}
-
-function addStreak() {
-  streak++;
-  localStorage.setItem("fp_streak", streak);
-  document.getElementById("streakCount").innerText = streak;
-  if(streak >= 3) document.getElementById("trophy-2").classList.add("unlocked");
-}
-
-function loadStreak() {
-  streak = parseInt(localStorage.getItem("fp_streak") || "0");
-  document.getElementById("streakCount").innerText = streak;
-}
-
-function initChart() {
-  var ctx = document.getElementById('weightChart').getContext('2d');
-  chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-      datasets: [{
-        label: 'Peso Projetado',
-        data: [75, 74.2, 73.8, 73.1],
-        borderColor: '#32D74B',
-        backgroundColor: 'rgba(50,215,75,0.05)',
-        tension: 0.4,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8E8E93' } },
-        x: { grid: { display: false }, ticks: { color: '#8E8E93' } }
-      }
-    }
-  });
 }
 
 function skipApiKey() {
@@ -1224,8 +1743,15 @@ function initApiKey() {
   if (loadSavedKey()) {
     hideApiKeyScreen();
     updateKeyStatusText();
+  } else {
+    // Mostra tela de configuração
+    document.getElementById("apikeyScreen").style.display = "flex";
+    lucide.createIcons();
   }
 }
+
+// ─── INICIALIZAR ÍCONES ───
+lucide.createIcons();
 </script>
 </body>
 </html>
