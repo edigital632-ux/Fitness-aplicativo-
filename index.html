@@ -424,7 +424,6 @@ body {
 </style>
 </head>
 <body>
-<!-- TELA DE CONFIGURAÇÃO DA CHAVE -->
 <div class="apikey-screen" id="apikeyScreen">
   <div class="apikey-logo">⚡</div>
   <div class="apikey-title">Conectar IA Gratuita</div>
@@ -463,22 +462,19 @@ body {
 
 <div class="app-container">
 
-  <!-- HEADER -->
   <header class="header">
     <div class="brand-box">
       <i data-lucide="activity" class="brand-icon"></i>
       <span class="brand-name">FitPlan</span>
-      <span class="brand-badge">PRO</span>
+      <span class="brand-badge" style="background:var(--gold); color:#000;">PREMIUM</span>
     </div>
     <div class="header-right">
       <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount">0</span></div>
-      <button class="header-pro-btn" onclick="openPaywall()">⚡ PRO</button>
       <i data-lucide="bell" style="color:var(--text-muted);cursor:pointer;width:20px;" onclick="openModal('modalNotif')"></i>
       <i data-lucide="settings" style="color:var(--text-muted);cursor:pointer;width:20px;" onclick="toggleSettings()"></i>
     </div>
   </header>
 
-  <!-- SETTINGS -->
   <div class="card" id="settingsPanel" style="display:none; border:1px solid var(--secondary);">
     <div class="section-title"><i data-lucide="cpu" size="16"></i> Diretrizes Base da IA</div>
     <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia dos glúteos..."></textarea>
@@ -494,7 +490,6 @@ body {
 
   </div>
 
-  <!-- PERFIL -->
   <div class="card" id="profileForm">
     <div class="section-title"><i data-lucide="user" size="16"></i> Dados Biométricos</div>
     <div class="input-group">
@@ -522,7 +517,6 @@ body {
     </button>
   </div>
 
-  <!-- RESULTADOS -->
   <div id="resultsSection" style="display:none;">
     <div class="action-bar-top">
       <button class="btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="openModal('modalCheckin')"><i data-lucide="clipboard-check" size="12"></i> Check-in</button>
@@ -539,7 +533,6 @@ body {
       <button class="tab-btn" onclick="switchTab('tab-trophies',this)"><i data-lucide="trophy" size="14"></i> Conquistas</button>
     </div>
 
-    <!-- TAB: CHAT -->
     <div id="tab-chat" class="tab-content active card">
       <div class="chat-container" id="chatBox"></div>
       <div class="chat-input-wrapper">
@@ -548,7 +541,6 @@ body {
       </div>
     </div>
 
-    <!-- TAB: TREINO (PERIODIZADO) -->
     <div id="tab-workout" class="tab-content card">
       <div class="section-title"><i data-lucide="calendar" size="16"></i> Plano Periodizado — 4 Semanas</div>
       <div class="week-tabs" id="weekTabs">
@@ -560,7 +552,6 @@ body {
       <div id="workoutContent"></div>
     </div>
 
-    <!-- TAB: DIETA -->
     <div id="tab-diet" class="tab-content card">
       <div class="section-title"><i data-lucide="apple" size="16"></i> Sugestão Alimentar</div>
       <div class="macros-grid">
@@ -572,7 +563,6 @@ body {
       <div id="dietContent"></div>
     </div>
 
-    <!-- TAB: SCANNER DE PRATO -->
     <div id="tab-scanner" class="tab-content card">
       <div class="section-title"><i data-lucide="scan" size="16"></i> Scanner de Prato com IA</div>
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Tire uma foto do seu prato e a IA estima as calorias e macros na hora.</p>
@@ -594,7 +584,6 @@ body {
       <div id="scannerResult" class="scanner-result"></div>
     </div>
 
-    <!-- TAB: PROGRESSO -->
     <div id="tab-progress" class="tab-content card">
       <div class="section-title"><i data-lucide="bar-chart-2" size="16"></i> Evolução de Carga</div>
       <div class="chart-container"><canvas id="progressChart"></canvas></div>
@@ -627,7 +616,6 @@ body {
       <div id="monthlyReport"></div>
     </div>
 
-    <!-- TAB: CONQUISTAS -->
     <div id="tab-trophies" class="tab-content card">
       <div class="section-title"><i data-lucide="trophy" size="16"></i> Suas Conquistas</div>
       <div class="trophies-grid" id="trophiesGrid"></div>
@@ -635,9 +623,6 @@ body {
   </div>
 </div>
 
-<!-- TOAST -->
-
-<!-- PAYWALL -->
 <div class="paywall-overlay" id="paywallOverlay">
   <div class="paywall-sheet">
     <div class="paywall-handle"></div>
@@ -681,7 +666,6 @@ body {
 
 <div class="toast" id="toastMsg"></div>
 
-<!-- MODAL: CHECK-IN SEMANAL -->
 <div class="modal-overlay" id="modalCheckin">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modalCheckin')">×</button>
@@ -717,7 +701,6 @@ body {
   </div>
 </div>
 
-<!-- MODAL: NOTIFICAÇÕES -->
 <div class="modal-overlay" id="modalNotif">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modalNotif')">×</button>
@@ -1464,7 +1447,7 @@ async function submitCheckin() {
     renderChat();
     switchTab("tab-chat", document.querySelector(".tab-btn"));
     document.querySelectorAll(".tab-btn")[0].classList.add("active");
-    showToast("✅ Plano ajustado com base no check-in!");
+    showToast("✅ Plano adjusted com base no check-in!");
   } catch (e) {
     showToast("❌ " + (e.message || "Erro no check-in."));
   }
@@ -1505,10 +1488,10 @@ function exportToWhatsApp() {
 
 // ─── PAYWALL / PRO ───
 var PRO_FEATURES_LIMIT = { plansGenerated: 0, scansUsed: 0, photosUsed: 0 };
-var isPro = false;
+var isPro = true;
 
 function initProState() {
-  isPro = localStorage.getItem("fp_is_pro") === "true";
+  isPro = true; // Liberado permanentemente sem restrições
   var stats = localStorage.getItem("fp_usage");
   if (stats) PRO_FEATURES_LIMIT = JSON.parse(stats);
   applyProUI();
@@ -1526,7 +1509,6 @@ function applyProUI() {
     if (scannerUpload) scannerUpload.style.display = "block";
     if (photoUpload) photoUpload.style.display = "block";
   } else {
-    // Free: 1 scan e 1 foto grátis
     var scanLocked = PRO_FEATURES_LIMIT.scansUsed >= 1;
     var photoLocked = PRO_FEATURES_LIMIT.photosUsed >= 1;
     if (scannerBanner) scannerBanner.style.display = scanLocked ? "flex" : "none";
@@ -1559,11 +1541,9 @@ function selectPlan(plan) {
 }
 
 function handleUpgrade() {
-  // Aqui você integra Hotmart, Stripe ou Lemon Squeezy
-  // Por ora abre uma URL de checkout (substitua pela sua)
   var urls = {
-    annual: "https://hotmart.com/seu-produto-anual",   // <- substitua
-    monthly: "https://hotmart.com/seu-produto-mensal"  // <- substitua
+    annual: "https://hotmart.com/seu-produto-anual",   
+    monthly: "https://hotmart.com/seu-produto-mensal"  
   };
   showToast("🔗 Redirecionando para o checkout...");
   setTimeout(function() {
@@ -1572,7 +1552,6 @@ function handleUpgrade() {
 }
 
 function restorePurchase() {
-  // Em produção: verificar token/webhook do Hotmart
   var code = prompt("Digite seu código de ativação PRO:");
   if (code && code.length > 4) {
     activatePro();
@@ -1587,33 +1566,18 @@ function activatePro() {
   applyProUI();
   closePaywall();
   showToast("👑 PRO ativado! Bem-vindo!");
-  // Atualiza badge header
-  var btn = document.querySelector(".header-pro-btn");
-  if (btn) { btn.innerText = "👑 PRO"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.onclick = null; }
 }
 
-// Intercepta scanner para contar uso
+// Intercepta scanner para contar uso (Desativado o bloqueio, roda direto)
 var _origScanFood = scanFood;
 scanFood = async function(event) {
-  if (!isPro && PRO_FEATURES_LIMIT.scansUsed >= 1) { openPaywall(); return; }
   await _origScanFood(event);
-  if (!isPro) {
-    PRO_FEATURES_LIMIT.scansUsed++;
-    localStorage.setItem("fp_usage", JSON.stringify(PRO_FEATURES_LIMIT));
-    applyProUI();
-  }
 };
 
-// Intercepta foto para contar uso
+// Intercepta foto para contar uso (Desativado o bloqueio, roda direto)
 var _origAnalyzePhoto = analyzePhoto;
 analyzePhoto = async function(event) {
-  if (!isPro && PRO_FEATURES_LIMIT.photosUsed >= 1) { openPaywall(); return; }
   await _origAnalyzePhoto(event);
-  if (!isPro) {
-    PRO_FEATURES_LIMIT.photosUsed++;
-    localStorage.setItem("fp_usage", JSON.stringify(PRO_FEATURES_LIMIT));
-    applyProUI();
-  }
 };
 
 
@@ -1675,7 +1639,6 @@ async function connectGroqKey() {
   txt.style.display = "none";
   loader.style.display = "block";
 
-  // Testa a chave com uma requisição mínima
   try {
     var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -1685,7 +1648,6 @@ async function connectGroqKey() {
     var data = await res.json();
     if (data.error) throw new Error(data.error.message);
 
-    // Sucesso
     userGroqKey = key;
     localStorage.setItem("fp_groq_key", key);
     updateKeyStatusText();
@@ -1744,7 +1706,6 @@ function initApiKey() {
     hideApiKeyScreen();
     updateKeyStatusText();
   } else {
-    // Mostra tela de configuração
     document.getElementById("apikeyScreen").style.display = "flex";
     lucide.createIcons();
   }
