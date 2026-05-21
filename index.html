@@ -215,7 +215,7 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
-        /* ─── REGRAS PROFISSIONAIS DE IMPRESSÃO (ESTILO FICHA RECEPÇÃO) ─── */
+        /* ─── REGRAS DE IMPRESSÃO PROFISSIONAIS ─── */
         @media print {
             body { background: #FFFFFF !important; color: #000000 !important; background-image: none !important; padding: 0; }
             .header, .tab-nav, #profileForm, .chat-input-wrapper, .action-bar-top, .btn-secondary, .load-input, label, .gif-frame, .ex-action-row, i { display: none !important; }
@@ -240,7 +240,7 @@
             .food-item { background: #FFFFFF !important; border-bottom: 1px dashed #AAAAAA !important; padding: 8px 0 !important; color: #000000 !important; page-break-inside: avoid; }
             .food-img { display: none !important; }
             
-            #tab-workout { page-break-after: always; } /* FORÇA A DIETA A IR PARA UMA NOVA PÁGINA NA IMPRESSÃO */
+            #tab-workout { page-break-after: always; } /* Força a separação de página para a Dieta */
         }
 
     </style>
@@ -302,7 +302,7 @@
         </div>
 
         <button class="btn-main" id="btnGenerate" onclick="generatePlan()">
-            <span id="btnText">Criar Plano com IA</span>
+            <span id="btnText">Criar Plano com Google Gemini</span>
             <div class="loader" id="btnLoader"></div>
         </button>
     </div>
@@ -400,7 +400,7 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // ─── REQUISIÇÃO VIA HTTPS COMPATÍVEL COM GITHUB PAGES ───
+    // ─── REQUISIÇÃO CONFIGURADA PARA USAR GOOGLE GEMINI ───
     async function generatePlan() {
         const name = document.getElementById('userName').value || "Aluno(a)";
         const age = document.getElementById('userAge').value;
@@ -418,7 +418,7 @@
         const systemPrompt = `Atue como Personal Trainer e Nutricionista de recepção de academia.
 Usuário: ${name}, ${age} anos, ${weight}kg, ${height}cm. Objetivo: ${currentObjective}. Contexto: ${context}. Diretrizes: ${directives}
 
-Gere um treino limpo, estritamente estruturado em formato de ficha tradicional de academia dividida por letras ordenadas (ex: TREINO A, TREINO B, TREINO C).
+Gere um treino limpo, estruturado em formato de ficha tradicional de academia dividida por letras ordenadas (ex: TREINO A, TREINO B, TREINO C).
 
 Siga rigorosamente a divisão de tags abaixo no retorno:
 ---CHAT---
@@ -432,17 +432,17 @@ Nome do Exercício | Séries x Reps | Carga Recomendada em KG
 (Adicione uma lista direta de alimentos e refeições limpas, linha por linha).`;
 
         try {
-            // Mudança crucial para HTTPS prevenindo bloqueios do GitHub Pages
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}?model=openai&cache=false`);
+            // Mudança para o endpoint do Google Gemini-2.5-Flash via HTTPS estável
+            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}?model=gemini-2.5-flash&cache=false`);
             const rawText = await response.text();
             
             processAIResponse(rawText, name);
             
             document.getElementById('profileForm').style.display = 'none';
             document.getElementById('resultsSection').style.display = 'block';
-            showToast("Ficha Criada com Sucesso!");
+            showToast("Ficha Criada com o Gemini!");
         } catch (error) {
-            showToast("Erro ao processar inteligência artificial.");
+            showToast("Erro ao processar inteligência artificial do Gemini.");
         } finally {
             btnText.style.display = 'block';
             loader.style.display = 'none';
@@ -451,7 +451,7 @@ Nome do Exercício | Séries x Reps | Carga Recomendada em KG
     }
 
     function processAIResponse(text, userName) {
-        let chatPart = "Ficha montada e separada com sucesso! Ótimos treinos.";
+        let chatPart = "Ficha montada com o motor do Google Gemini! Bons treinos.";
         cleanWorkoutText = "";
         cleanDietText = "";
 
@@ -500,10 +500,10 @@ Nome do Exercício | Séries x Reps | Carga Recomendada em KG
         document.getElementById('chatBox').appendChild(loadingDiv);
 
         const contextLines = chatHistory.slice(-4).map(h => `${h.role === 'user' ? 'Aluno' : 'Treinador'}: ${h.msg}`).join('\n');
-        const prompt = `Como Personal Trainer, responda à dúvida de forma muito resumida (máx 2 frases):\n${contextLines}\nTreinador:`;
+        const prompt = `Como Personal Trainer da Google Gemini, responda à dúvida de forma muito resumida (máx 2 frases):\n${contextLines}\nTreinador:`;
 
         try {
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`);
+            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=gemini-2.5-flash&cache=false`);
             const answer = await response.text();
             loadingDiv.remove();
             chatHistory.push({ role: 'ai', msg: answer.trim() });
@@ -619,7 +619,6 @@ Nome do Exercício | Séries x Reps | Carga Recomendada em KG
         } catch(e) { frame.innerHTML = '<div style="padding:20px; text-align:center;">Erro.</div>'; }
     }
 
-    // ─── MAREAMENTO E IMAGENS COMPLETAS DA DIETA DO SEU ARQUIVO ORIGINAL ───
     function renderDiet(text) {
         const container = document.getElementById('dietContent');
         container.innerHTML = '';
@@ -653,11 +652,10 @@ Nome do Exercício | Séries x Reps | Carga Recomendada em KG
         });
     }
 
-    // ─── EXPORTAÇÃO SEPARADA E ORGANIZADA PARA WHATSAPP ───
     function exportToWhatsApp() {
         if(!cleanWorkoutText) { showToast("Crie o seu plano primeiro!"); return; }
         
-        let zapMessage = `🏋️‍♂️ *FICHA DE TREINO ACADEMIA* 🏋️‍♂️\n\n`;
+        let zapMessage = `🏋️‍♂️ *FICHA DE TREINO ACADEMIA (GEMINI)* 🏋️‍♂️\n\n`;
         zapMessage += `${cleanWorkoutText}\n\n`;
         zapMessage += `=============================\n\n`;
         zapMessage += `🍏 *PLANEJAMENTO ALIMENTAR* 🍏\n\n`;
