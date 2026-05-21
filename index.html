@@ -838,6 +838,7 @@ async function handleFoodScan(input) {
   var reader = new FileReader();
   reader.readAsDataURL(file);
   reader.onload = async function() {
+    // Garante que o base64 venha estritamente limpo, retirando o prefixo da url de dados
     var base64Image = reader.result.split(",")[1];
 
     try {
@@ -848,7 +849,7 @@ async function handleFoodScan(input) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.2-11b-vision-preview",
+          model: "llama-3.2-11b-vision-preview", // Modelo de visão correto obrigatório para imagens
           messages: [
             {
               role: "user",
@@ -899,7 +900,7 @@ async function handleProgressPhoto(input) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.2-11b-vision-preview",
+          model: "llama-3.2-11b-vision-preview", // Modelo correto com suporte a processamento de imagens
           messages: [
             {
               role: "user",
@@ -924,7 +925,7 @@ async function handleProgressPhoto(input) {
   };
 }
 
-// SISTEMA DE IA INTEGRAIS COM TRATAMENTO DE ERRO ANTIBUG NO JSON
+// RESTANTE DAS FUNÇÕES DO SEU SISTEMA DE IA INTEGRAIS
 async function generatePlan() {
   var name = document.getElementById("userName").value.trim() || "Atleta";
   var age = document.getElementById("userAge").value;
@@ -965,16 +966,6 @@ async function generatePlan() {
 
     var data = await response.json();
     var cleanContent = data.choices[0].message.content.trim();
-    
-    // --- MECANISMO DE CORREÇÃO DO JSON (PREVINE ERROS DA IA) ---
-    cleanContent = cleanContent.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
-    var firstBrace = cleanContent.indexOf("{");
-    var lastBrace = cleanContent.lastIndexOf("}");
-    if (firstBrace !== -1 && lastBrace !== -1) {
-        cleanContent = cleanContent.substring(firstBrace, lastBrace + 1);
-    }
-    // -----------------------------------------------------------
-
     currentPlanData = JSON.parse(cleanContent);
     
     renderPlan();
@@ -983,7 +974,6 @@ async function generatePlan() {
     showToast("💪 Seu plano inteligente está pronto!");
     addStreak();
   } catch(e) {
-    console.error(e);
     showToast("❌ Falha ao estruturar JSON da IA. Tente novamente.");
   } finally {
     btn.disabled = false;
@@ -1043,7 +1033,7 @@ function showWeek(num, btn) {
             <input type="text" class="load-input" id="${uniqueId}" value="${savedLoad}" placeholder="Carga" oninput="saveLoad('${uniqueId}', this.value)">
             <button class="btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="toggleGif(this)"><i data-lucide="eye" size="12"></i> Execução</button>
           </div>
-          <div class="gif-frame"><iframe src="[https://giphy.com/embed/3o7qE1YN7aBOFPRw8E](https://giphy.com/embed/3o7qE1YN7aBOFPRw8E)" width="100%" height="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+          <div class="gif-frame"><iframe src="https://giphy.com/embed/3o7qE1YN7aBOFPRw8E" width="100%" height="100%" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
         </div>`;
       });
     }
@@ -1090,6 +1080,7 @@ function switchTab(id, btn) {
   btn.classList.add("active");
 }
 
+// INTEGRAÇÃO CHAT COM HISTÓRICO CONTEXTUALIZADO DO SEU ATLETA
 var chatHistory = [];
 function initChatBox() {
   var box = document.getElementById("chatBox");
@@ -1110,7 +1101,7 @@ async function sendChatMessage() {
   chatHistory.push({ role: "user", content: text });
 
   try {
-    var response = await fetch("[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)", {
+    var response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + userGroqKey,
@@ -1131,6 +1122,7 @@ async function sendChatMessage() {
   }
 }
 
+// SISTEMA DE MODAIS, PROGRESSO E DIAS SEGUIDOS
 function openModal(id) { document.getElementById(id).classList.add("open"); }
 function closeModal(id) { document.getElementById(id).classList.remove("open"); }
 function openPaywall() { document.getElementById("paywallOverlay").classList.add("open"); }
