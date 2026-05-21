@@ -373,11 +373,8 @@
 <script>
     lucide.createIcons();
 
-    // Chave de API Ofuscada (Evita varredura automatizada e crawlers estáticos)
-    const GEMINI_API_KEY = (() => {
-        const deobfuscate = [66, 74, 123, 98, 84, 122, 68, 106, 51, 121, 71, 50, 121, 77, 49, 120, 51, 87, 81, 107, 88, 73, 115, 77, 85, 111, 82, 65, 57, 57, 104, 119, 51, 83, 67, 80, 109, 83, 65, 111, 50, 52];
-        return deobfuscate.map((code, index) => String.fromCharCode(code - (index % 2 === 0 ? 1 : -1))).join('');
-    })();
+    // Chave de API Oficial do Gemini integrada
+    const GEMINI_API_KEY = "AIzaSyCi2xM1x3WQkXIsMUoRA99hw3SCPmSAo24";
 
     // Estado Geral da Aplicação
     let currentObjective = "Hipertrofia";
@@ -515,7 +512,7 @@ Kcal: X | Carb: Xg | Prot: Xg | Gord: Xg`;
             const splitDieta = splitChat[1].split('---DIETA---');
             treinoPart = splitDieta[0].trim();
             
-            const splitMacros = splitDieta[1].split('---DIETA---');
+            const splitMacros = splitDieta[1].split('---MACROS---');
             dietaPart = splitMacros[0].trim();
             macrosPart = splitMacros[1] ? splitMacros[1].trim() : "";
         } catch(e) {
