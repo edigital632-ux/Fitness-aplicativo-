@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FitPlan Pro AI | Premium</title>
     
-    <!-- Fontes Premium -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     
-    <!-- Bibliotecas Externas -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -237,7 +235,6 @@
 
 <div class="app-container">
 
-    <!-- HEADER -->
     <header class="header">
         <div class="brand-box">
             <i data-lucide="activity" class="brand-icon"></i>
@@ -249,14 +246,12 @@
         </div>
     </header>
 
-    <!-- CONFIG (Hidden by default) -->
     <div class="card" id="settingsPanel" style="display: none; border: 1px solid var(--secondary);">
         <div class="section-title"><i data-lucide="cpu" size="16"></i> Diretrizes Base da IA</div>
         <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia dos glúteos..."></textarea>
         <button class="btn-secondary" style="margin-top: 12px; width: 100%;" onclick="saveSettings()">Salvar Preferências</button>
     </div>
 
-    <!-- FORMULÁRIO DE PERFIL (Desaparece após gerar) -->
     <div class="card" id="profileForm">
         <div class="section-title"><i data-lucide="user" size="16"></i> Dados Biométricos</div>
         
@@ -298,10 +293,8 @@
         </button>
     </div>
 
-    <!-- RESULTADOS (Oculto inicialmente) -->
     <div id="resultsSection" style="display: none;">
         
-        <!-- ABAS -->
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('tab-chat')"><i data-lucide="message-circle" size="16"></i> Consultoria</button>
             <button class="tab-btn" onclick="switchTab('tab-workout')"><i data-lucide="dumbbell" size="16"></i> Treino</button>
@@ -309,30 +302,25 @@
             <button class="tab-btn" onclick="switchTab('tab-progress')"><i data-lucide="trending-up" size="16"></i> Evolução</button>
         </div>
 
-        <!-- ABA CHAT -->
         <div id="tab-chat" class="tab-content active card">
             <div class="chat-container" id="chatBox">
-                <!-- Mensagens da IA e Usuário entrarão aqui -->
-            </div>
+                </div>
             <div class="chat-input-wrapper">
                 <input type="text" id="chatInput" class="input-control" placeholder="Tire dúvidas com o personal..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
                 <button class="btn-send" onclick="sendChatMessage()"><i data-lucide="send" size="18"></i></button>
             </div>
         </div>
 
-        <!-- ABA TREINO -->
         <div id="tab-workout" class="tab-content card">
             <div class="section-title"><i data-lucide="calendar" size="16"></i> Ficha Estruturada</div>
             <div id="workoutContent"></div>
         </div>
 
-        <!-- ABA DIETA -->
         <div id="tab-diet" class="tab-content card">
             <div class="section-title"><i data-lucide="apple" size="16"></i> Sugestão Alimentar</div>
             <div id="dietContent"></div>
         </div>
 
-        <!-- ABA PROGRESSO (GRÁFICO) -->
         <div id="tab-progress" class="tab-content card">
             <div class="section-title"><i data-lucide="bar-chart-2" size="16"></i> Evolução de Carga (Volume Total)</div>
             <p style="font-size: 13px; color: var(--text-muted);">Acompanhe o volume de carga que você levanta a cada treino salvo.</p>
@@ -345,12 +333,14 @@
 
 </div>
 
-<!-- Elemento Toast -->
 <div class="toast" id="toastMsg">Operação realizada!</div>
 
 <script>
     // Inicializar ícones
     lucide.createIcons();
+
+    // Chave da API do Gemini definida globalmente para uso seguro nas funções
+    const GEMINI_API_KEY = "AIzaSyCPQOogSw9lAMPBzyvy1gJ3-iQRcz9orBI";
 
     // Estado da Aplicação
     let currentObjective = "Hipertrofia";
@@ -383,7 +373,7 @@
     function saveSettings() {
         localStorage.setItem('fitplan_directives', document.getElementById('aiDirectives').value);
         toggleSettings();
-        showToast("Diretrizes atualizadas!");
+        showToast("Diretrizes updated!");
     }
 
     // Carregar configurações locais
@@ -401,7 +391,7 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // ─── GERAÇÃO DO PLANO VIA IA ───
+    // ─── GERAÇÃO DO PLANO VIA IA (AGORA COM GEMINI) ───
     async function generatePlan() {
         const name = document.getElementById('userName').value || "Aluno(a)";
         const age = document.getElementById('userAge').value;
@@ -434,8 +424,17 @@ Crucifixo | 3 x 12 | 12kg)
 (Liste recomendações de refeições, uma por linha, direto ao ponto).`;
 
         try {
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt)}?model=openai&cache=false`);
-            const data = await response.text();
+            // Chamada adaptada para o endpoint oficial do Google Gemini API
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: systemPrompt }] }]
+                })
+            });
+            
+            const result = await response.json();
+            const data = result.candidates[0].content.parts[0].text;
             
             processAIResponse(data, name);
             
@@ -444,6 +443,7 @@ Crucifixo | 3 x 12 | 12kg)
             document.getElementById('resultsSection').style.display = 'block';
             showToast("Plano Personalizado Gerado!");
         } catch (error) {
+            console.error(error);
             showToast("Erro ao contatar IA. Tente novamente.");
         } finally {
             btnText.style.display = 'block';
@@ -476,7 +476,7 @@ Crucifixo | 3 x 12 | 12kg)
         renderDiet(dietaPart);
     }
 
-    // ─── CHAT CONSULTORIA ───
+    // ─── CHAT CONSULTORIA (AGORA COM GEMINI) ───
     function renderChat() {
         const box = document.getElementById('chatBox');
         box.innerHTML = '';
@@ -509,13 +509,23 @@ Crucifixo | 3 x 12 | 12kg)
         const prompt = `Como Personal Trainer da plataforma FitPlan PRO, responda à última dúvida do aluno de forma breve (máx 3 frases). Histórico recente:\n${contextLines}\nTreinador:`;
 
         try {
-            const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&cache=false`);
-            const answer = await response.text();
+            // Chamada adaptada para o endpoint oficial do Google Gemini API no Chat de Consultoria
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+
+            const result = await response.json();
+            const answer = result.candidates[0].content.parts[0].text;
             
             loadingDiv.remove();
             chatHistory.push({ role: 'ai', msg: answer.trim() });
             renderChat();
         } catch(e) {
+            console.error(e);
             loadingDiv.remove();
             showToast("Falha na rede. Tente enviar de novo.");
         }
@@ -665,7 +675,7 @@ Crucifixo | 3 x 12 | 12kg)
         }
     }
 
-    // ─── SOLUÇÃO 100% GARANTIDA PARA IMAGENS DA DIETA (ADICIONADA AQUI) ───
+    // ─── SOLUÇÃO 100% GARANTIDA PARA IMAGENS DA DIETA ───
     function renderDiet(text) {
         const container = document.getElementById('dietContent');
         container.innerHTML = '';
@@ -673,7 +683,7 @@ Crucifixo | 3 x 12 | 12kg)
 
         const lines = text.split('\n').filter(l => l.trim().length > 0);
         
-        // Dicionário de URLs estáticas e diretas (100% de certeza que não saem do ar)
+        // Dicionário de URLs estáticas e diretas
         const imagensComida = {
             ovo: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=150&h=150&fit=crop",
             frango: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=150&h=150&fit=crop",
