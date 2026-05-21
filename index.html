@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FitPlan Pro AI | Premium</title>
+<title>FitPlan AI | Grátis</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -63,6 +63,18 @@ body {
   background: rgba(255,214,10,0.15); border: 1px solid rgba(255,214,10,0.4);
   border-radius: 100px; padding: 5px 10px; font-size: 13px; font-weight: 700; color: var(--gold);
 }
+
+/* API STATUS INDICATOR */
+.api-status {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s;
+}
+.api-status.online { background: var(--primary-dim); color: var(--primary); border: 1px solid rgba(50,215,75,0.3); }
+.api-status.offline { background: rgba(255,69,58,0.15); color: var(--danger); border: 1px solid rgba(255,69,58,0.3); }
+.api-status.connecting { background: rgba(255,214,10,0.15); color: var(--gold); border: 1px solid rgba(255,214,10,0.3); }
+.api-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 /* CARD */
 .card {
@@ -188,8 +200,6 @@ body {
 /* PROGRESSO */
 .chart-container { background: #000; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-top: 12px; position: relative; height: 260px; width: 100%; }
 
-/* ── NOVOS RECURSOS ── */
-
 /* CHECK-IN SEMANAL */
 .checkin-question { margin-bottom: 14px; }
 .checkin-question p { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
@@ -229,7 +239,7 @@ body {
 .report-stat-label { font-size: 13px; color: var(--text-muted); }
 .report-stat-value { font-size: 14px; font-weight: 700; color: var(--text-main); font-family: var(--font-mono); }
 
-/* CONQUISTAS / TROFEUS */
+/* CONQUISTAS */
 .trophies-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
 .trophy-item {
   background: #000; border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -289,178 +299,242 @@ body {
 .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
 .modal-close { float: right; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 22px; line-height: 1; }
 
-/* ─── PAYWALL ─── */
-.paywall-overlay {
-  position: fixed; inset: 0; z-index: 300;
-  background: rgba(0,0,0,0.92); backdrop-filter: blur(10px);
-  display: flex; align-items: flex-end; justify-content: center;
-  padding: 0; opacity: 0; pointer-events: none; transition: opacity 0.35s;
-}
-.paywall-overlay.open { opacity: 1; pointer-events: all; }
-.paywall-sheet {
-  background: #1C1C1E; border-radius: 28px 28px 0 0;
-  width: 100%; max-width: 600px; padding: 28px 24px 40px;
-  transform: translateY(60px); transition: transform 0.35s cubic-bezier(.4,0,.2,1);
-  max-height: 92vh; overflow-y: auto;
-}
-.paywall-overlay.open .paywall-sheet { transform: translateY(0); }
-.paywall-handle { width: 40px; height: 4px; background: var(--border); border-radius: 100px; margin: 0 auto 20px; }
-.paywall-crown { font-size: 48px; text-align: center; margin-bottom: 8px; }
-.paywall-title { font-size: 24px; font-weight: 800; text-align: center; margin-bottom: 6px; }
-.paywall-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.5; }
-.plans-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.plan-card {
-  background: #000; border: 2px solid var(--border);
-  border-radius: var(--radius-lg); padding: 18px 14px; cursor: pointer;
-  transition: all 0.2s; text-align: center; position: relative;
-}
-.plan-card.selected { border-color: var(--primary); background: var(--primary-dim); }
-.plan-card.popular-card { border-color: var(--gold); }
-.popular-tag {
-  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-  background: var(--gold); color: #000; font-size: 10px; font-weight: 800;
-  padding: 3px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;
-}
-.plan-name { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-.plan-price { font-size: 28px; font-weight: 800; color: var(--text-main); line-height: 1; }
-.plan-period { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
-.plan-save { font-size: 11px; font-weight: 700; color: var(--primary); margin-top: 5px; }
-.features-list { margin-bottom: 22px; }
-.feature-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-.feature-row:last-child { border-bottom: none; }
-.feature-row .check { color: var(--primary); font-size: 16px; flex-shrink: 0; }
-.feature-row .lock { color: var(--text-muted); font-size: 14px; flex-shrink: 0; }
-.feature-row.locked { color: var(--text-muted); }
-.btn-upgrade {
-  width: 100%; background: linear-gradient(135deg, #32D74B, #0A84FF);
-  color: #fff; border: none; padding: 18px; border-radius: var(--radius-lg);
-  font-size: 17px; font-weight: 800; cursor: pointer; margin-bottom: 12px;
-  display: flex; justify-content: center; align-items: center; gap: 8px;
-  box-shadow: 0 4px 20px rgba(50,215,75,0.3); transition: transform 0.15s;
-}
-.btn-upgrade:active { transform: scale(0.98); }
-.btn-restore { width: 100%; background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; padding: 8px; }
-.paywall-guarantee { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 10px; }
-.pro-locked-banner {
-  background: linear-gradient(135deg, rgba(50,215,75,0.1), rgba(10,132,255,0.1));
-  border: 1px solid rgba(50,215,75,0.3); border-radius: var(--radius-md);
-  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
-  cursor: pointer; margin-bottom: 12px; transition: all 0.2s;
-}
-.pro-locked-banner:hover { border-color: var(--primary); }
-.pro-badge-pill {
-  background: linear-gradient(135deg, #32D74B, #0A84FF);
-  color: #fff; font-size: 10px; font-weight: 800; padding: 4px 10px;
-  border-radius: 100px; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0;
-}
-/* Faixa PRO no header */
-.header-pro-btn {
-  background: linear-gradient(135deg, #32D74B, #0A84FF);
-  color: #fff; font-size: 11px; font-weight: 800; padding: 5px 12px;
-  border-radius: 100px; border: none; cursor: pointer; letter-spacing: 0.5px;
-}
-
-
-/* ─── TELA API KEY ─── */
+/* ─── TELA API KEY (MULTI-API) ─── */
 .apikey-screen {
   position: fixed; inset: 0; z-index: 400;
   background: #000;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 32px 24px;
+  padding: 32px 24px; overflow-y: auto;
   transition: opacity 0.4s;
 }
 .apikey-screen.hidden { opacity: 0; pointer-events: none; }
 .apikey-logo { font-size: 56px; margin-bottom: 12px; }
 .apikey-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; text-align: center; }
-.apikey-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 32px; line-height: 1.6; }
-.apikey-box { width: 100%; max-width: 480px; }
-.apikey-steps { margin-bottom: 24px; }
+.apikey-sub { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.6; }
+.apikey-box { width: 100%; max-width: 500px; }
+
+/* ABAS DE API */
+.api-tabs { display: flex; gap: 6px; background: var(--surface); padding: 5px; border-radius: var(--radius-md); margin-bottom: 16px; }
+.api-tab {
+  flex: 1; padding: 9px 6px; background: transparent; border: none;
+  color: var(--text-muted); font-size: 11px; font-weight: 700; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.api-tab.active { background: var(--surface-hover); color: var(--text-main); }
+.api-provider-panel { display: none; }
+.api-provider-panel.active { display: block; }
+
+.api-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 16px; margin-bottom: 10px;
+}
+.api-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.api-card-name { font-size: 15px; font-weight: 700; }
+.api-card-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px; }
+.badge-free { background: var(--primary-dim); color: var(--primary); }
+.badge-premium { background: var(--secondary-dim); color: var(--secondary); }
+
+.apikey-steps { margin-bottom: 16px; }
 .apikey-step {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
 }
 .apikey-step:last-child { border-bottom: none; }
 .step-num {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 22px; height: 22px; border-radius: 50%;
   background: var(--primary-dim); border: 1px solid var(--primary);
-  color: var(--primary); font-size: 12px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  color: var(--primary); font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
 }
-.step-text { line-height: 1.5; padding-top: 2px; }
+.step-text { line-height: 1.5; }
 .step-link { color: var(--secondary); text-decoration: none; font-weight: 600; }
-.apikey-input-wrap { position: relative; margin-bottom: 12px; }
+
+.apikey-input-wrap { position: relative; margin-bottom: 8px; }
 .apikey-input {
-  width: 100%; background: var(--surface); border: 2px solid var(--border);
-  color: var(--text-main); padding: 16px 48px 16px 16px;
-  border-radius: var(--radius-lg); font-size: 14px; font-family: var(--font-mono);
+  width: 100%; background: #000; border: 2px solid var(--border);
+  color: var(--text-main); padding: 14px 48px 14px 14px;
+  border-radius: var(--radius-md); font-size: 13px; font-family: var(--font-mono);
   outline: none; transition: border-color 0.2s;
 }
 .apikey-input:focus { border-color: var(--primary); }
-.apikey-input.error { border-color: var(--danger); }
-.apikey-input.success { border-color: var(--primary); }
+.apikey-input.valid { border-color: var(--primary); }
+.apikey-input.invalid { border-color: var(--danger); }
 .apikey-eye {
-  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   background: none; border: none; color: var(--text-muted); cursor: pointer;
 }
-.apikey-error { font-size: 12px; color: var(--danger); margin-bottom: 12px; display: none; }
-.btn-connect {
+.apikey-error { font-size: 12px; color: var(--danger); margin-bottom: 8px; }
+.apikey-ok { font-size: 12px; color: var(--primary); margin-bottom: 8px; }
+
+.btn-add-key {
+  width: 100%; background: var(--primary-dim); color: var(--primary);
+  border: 1px solid rgba(50,215,75,0.4); padding: 12px; border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 6px; transition: all 0.2s; margin-bottom: 8px;
+}
+.btn-add-key:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-add-key:hover:not(:disabled) { background: rgba(50,215,75,0.25); }
+
+/* Keys adicionadas */
+.saved-keys { margin-top: 12px; }
+.saved-key-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #000; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 14px; margin-bottom: 6px;
+}
+.saved-key-item.active-key { border-color: var(--primary); }
+.key-info { font-size: 12px; font-family: var(--font-mono); color: var(--text-muted); }
+.key-info span { color: var(--primary); font-weight: 700; }
+.key-remove { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; padding: 2px 6px; }
+.btn-use-key { background: var(--primary-dim); color: var(--primary); border: 1px solid var(--primary); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; cursor: pointer; }
+
+.btn-start-app {
   width: 100%; background: var(--primary); color: #000;
   border: none; padding: 18px; border-radius: var(--radius-lg);
   font-size: 16px; font-weight: 800; cursor: pointer;
   display: flex; justify-content: center; align-items: center; gap: 8px;
-  transition: all 0.2s; margin-bottom: 12px;
+  transition: all 0.2s; margin-top: 16px;
 }
-.btn-connect:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-connect:active { transform: scale(0.98); }
+.btn-start-app:active { transform: scale(0.98); }
+.btn-start-app:disabled { opacity: 0.5; cursor: not-allowed; }
 .apikey-skip { width: 100%; background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; padding: 8px; text-decoration: underline; }
+
+.api-priority-info {
+  background: rgba(10,132,255,0.1); border: 1px solid rgba(10,132,255,0.3);
+  border-radius: var(--radius-sm); padding: 12px; font-size: 12px; color: var(--text-muted);
+  margin-top: 12px; line-height: 1.5;
+}
+
+/* Settings */
 .apikey-change-btn {
   background: none; border: 1px solid var(--border); color: var(--text-muted);
   font-size: 11px; padding: 4px 10px; border-radius: 100px; cursor: pointer;
   display: flex; align-items: center; gap: 4px;
 }
-.apikey-change-btn:hover { border-color: var(--danger); color: var(--danger); }
-
+.apikey-change-btn:hover { border-color: var(--primary); color: var(--primary); }
 </style>
 </head>
 <body>
-<!-- TELA DE CONFIGURAÇÃO DA CHAVE -->
+
+<!-- ═══════════════════════════════════════════
+     TELA DE CONFIGURAÇÃO MULTI-API
+════════════════════════════════════════════ -->
 <div class="apikey-screen" id="apikeyScreen">
   <div class="apikey-logo">⚡</div>
-  <div class="apikey-title">Conectar IA Gratuita</div>
-  <div class="apikey-sub">Configure sua chave Groq gratuita<br>para ativar o Personal IA</div>
+  <div class="apikey-title">Conectar IA</div>
+  <div class="apikey-sub">Adicione uma ou mais chaves de API.<br>O app usa automaticamente a disponível.</div>
+
   <div class="apikey-box">
-    <div class="apikey-steps">
-      <div class="apikey-step">
-        <div class="step-num">1</div>
-        <div class="step-text">Acesse <a href="https://console.groq.com" target="_blank" class="step-link">console.groq.com</a> e crie uma conta gratuita</div>
-      </div>
-      <div class="apikey-step">
-        <div class="step-num">2</div>
-        <div class="step-text">No menu lateral clique em <strong>API Keys</strong> → <strong>Create API Key</strong></div>
-      </div>
-      <div class="apikey-step">
-        <div class="step-num">3</div>
-        <div class="step-text">Copie a chave gerada (começa com <span style="color:var(--primary);font-family:var(--font-mono);">gsk_</span>) e cole abaixo</div>
+    <!-- Abas dos provedores -->
+    <div class="api-tabs">
+      <button class="api-tab active" onclick="switchApiTab('groq',this)">Groq</button>
+      <button class="api-tab" onclick="switchApiTab('gemini',this)">Gemini</button>
+      <button class="api-tab" onclick="switchApiTab('openai',this)">OpenAI</button>
+      <button class="api-tab" onclick="switchApiTab('openrouter',this)">OpenRouter</button>
+    </div>
+
+    <!-- GROQ -->
+    <div class="api-provider-panel active" id="panel-groq">
+      <div class="api-card">
+        <div class="api-card-header">
+          <div class="api-card-name">🟢 Groq Cloud</div>
+          <span class="api-card-badge badge-free">GRÁTIS</span>
+        </div>
+        <div class="apikey-steps">
+          <div class="apikey-step"><div class="step-num">1</div><div class="step-text">Acesse <a href="https://console.groq.com" target="_blank" class="step-link">console.groq.com</a> e crie conta gratuita</div></div>
+          <div class="apikey-step"><div class="step-num">2</div><div class="step-text">Menu lateral → <strong>API Keys</strong> → <strong>Create API Key</strong></div></div>
+          <div class="apikey-step"><div class="step-num">3</div><div class="step-text">Copie a chave (começa com <span style="color:var(--primary);font-family:var(--font-mono);">gsk_</span>)</div></div>
+        </div>
+        <div class="apikey-input-wrap">
+          <input type="password" id="key-groq" class="apikey-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" oninput="validateKey('groq',this,'gsk_',20)">
+          <button class="apikey-eye" onclick="toggleVis('key-groq',this)"><i data-lucide="eye" size="16"></i></button>
+        </div>
+        <div id="msg-groq" style="display:none;font-size:12px;margin-bottom:8px;"></div>
+        <button class="btn-add-key" id="btn-groq" onclick="addKey('groq')" disabled>+ Adicionar Chave Groq</button>
       </div>
     </div>
-    <div class="apikey-input-wrap">
-      <input type="password" id="apikeyInput" class="apikey-input"
-        placeholder="gsk_xxxxxxxxxxxxxxxxxxxx"
-        oninput="validateKeyInput(this)">
-      <button class="apikey-eye" onclick="toggleKeyVisibility()" id="eyeBtn">
-        <i data-lucide="eye" size="18"></i>
-      </button>
+
+    <!-- GEMINI -->
+    <div class="api-provider-panel" id="panel-gemini">
+      <div class="api-card">
+        <div class="api-card-header">
+          <div class="api-card-name">🔵 Google Gemini</div>
+          <span class="api-card-badge badge-free">GRÁTIS</span>
+        </div>
+        <div class="apikey-steps">
+          <div class="apikey-step"><div class="step-num">1</div><div class="step-text">Acesse <a href="https://aistudio.google.com/app/apikey" target="_blank" class="step-link">aistudio.google.com</a></div></div>
+          <div class="apikey-step"><div class="step-num">2</div><div class="step-text">Clique em <strong>Create API Key</strong> → selecione um projeto</div></div>
+          <div class="apikey-step"><div class="step-num">3</div><div class="step-text">Copie a chave (começa com <span style="color:var(--primary);font-family:var(--font-mono);">AIza</span>)</div></div>
+        </div>
+        <div class="apikey-input-wrap">
+          <input type="password" id="key-gemini" class="apikey-input" placeholder="AIzaSyxxxxxxxxxxxxxxxxxx" oninput="validateKey('gemini',this,'AIza',30)">
+          <button class="apikey-eye" onclick="toggleVis('key-gemini',this)"><i data-lucide="eye" size="16"></i></button>
+        </div>
+        <div id="msg-gemini" style="display:none;font-size:12px;margin-bottom:8px;"></div>
+        <button class="btn-add-key" id="btn-gemini" onclick="addKey('gemini')" disabled>+ Adicionar Chave Gemini</button>
+      </div>
     </div>
-    <div class="apikey-error" id="apikeyError">Chave inválida. Deve começar com gsk_</div>
-    <button class="btn-connect" id="btnConnect" onclick="connectGroqKey()" disabled>
-      <span id="connectText">Conectar IA</span>
-      <div class="loader" id="connectLoader" style="border-color:rgba(0,0,0,0.2);border-left-color:#000;"></div>
+
+    <!-- OPENAI -->
+    <div class="api-provider-panel" id="panel-openai">
+      <div class="api-card">
+        <div class="api-card-header">
+          <div class="api-card-name">⚫ OpenAI</div>
+          <span class="api-card-badge badge-premium">PAGO</span>
+        </div>
+        <div class="apikey-steps">
+          <div class="apikey-step"><div class="step-num">1</div><div class="step-text">Acesse <a href="https://platform.openai.com/api-keys" target="_blank" class="step-link">platform.openai.com/api-keys</a></div></div>
+          <div class="apikey-step"><div class="step-num">2</div><div class="step-text">Clique em <strong>Create new secret key</strong></div></div>
+          <div class="apikey-step"><div class="step-num">3</div><div class="step-text">Copie a chave (começa com <span style="color:var(--primary);font-family:var(--font-mono);">sk-</span>)</div></div>
+        </div>
+        <div class="apikey-input-wrap">
+          <input type="password" id="key-openai" class="apikey-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" oninput="validateKey('openai',this,'sk-',20)">
+          <button class="apikey-eye" onclick="toggleVis('key-openai',this)"><i data-lucide="eye" size="16"></i></button>
+        </div>
+        <div id="msg-openai" style="display:none;font-size:12px;margin-bottom:8px;"></div>
+        <button class="btn-add-key" id="btn-openai" onclick="addKey('openai')" disabled>+ Adicionar Chave OpenAI</button>
+      </div>
+    </div>
+
+    <!-- OPENROUTER -->
+    <div class="api-provider-panel" id="panel-openrouter">
+      <div class="api-card">
+        <div class="api-card-header">
+          <div class="api-card-name">🟣 OpenRouter</div>
+          <span class="api-card-badge badge-free">FREE+PAGO</span>
+        </div>
+        <div class="apikey-steps">
+          <div class="apikey-step"><div class="step-num">1</div><div class="step-text">Acesse <a href="https://openrouter.ai/keys" target="_blank" class="step-link">openrouter.ai/keys</a> e crie conta</div></div>
+          <div class="apikey-step"><div class="step-num">2</div><div class="step-text">Clique em <strong>Create Key</strong> (tem modelos gratuitos!)</div></div>
+          <div class="apikey-step"><div class="step-num">3</div><div class="step-text">Copie a chave (começa com <span style="color:var(--primary);font-family:var(--font-mono);">sk-or-</span>)</div></div>
+        </div>
+        <div class="apikey-input-wrap">
+          <input type="password" id="key-openrouter" class="apikey-input" placeholder="sk-or-xxxxxxxxxxxxxxxxxxxx" oninput="validateKey('openrouter',this,'sk-or-',20)">
+          <button class="apikey-eye" onclick="toggleVis('key-openrouter',this)"><i data-lucide="eye" size="16"></i></button>
+        </div>
+        <div id="msg-openrouter" style="display:none;font-size:12px;margin-bottom:8px;"></div>
+        <button class="btn-add-key" id="btn-openrouter" onclick="addKey('openrouter')" disabled>+ Adicionar Chave OpenRouter</button>
+      </div>
+    </div>
+
+    <!-- Lista de chaves salvas -->
+    <div class="saved-keys" id="savedKeysList"></div>
+
+    <div class="api-priority-info">
+      💡 <strong>Fallback automático:</strong> Se uma API falhar, o app tenta automaticamente a próxima. Adicione várias para máxima estabilidade.
+    </div>
+
+    <button class="btn-start-app" id="btnStartApp" onclick="startApp()">
+      ⚡ Iniciar FitPlan AI
     </button>
     <button class="apikey-skip" onclick="skipApiKey()">Continuar sem IA (modo demo)</button>
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     APP PRINCIPAL
+════════════════════════════════════════════ -->
 <div class="app-container">
 
   <!-- HEADER -->
@@ -468,31 +542,18 @@ body {
     <div class="brand-box">
       <i data-lucide="activity" class="brand-icon"></i>
       <span class="brand-name">FitPlan</span>
-      <span class="brand-badge">PRO</span>
+      <span class="brand-badge">AI</span>
     </div>
     <div class="header-right">
       <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount">0</span></div>
-      <button class="header-pro-btn" onclick="openPaywall()">⚡ PRO</button>
+      <div class="api-status connecting" id="apiStatusBadge" onclick="openModal('modalSettings')">
+        <div class="api-dot"></div>
+        <span id="apiStatusText">IA</span>
+      </div>
       <i data-lucide="bell" style="color:var(--text-muted);cursor:pointer;width:20px;" onclick="openModal('modalNotif')"></i>
-      <i data-lucide="settings" style="color:var(--text-muted);cursor:pointer;width:20px;" onclick="toggleSettings()"></i>
+      <i data-lucide="settings" style="color:var(--text-muted);cursor:pointer;width:20px;" onclick="openModal('modalSettings')"></i>
     </div>
   </header>
-
-  <!-- SETTINGS -->
-  <div class="card" id="settingsPanel" style="display:none; border:1px solid var(--secondary);">
-    <div class="section-title"><i data-lucide="cpu" size="16"></i> Diretrizes Base da IA</div>
-    <textarea id="aiDirectives" class="input-control" rows="3" placeholder="Ex: Evitar lactose. Focar em hipertrofia dos glúteos..."></textarea>
-    <button class="btn-secondary" style="margin-top:12px;width:100%;" onclick="saveSettings()">Salvar Preferências</button>
-    <div class="divider"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div>
-        <div style="font-size:13px;font-weight:600;">Chave Groq</div>
-        <div id="keyStatusText" style="font-size:11px;color:var(--text-muted);margin-top:2px;">Carregando...</div>
-      </div>
-      <button class="apikey-change-btn" onclick="changeApiKey()"><i data-lucide="key" size="12"></i> Trocar</button>
-    </div>
-
-  </div>
 
   <!-- PERFIL -->
   <div class="card" id="profileForm">
@@ -502,9 +563,9 @@ body {
       <input type="text" id="userName" class="input-control" placeholder="Seu nome">
     </div>
     <div class="grid-3">
-      <div class="input-group"><label>Idade</label><input type="number" id="userAge" class="input-control" value="25"></div>
-      <div class="input-group"><label>Peso (kg)</label><input type="number" id="userWeight" class="input-control" value="75"></div>
-      <div class="input-group"><label>Altura (cm)</label><input type="number" id="userHeight" class="input-control" value="175"></div>
+      <div class="input-group"><label>Idade</label><input type="number" id="userAge" class="input-control" value="25" min="10" max="100"></div>
+      <div class="input-group"><label>Peso (kg)</label><input type="number" id="userWeight" class="input-control" value="75" min="30" max="300"></div>
+      <div class="input-group"><label>Altura (cm)</label><input type="number" id="userHeight" class="input-control" value="175" min="100" max="250"></div>
     </div>
     <div class="section-title" style="margin-top:6px;"><i data-lucide="target" size="16"></i> Foco Principal</div>
     <div class="chips-wrapper" id="objectiveChips">
@@ -548,7 +609,7 @@ body {
       </div>
     </div>
 
-    <!-- TAB: TREINO (PERIODIZADO) -->
+    <!-- TAB: TREINO -->
     <div id="tab-workout" class="tab-content card">
       <div class="section-title"><i data-lucide="calendar" size="16"></i> Plano Periodizado — 4 Semanas</div>
       <div class="week-tabs" id="weekTabs">
@@ -572,7 +633,7 @@ body {
       <div id="dietContent"></div>
     </div>
 
-    <!-- TAB: SCANNER DE PRATO -->
+    <!-- TAB: SCANNER -->
     <div id="tab-scanner" class="tab-content card">
       <div class="section-title"><i data-lucide="scan" size="16"></i> Scanner de Prato com IA</div>
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Tire uma foto do seu prato e a IA estima as calorias e macros na hora.</p>
@@ -580,14 +641,6 @@ body {
         <div style="font-size:36px;margin-bottom:8px;">📸</div>
         <div style="font-weight:700;font-size:15px;">Toque para fotografar o prato</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">JPG, PNG ou tirar foto agora</div>
-      </div>
-      <div class="pro-locked-banner" id="scannerBanner" onclick="openPaywall()" style="display:none;">
-        <span style="font-size:28px;">🔒</span>
-        <div>
-          <div style="font-weight:700;font-size:14px;">Recurso PRO</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Scanner ilimitado disponível no plano PRO</div>
-        </div>
-        <span class="pro-badge-pill">PRO</span>
       </div>
       <input type="file" id="scannerInput" accept="image/*" capture="environment" style="display:none;" onchange="scanFood(event)">
       <img id="scannerPreview" class="scanner-preview">
@@ -598,7 +651,6 @@ body {
     <div id="tab-progress" class="tab-content card">
       <div class="section-title"><i data-lucide="bar-chart-2" size="16"></i> Evolução de Carga</div>
       <div class="chart-container"><canvas id="progressChart"></canvas></div>
-
       <div class="divider"></div>
       <div class="section-title"><i data-lucide="camera" size="16"></i> Foto de Progresso + Análise IA</div>
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Envie uma foto e receba análise visual da sua evolução.</p>
@@ -607,21 +659,11 @@ body {
         <div style="font-weight:700;font-size:15px;">Enviar foto do corpo</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">IA analisa sua composição corporal</div>
       </div>
-      <div class="pro-locked-banner" id="photoBanner" onclick="openPaywall()" style="display:none;">
-        <span style="font-size:28px;">🔒</span>
-        <div>
-          <div style="font-weight:700;font-size:14px;">Recurso PRO</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Análise corporal disponível no plano PRO</div>
-        </div>
-        <span class="pro-badge-pill">PRO</span>
-      </div>
       <input type="file" id="photoInput" accept="image/*" capture="user" style="display:none;" onchange="analyzePhoto(event)">
       <img id="photoPreview" class="photo-preview">
       <div id="photoAiResult" class="ai-photo-result"></div>
-
       <div class="divider"></div>
       <button class="btn-secondary" style="width:100%;border-color:var(--danger);color:var(--danger);" onclick="clearHistory()">Resetar Diário de Cargas</button>
-
       <div class="divider"></div>
       <div class="section-title"><i data-lucide="file-text" size="16"></i> Relatório Mensal</div>
       <div id="monthlyReport"></div>
@@ -636,52 +678,9 @@ body {
 </div>
 
 <!-- TOAST -->
-
-<!-- PAYWALL -->
-<div class="paywall-overlay" id="paywallOverlay">
-  <div class="paywall-sheet">
-    <div class="paywall-handle"></div>
-    <div class="paywall-crown">👑</div>
-    <div class="paywall-title">FitPlan PRO</div>
-    <div class="paywall-sub">Desbloqueie tudo e transforme seu corpo<br>mais rápido com IA ilimitada</div>
-
-    <div class="plans-row">
-      <div class="plan-card" id="planMonthly" onclick="selectPlan('monthly')">
-        <div class="plan-name">Mensal</div>
-        <div class="plan-price">R$19<span style="font-size:16px">,90</span></div>
-        <div class="plan-period">por mês</div>
-      </div>
-      <div class="plan-card popular-card selected" id="planAnnual" onclick="selectPlan('annual')">
-        <div class="popular-tag">🔥 Mais Popular</div>
-        <div class="plan-name">Anual</div>
-        <div class="plan-price">R$9<span style="font-size:16px">,90</span></div>
-        <div class="plan-period">por mês</div>
-        <div class="plan-save">Economize 50%</div>
-      </div>
-    </div>
-
-    <div class="features-list">
-      <div class="feature-row"><span class="check">✅</span> Planos ilimitados com IA</div>
-      <div class="feature-row"><span class="check">✅</span> Periodização 4 semanas automática</div>
-      <div class="feature-row"><span class="check">✅</span> Scanner de prato ilimitado</div>
-      <div class="feature-row"><span class="check">✅</span> Análise de foto corporal</div>
-      <div class="feature-row"><span class="check">✅</span> Check-in semanal com ajuste de IA</div>
-      <div class="feature-row"><span class="check">✅</span> Relatório PDF mensal</div>
-      <div class="feature-row"><span class="check">✅</span> Chat com personal IA ilimitado</div>
-      <div class="feature-row"><span class="check">✅</span> Sem anúncios</div>
-    </div>
-
-    <button class="btn-upgrade" id="btnUpgrade" onclick="handleUpgrade()">
-      ⚡ Começar PRO Agora
-    </button>
-    <button class="btn-restore" onclick="restorePurchase()">Restaurar compra</button>
-    <div class="paywall-guarantee">🔒 Pagamento seguro • Cancele quando quiser</div>
-  </div>
-</div>
-
 <div class="toast" id="toastMsg"></div>
 
-<!-- MODAL: CHECK-IN SEMANAL -->
+<!-- MODAL: CHECK-IN -->
 <div class="modal-overlay" id="modalCheckin">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modalCheckin')">×</button>
@@ -724,10 +723,7 @@ body {
     <div class="modal-title">Notificações</div>
     <div class="modal-sub">Configure seus lembretes de treino</div>
     <div class="notif-row">
-      <div>
-        <div class="notif-label">Lembrete de Treino</div>
-        <div class="notif-sub">Notificação diária no horário escolhido</div>
-      </div>
+      <div><div class="notif-label">Lembrete de Treino</div><div class="notif-sub">Notificação diária no horário escolhido</div></div>
       <div class="toggle-switch" id="toggleTreino" onclick="toggleNotif('treino')"><div class="toggle-knob"></div></div>
     </div>
     <div class="notif-row" style="padding-top:16px;">
@@ -735,121 +731,511 @@ body {
       <input type="time" id="notifTime" class="input-control" style="width:130px;padding:8px 12px;" value="07:00">
     </div>
     <div class="notif-row">
-      <div>
-        <div class="notif-label">Lembrete de Hidratação</div>
-        <div class="notif-sub">A cada 2h durante o dia</div>
-      </div>
+      <div><div class="notif-label">Lembrete de Hidratação</div><div class="notif-sub">A cada 2h durante o dia</div></div>
       <div class="toggle-switch" id="toggleAgua" onclick="toggleNotif('agua')"><div class="toggle-knob"></div></div>
     </div>
     <div class="notif-row">
-      <div>
-        <div class="notif-label">Check-in Semanal</div>
-        <div class="notif-sub">Todo domingo para revisar o plano</div>
-      </div>
+      <div><div class="notif-label">Check-in Semanal</div><div class="notif-sub">Todo domingo para revisar o plano</div></div>
       <div class="toggle-switch on" id="toggleCheckin" onclick="toggleNotif('checkin')"><div class="toggle-knob"></div></div>
     </div>
     <button class="btn-main" onclick="saveNotifSettings()" style="margin-top:16px;">Salvar Configurações</button>
   </div>
 </div>
 
-<script>
-// ─── API GROQ ───
-const GROQ_API_KEY = [[103,115,107,95,119,112,98,56],[77,90,73,104,87,87,112,51],[100,112,114,67,122,106,80,52],[87,71,100,121,98,51,70,89],[104,100,117,74,84,65,107,114],[116,87,78,102,100,77,56,73],[90,101,105,70,102,86,119,73]].map(a=>a.map(c=>String.fromCharCode(c)).join("")).join("");
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+<!-- MODAL: CONFIGURAÇÕES (API) -->
+<div class="modal-overlay" id="modalSettings">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalSettings')">×</button>
+    <div class="modal-title">Configurações</div>
+    <div class="modal-sub">Gerencie suas chaves de API e preferências</div>
 
-async function callGroq(messages, maxTokens) {
-  maxTokens = maxTokens || 4096;
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 35000);
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getActiveGroqKey() },
-        body: JSON.stringify({ model: GROQ_MODEL, messages: messages, max_tokens: maxTokens, temperature: 0.7 }),
-        signal: controller.signal
-      });
-      clearTimeout(tid);
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const msg = (err.error && err.error.message) || ("HTTP " + res.status);
-        if (res.status === 429 && attempt < 3) {
-          showToast("⏳ Limite atingido, aguardando...");
-          await sleep(2500 * attempt);
-          continue;
+    <div class="section-title" style="margin-top:0;"><i data-lucide="cpu" size="14"></i> Diretrizes da IA</div>
+    <textarea id="aiDirectives" class="input-control" rows="2" placeholder="Ex: Evitar lactose. Focar em glúteos..."></textarea>
+    <button class="btn-secondary" style="margin-top:8px;width:100%;" onclick="saveDirectives()">Salvar Diretrizes</button>
+
+    <div class="divider"></div>
+    <div class="section-title"><i data-lucide="key" size="14"></i> Chaves de API Salvas</div>
+    <div id="modalKeysList"></div>
+    <button class="btn-secondary" style="width:100%;margin-top:8px;" onclick="closeModal('modalSettings');openApiKeyScreen()">
+      <i data-lucide="plus" size="14"></i> Adicionar Nova Chave
+    </button>
+
+    <div class="divider"></div>
+    <div style="background:#000;border-radius:var(--radius-md);padding:12px;font-size:12px;color:var(--text-muted);">
+      <div style="font-weight:700;margin-bottom:6px;color:var(--text-main);">🔄 Prioridade de Fallback</div>
+      <div id="fallbackOrder"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  SISTEMA MULTI-API COM FALLBACK AUTOMÁTICO
+// ══════════════════════════════════════════════════════
+
+// Configuração dos provedores
+var API_PROVIDERS = {
+  groq: {
+    name: "Groq",
+    prefix: "gsk_",
+    minLen: 20,
+    textModel: "llama-3.3-70b-versatile",
+    visionModel: "meta-llama/llama-4-scout-17b-16e-instruct",
+    endpoint: "https://api.groq.com/openai/v1/chat/completions",
+    buildHeaders: function(key) { return { "Content-Type":"application/json","Authorization":"Bearer "+key }; },
+    buildBody: function(messages, maxTokens, model) {
+      return JSON.stringify({ model: model, messages: messages, max_tokens: maxTokens, temperature: 0.7 });
+    },
+    extractText: function(data) { return data.choices && data.choices[0] && data.choices[0].message.content; },
+    supportsVision: true
+  },
+  gemini: {
+    name: "Gemini",
+    prefix: "AIza",
+    minLen: 30,
+    textModel: "gemini-1.5-flash",
+    visionModel: "gemini-1.5-flash",
+    endpoint: null, // dinâmico
+    buildHeaders: function(key) { return { "Content-Type":"application/json" }; },
+    buildBody: function(messages, maxTokens, model, isVision) {
+      var parts = [];
+      messages.forEach(function(m) {
+        if (typeof m.content === "string") {
+          parts.push({ text: m.content });
+        } else if (Array.isArray(m.content)) {
+          m.content.forEach(function(c) {
+            if (c.type === "text") parts.push({ text: c.text });
+            if (c.type === "image_url" && c.image_url) {
+              var url = c.image_url.url || "";
+              if (url.startsWith("data:")) {
+                var parts2 = url.split(",");
+                var mime = parts2[0].split(":")[1].split(";")[0];
+                parts.push({ inline_data: { mime_type: mime, data: parts2[1] } });
+              }
+            }
+          });
         }
-        throw new Error(msg);
-      }
-      const data = await res.json();
-      if (!data.choices || !data.choices[0]) throw new Error("Resposta inválida da IA.");
-      return data.choices[0].message.content;
-    } catch (e) {
-      if (e.name === "AbortError") {
-        if (attempt < 3) { showToast("⏳ Tentando novamente... (" + attempt + "/3)"); await sleep(1500); continue; }
-        throw new Error("A IA demorou demais. Verifique sua internet.");
-      }
-      if (attempt === 3) throw e;
-      await sleep(1500 * attempt);
-    }
+      });
+      return JSON.stringify({ contents: [{ parts: parts }], generationConfig: { maxOutputTokens: maxTokens } });
+    },
+    extractText: function(data) {
+      return data.candidates && data.candidates[0] && data.candidates[0].content &&
+             data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
+             data.candidates[0].content.parts[0].text;
+    },
+    getEndpoint: function(key, model) {
+      return "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key;
+    },
+    supportsVision: true
+  },
+  openai: {
+    name: "OpenAI",
+    prefix: "sk-",
+    minLen: 20,
+    textModel: "gpt-4o-mini",
+    visionModel: "gpt-4o-mini",
+    endpoint: "https://api.openai.com/v1/chat/completions",
+    buildHeaders: function(key) { return { "Content-Type":"application/json","Authorization":"Bearer "+key }; },
+    buildBody: function(messages, maxTokens, model) {
+      return JSON.stringify({ model: model, messages: messages, max_tokens: maxTokens });
+    },
+    extractText: function(data) { return data.choices && data.choices[0] && data.choices[0].message.content; },
+    supportsVision: true
+  },
+  openrouter: {
+    name: "OpenRouter",
+    prefix: "sk-or-",
+    minLen: 20,
+    textModel: "meta-llama/llama-3.1-8b-instruct:free",
+    visionModel: "meta-llama/llama-3.2-11b-vision-instruct:free",
+    endpoint: "https://openrouter.ai/api/v1/chat/completions",
+    buildHeaders: function(key) { return { "Content-Type":"application/json","Authorization":"Bearer "+key,"HTTP-Referer":"https://fitplan.ai","X-Title":"FitPlan AI" }; },
+    buildBody: function(messages, maxTokens, model) {
+      return JSON.stringify({ model: model, messages: messages, max_tokens: maxTokens });
+    },
+    extractText: function(data) { return data.choices && data.choices[0] && data.choices[0].message.content; },
+    supportsVision: true
+  }
+};
+
+// Chaves salvas: { provider: [key1, key2, ...] }
+var savedKeys = {};
+var activeProvider = null;
+var activeKey = null;
+
+// ── Carregar chaves salvas ──
+function loadKeys() {
+  var saved = localStorage.getItem("fp_multi_keys");
+  if (saved) {
+    try { savedKeys = JSON.parse(saved); }
+    catch(e) { savedKeys = {}; }
+  }
+  // Migração: chave antiga Groq
+  var oldKey = localStorage.getItem("fp_groq_key");
+  if (oldKey && oldKey.startsWith("gsk_")) {
+    if (!savedKeys.groq) savedKeys.groq = [];
+    if (savedKeys.groq.indexOf(oldKey) === -1) savedKeys.groq.push(oldKey);
+    localStorage.removeItem("fp_groq_key");
+    saveAllKeys();
   }
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function saveAllKeys() {
+  localStorage.setItem("fp_multi_keys", JSON.stringify(savedKeys));
+}
 
-// ─── ESTADO GLOBAL ───
-let currentObjective = "Hipertrofia";
-let chatHistory = [];
-let weightHistory = [];
-let evolutionChartInstance = null;
-let rawAIText = "";
-let weekPlans = { 1: "", 2: "", 3: "", 4: "" };
-let currentWeek = 1;
-let personalRecords = {};
-let checkinData = {};
-let streakDays = 0;
-let lastTrainDate = "";
+// ── Seleciona o provedor/chave ativo ──
+function selectBestProvider() {
+  var priority = ["groq","gemini","openrouter","openai"];
+  for (var i = 0; i < priority.length; i++) {
+    var prov = priority[i];
+    if (savedKeys[prov] && savedKeys[prov].length > 0) {
+      activeProvider = prov;
+      activeKey = savedKeys[prov][0];
+      return true;
+    }
+  }
+  activeProvider = null;
+  activeKey = null;
+  return false;
+}
 
-// ─── INIT ───
+function hasAnyKey() {
+  return Object.keys(savedKeys).some(function(p) { return savedKeys[p] && savedKeys[p].length > 0; });
+}
+
+// ── Chamada Universal à API com Fallback ──
+async function callAI(messages, maxTokens, needsVision) {
+  maxTokens = maxTokens || 4096;
+  var priority = ["groq","gemini","openrouter","openai"];
+  var errors = [];
+
+  for (var i = 0; i < priority.length; i++) {
+    var prov = priority[i];
+    if (!savedKeys[prov] || savedKeys[prov].length === 0) continue;
+    if (needsVision && !API_PROVIDERS[prov].supportsVision) continue;
+
+    for (var j = 0; j < savedKeys[prov].length; j++) {
+      var key = savedKeys[prov][j];
+      try {
+        var result = await callProvider(prov, key, messages, maxTokens, needsVision);
+        // Sucesso: atualiza status
+        activeProvider = prov;
+        activeKey = key;
+        updateApiStatus("online", API_PROVIDERS[prov].name);
+        return result;
+      } catch(e) {
+        errors.push(API_PROVIDERS[prov].name + ": " + e.message);
+        // Tenta próxima chave do mesmo provedor
+        continue;
+      }
+    }
+  }
+
+  updateApiStatus("offline", "Erro");
+  throw new Error("Todos os provedores falharam.\n" + errors.join("\n"));
+}
+
+async function callProvider(provName, key, messages, maxTokens, needsVision) {
+  var prov = API_PROVIDERS[provName];
+  var model = needsVision ? prov.visionModel : prov.textModel;
+  var endpoint = prov.endpoint;
+
+  if (provName === "gemini") {
+    endpoint = prov.getEndpoint(key, model);
+  }
+
+  var controller = new AbortController();
+  var tid = setTimeout(function() { controller.abort(); }, 40000);
+
+  var res;
+  try {
+    var headers = prov.buildHeaders(key);
+    var body = prov.buildBody(messages, maxTokens, model, needsVision);
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: headers,
+      body: body,
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(tid);
+  }
+
+  var data;
+  try { data = await res.json(); }
+  catch(e) { throw new Error("Resposta inválida do servidor"); }
+
+  if (!res.ok) {
+    var errMsg = (data.error && (data.error.message || data.error)) || ("HTTP " + res.status);
+    // Rate limit: espera e retry
+    if (res.status === 429) {
+      await sleep(2000);
+      throw new Error("Rate limit: " + errMsg);
+    }
+    throw new Error(errMsg);
+  }
+
+  var text = prov.extractText(data);
+  if (!text || text.trim().length < 3) throw new Error("Resposta vazia");
+  return text.trim();
+}
+
+// ── Teste de chave ──
+async function testKey(provName, key) {
+  var testMessages = [{ role: "user", content: "ok" }];
+  await callProvider(provName, key, testMessages, 5, false);
+  return true;
+}
+
+function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+
+// ══════════════════════════════════════════════════════
+//  UI DA TELA DE API KEYS
+// ══════════════════════════════════════════════════════
+
+var currentApiTab = "groq";
+var keyVisibility = {};
+
+function switchApiTab(tab, btn) {
+  currentApiTab = tab;
+  document.querySelectorAll(".api-provider-panel").forEach(function(p){ p.classList.remove("active"); });
+  document.querySelectorAll(".api-tab").forEach(function(b){ b.classList.remove("active"); });
+  document.getElementById("panel-" + tab).classList.add("active");
+  if (btn) btn.classList.add("active");
+}
+
+function validateKey(provName, input, prefix, minLen) {
+  var val = input.value.trim();
+  var btn = document.getElementById("btn-" + provName);
+  var msg = document.getElementById("msg-" + provName);
+  if (val.length === 0) {
+    input.className = "apikey-input";
+    btn.disabled = true;
+    msg.style.display = "none";
+  } else if (val.startsWith(prefix) && val.length >= minLen) {
+    input.className = "apikey-input valid";
+    btn.disabled = false;
+    msg.style.display = "none";
+  } else {
+    input.className = "apikey-input invalid";
+    btn.disabled = true;
+    msg.style.display = "block";
+    msg.style.color = "var(--danger)";
+    msg.innerText = "Chave deve começar com \"" + prefix + "\" e ter pelo menos " + minLen + " caracteres";
+  }
+}
+
+function toggleVis(inputId, btn) {
+  var input = document.getElementById(inputId);
+  keyVisibility[inputId] = !keyVisibility[inputId];
+  input.type = keyVisibility[inputId] ? "text" : "password";
+  btn.innerHTML = keyVisibility[inputId]
+    ? '<i data-lucide="eye-off" size="16"></i>'
+    : '<i data-lucide="eye" size="16"></i>';
+  lucide.createIcons();
+}
+
+async function addKey(provName) {
+  var input = document.getElementById("key-" + provName);
+  var key = input.value.trim();
+  var btn = document.getElementById("btn-" + provName);
+  var msg = document.getElementById("msg-" + provName);
+
+  if (!key) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader-white"></span> Testando...';
+  msg.style.display = "none";
+
+  try {
+    await testKey(provName, key);
+
+    if (!savedKeys[provName]) savedKeys[provName] = [];
+    if (savedKeys[provName].indexOf(key) === -1) {
+      savedKeys[provName].push(key);
+      saveAllKeys();
+    }
+
+    input.value = "";
+    input.className = "apikey-input";
+    msg.style.display = "block";
+    msg.style.color = "var(--primary)";
+    msg.innerText = "✅ Chave adicionada com sucesso!";
+    renderSavedKeysList();
+    updateStartButton();
+    showToast("✅ " + API_PROVIDERS[provName].name + " conectado!");
+  } catch(e) {
+    msg.style.display = "block";
+    msg.style.color = "var(--danger)";
+    msg.innerText = "❌ " + (e.message || "Chave inválida");
+    input.className = "apikey-input invalid";
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "+ Adicionar Chave " + API_PROVIDERS[provName].name;
+    validateKey(provName, input, API_PROVIDERS[provName].prefix, API_PROVIDERS[provName].minLen);
+  }
+}
+
+function renderSavedKeysList() {
+  var container = document.getElementById("savedKeysList");
+  if (!container) return;
+  container.innerHTML = "";
+  var total = 0;
+  Object.keys(savedKeys).forEach(function(prov) {
+    if (!savedKeys[prov] || savedKeys[prov].length === 0) return;
+    savedKeys[prov].forEach(function(key, idx) {
+      total++;
+      var masked = key.substring(0, 8) + "••••••••••";
+      var isActive = (prov === activeProvider && key === activeKey);
+      var div = document.createElement("div");
+      div.className = "saved-key-item" + (isActive ? " active-key" : "");
+      div.innerHTML =
+        "<div class='key-info'><span>" + API_PROVIDERS[prov].name + "</span> — " + masked + "</div>" +
+        "<div style='display:flex;gap:6px;align-items:center;'>" +
+        (isActive ? "<span style='font-size:10px;color:var(--primary);font-weight:700;'>ATIVO</span>" : "") +
+        "<button class='key-remove' onclick='removeKey(\""+prov+"\","+idx+")' title='Remover'>🗑</button>" +
+        "</div>";
+      container.appendChild(div);
+    });
+  });
+  if (total === 0) {
+    container.innerHTML = "<p style='font-size:13px;color:var(--text-muted);text-align:center;padding:12px 0;'>Nenhuma chave adicionada ainda</p>";
+  }
+}
+
+function removeKey(provName, idx) {
+  if (!confirm("Remover esta chave?")) return;
+  savedKeys[provName].splice(idx, 1);
+  saveAllKeys();
+  selectBestProvider();
+  renderSavedKeysList();
+  updateStartButton();
+  updateApiStatus(hasAnyKey() ? "online" : "offline", hasAnyKey() ? activeProvider : "Sem IA");
+}
+
+function updateStartButton() {
+  var btn = document.getElementById("btnStartApp");
+  if (!btn) return;
+  btn.disabled = !hasAnyKey();
+  btn.innerText = hasAnyKey() ? "⚡ Iniciar FitPlan AI" : "Adicione pelo menos 1 chave";
+}
+
+function startApp() {
+  if (!hasAnyKey()) { showToast("Adicione pelo menos uma chave de API!"); return; }
+  selectBestProvider();
+  hideApiKeyScreen();
+  updateApiStatus("online", API_PROVIDERS[activeProvider].name);
+  showToast("✅ " + API_PROVIDERS[activeProvider].name + " ativo!");
+}
+
+function skipApiKey() {
+  hideApiKeyScreen();
+  updateApiStatus("offline", "Demo");
+  showToast("⚠️ Modo demo ativo (sem IA)");
+}
+
+function hideApiKeyScreen() {
+  var s = document.getElementById("apikeyScreen");
+  s.classList.add("hidden");
+  setTimeout(function(){ s.style.display = "none"; }, 400);
+  document.body.style.overflow = "";
+}
+
+function openApiKeyScreen() {
+  var s = document.getElementById("apikeyScreen");
+  s.style.display = "flex";
+  s.classList.remove("hidden");
+  renderSavedKeysList();
+  updateStartButton();
+  document.body.style.overflow = "hidden";
+}
+
+function updateApiStatus(state, label) {
+  var badge = document.getElementById("apiStatusBadge");
+  var text = document.getElementById("apiStatusText");
+  if (!badge || !text) return;
+  badge.className = "api-status " + state;
+  text.innerText = label || "IA";
+}
+
+function initApiKey() {
+  loadKeys();
+  renderSavedKeysList();
+  updateStartButton();
+  if (hasAnyKey()) {
+    selectBestProvider();
+    hideApiKeyScreen();
+    updateApiStatus("online", API_PROVIDERS[activeProvider].name);
+  } else {
+    document.getElementById("apikeyScreen").style.display = "flex";
+    lucide.createIcons();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ══════════════════════════════════════════════════════
+var currentObjective = "Hipertrofia";
+var chatHistory = [];
+var weightHistory = [];
+var evolutionChartInstance = null;
+var rawAIText = "";
+var weekPlans = { 1: "", 2: "", 3: "", 4: "" };
+var currentWeek = 1;
+var personalRecords = {};
+var checkinData = {};
+var streakDays = 0;
+var lastTrainDate = "";
+
+// ── INIT ──
 window.onload = function() {
   lucide.createIcons();
 
-  const savedDirectives = localStorage.getItem("fp_directives");
-  if (savedDirectives) document.getElementById("aiDirectives").value = savedDirectives;
+  // Restaurar dados
+  var savedDirectives = localStorage.getItem("fp_directives");
+  if (savedDirectives) {
+    var el = document.getElementById("aiDirectives");
+    if (el) el.value = savedDirectives;
+  }
 
-  const savedHistory = localStorage.getItem("fp_weight_history");
+  var savedHistory = localStorage.getItem("fp_weight_history");
   weightHistory = savedHistory ? JSON.parse(savedHistory) : [
     { date: "10/05", totalLoad: 120 },
     { date: "12/05", totalLoad: 135 },
     { date: "14/05", totalLoad: 140 }
   ];
 
-  const savedPRs = localStorage.getItem("fp_prs");
-  if (savedPRs) personalRecords = JSON.parse(savedPRs);
+  var savedPRs = localStorage.getItem("fp_prs");
+  if (savedPRs) try { personalRecords = JSON.parse(savedPRs); } catch(e) {}
 
-  const savedStreak = localStorage.getItem("fp_streak");
+  var savedStreak = localStorage.getItem("fp_streak");
   if (savedStreak) {
-    const s = JSON.parse(savedStreak);
-    streakDays = s.days || 0;
-    lastTrainDate = s.lastDate || "";
+    try {
+      var s = JSON.parse(savedStreak);
+      streakDays = s.days || 0;
+      lastTrainDate = s.lastDate || "";
+    } catch(e) {}
   }
   updateStreakUI();
 
-  const notifSettings = localStorage.getItem("fp_notif");
+  var notifSettings = localStorage.getItem("fp_notif");
   if (notifSettings) {
-    const n = JSON.parse(notifSettings);
-    if (n.treino) document.getElementById("toggleTreino").classList.add("on");
-    if (!n.checkin) document.getElementById("toggleCheckin").classList.remove("on");
-    if (n.time) document.getElementById("notifTime").value = n.time;
+    try {
+      var n = JSON.parse(notifSettings);
+      if (n.treino) document.getElementById("toggleTreino").classList.add("on");
+      if (!n.checkin) document.getElementById("toggleCheckin").classList.remove("on");
+      if (n.time) document.getElementById("notifTime").value = n.time;
+    } catch(e) {}
   }
 
   initChart();
   renderTrophies();
   renderMonthlyReport();
-  initProState();
   initApiKey();
 };
 
-// ─── CHIPS OBJETIVO ───
+// ── CHIPS OBJETIVO ──
 document.querySelectorAll(".chip").forEach(function(chip) {
   chip.addEventListener("click", function() {
     document.querySelectorAll(".chip").forEach(function(c) { c.classList.remove("active"); });
@@ -858,112 +1244,204 @@ document.querySelectorAll(".chip").forEach(function(chip) {
   });
 });
 
-// ─── TABS ───
+// ── TABS ──
 function switchTab(tabId, btn) {
   document.querySelectorAll(".tab-content").forEach(function(el) { el.classList.remove("active"); });
   document.querySelectorAll(".tab-btn").forEach(function(el) { el.classList.remove("active"); });
-  document.getElementById(tabId).classList.add("active");
+  var target = document.getElementById(tabId);
+  if (target) target.classList.add("active");
   if (btn) btn.classList.add("active");
 }
 
-// ─── SETTINGS ───
-function toggleSettings() {
-  var p = document.getElementById("settingsPanel");
-  p.style.display = p.style.display === "none" ? "block" : "none";
-}
-function saveSettings() {
-  localStorage.setItem("fp_directives", document.getElementById("aiDirectives").value);
-  toggleSettings();
-  showToast("✅ Diretrizes salvas!");
-}
-
-// ─── TOAST ───
+// ── TOAST ──
 var toastTimer = null;
 function showToast(msg) {
   var t = document.getElementById("toastMsg");
+  if (!t) return;
   t.innerText = msg;
   t.classList.add("show");
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(function() { t.classList.remove("show"); }, 3500);
 }
 
-// ─── MODAL ───
+// ── MODAL ──
 function openModal(id) {
-  document.getElementById(id).classList.add("open");
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (id === "modalSettings") {
+    renderModalKeysList();
+    renderFallbackOrder();
+    var dir = document.getElementById("aiDirectives");
+    var saved = localStorage.getItem("fp_directives");
+    if (dir && saved) dir.value = saved;
+  }
+  el.classList.add("open");
   document.body.style.overflow = "hidden";
 }
 function closeModal(id) {
-  document.getElementById(id).classList.remove("open");
+  var el = document.getElementById(id);
+  if (el) el.classList.remove("open");
   document.body.style.overflow = "";
 }
 document.querySelectorAll(".modal-overlay").forEach(function(m) {
   m.addEventListener("click", function(e) { if (e.target === m) closeModal(m.id); });
 });
 
-// ─── GERAR PLANO PRINCIPAL ───
+function saveDirectives() {
+  var el = document.getElementById("aiDirectives");
+  if (el) localStorage.setItem("fp_directives", el.value);
+  showToast("✅ Diretrizes salvas!");
+}
+
+function renderModalKeysList() {
+  var el = document.getElementById("modalKeysList");
+  if (!el) return;
+  el.innerHTML = "";
+  var total = 0;
+  Object.keys(savedKeys).forEach(function(prov) {
+    if (!savedKeys[prov] || savedKeys[prov].length === 0) return;
+    savedKeys[prov].forEach(function(key, idx) {
+      total++;
+      var isActive = (prov === activeProvider && key === activeKey);
+      var masked = key.substring(0,8) + "••••••";
+      var div = document.createElement("div");
+      div.className = "saved-key-item" + (isActive ? " active-key" : "");
+      div.innerHTML =
+        "<div class='key-info'><span>" + API_PROVIDERS[prov].name + "</span> — " + masked + "</div>" +
+        "<div style='display:flex;gap:6px;align-items:center;'>" +
+        (isActive ? "<span style='font-size:10px;color:var(--primary);font-weight:700;'>ATIVO</span>" : "") +
+        "<button class='key-remove' onclick='removeKeyModal(\""+prov+"\","+idx+")'  title='Remover'>🗑</button>" +
+        "</div>";
+      el.appendChild(div);
+    });
+  });
+  if (total === 0) {
+    el.innerHTML = "<p style='font-size:13px;color:var(--text-muted);'>Nenhuma chave configurada.</p>";
+  }
+}
+
+function removeKeyModal(provName, idx) {
+  if (!confirm("Remover esta chave?")) return;
+  savedKeys[provName].splice(idx, 1);
+  saveAllKeys();
+  selectBestProvider();
+  renderModalKeysList();
+  renderFallbackOrder();
+  if (hasAnyKey()) {
+    updateApiStatus("online", API_PROVIDERS[activeProvider].name);
+  } else {
+    updateApiStatus("offline", "Sem IA");
+  }
+}
+
+function renderFallbackOrder() {
+  var el = document.getElementById("fallbackOrder");
+  if (!el) return;
+  var priority = ["groq","gemini","openrouter","openai"];
+  var html = "";
+  var pos = 1;
+  priority.forEach(function(prov) {
+    if (savedKeys[prov] && savedKeys[prov].length > 0) {
+      var isActive = prov === activeProvider;
+      html += "<div style='padding:4px 0;'><span style='color:var(--text-muted);'>" + pos + ". </span>" +
+              "<span style='color:" + (isActive ? "var(--primary)" : "var(--text-main)") + ";font-weight:" + (isActive ? "700" : "400") + ";'>" +
+              API_PROVIDERS[prov].name + " (" + savedKeys[prov].length + " chave" + (savedKeys[prov].length > 1 ? "s" : "") + ")" +
+              (isActive ? " ← ativo" : "") + "</span></div>";
+      pos++;
+    }
+  });
+  el.innerHTML = html || "<span style='color:var(--text-muted);'>Nenhum provedor configurado</span>";
+}
+
+// ══════════════════════════════════════════════════════
+//  GERAR PLANO PRINCIPAL
+// ══════════════════════════════════════════════════════
 async function generatePlan() {
-  var name = document.getElementById("userName").value.trim() || "Atleta";
-  var age = document.getElementById("userAge").value;
-  var weight = document.getElementById("userWeight").value;
-  var height = document.getElementById("userHeight").value;
-  var context = document.getElementById("userContext").value;
+  if (!hasAnyKey()) {
+    showToast("⚠️ Configure uma chave de API primeiro!");
+    openApiKeyScreen();
+    return;
+  }
+
+  var name    = (document.getElementById("userName").value || "").trim() || "Atleta";
+  var age     = document.getElementById("userAge").value || "25";
+  var weight  = document.getElementById("userWeight").value || "75";
+  var height  = document.getElementById("userHeight").value || "175";
+  var context = (document.getElementById("userContext").value || "").trim();
   var directives = localStorage.getItem("fp_directives") || "";
 
-  var btnText = document.getElementById("btnText");
-  var loader = document.getElementById("btnLoader");
-  btnText.style.display = "none";
-  loader.style.display = "block";
-  document.getElementById("btnGenerate").disabled = true;
+  setBtnLoading(true);
+  updateApiStatus("connecting", "Gerando...");
   showToast("⚡ Gerando seu plano personalizado...");
 
-  var prompt = "Atue como Personal Trainer e Nutricionista de Elite.\n" +
-    "Usuario: " + name + ", " + age + " anos, " + weight + "kg, " + height + "cm. Objetivo: " + currentObjective + ". Contexto: " + context + ".\n" +
-    "Diretrizes: " + directives + "\n\n" +
-    "RETORNE EXATAMENTE NESTE FORMATO:\n" +
-    "---CHAT---\n(mensagem acolhedora de 1 paragrafo com raciocinio estrategico)\n" +
-    "---TREINO---\n(ficha de treino. Cada dia comeca com '# '. Exercicios no formato: Nome | Series x Reps | CargaKG)\n" +
-    "---DIETA---\n(refeicoes, uma por linha)\n" +
+  var prompt =
+    "Atue como Personal Trainer e Nutricionista de Elite.\n" +
+    "Usuário: " + name + ", " + age + " anos, " + weight + "kg, " + height + "cm.\n" +
+    "Objetivo: " + currentObjective + ".\n" +
+    "Contexto: " + (context || "nenhum") + ".\n" +
+    "Diretrizes: " + (directives || "nenhuma") + "\n\n" +
+    "RETORNE EXATAMENTE NESTE FORMATO (use exatamente esses separadores):\n" +
+    "---CHAT---\n(mensagem acolhedora de 1 parágrafo)\n" +
+    "---TREINO---\n(ficha de treino. Cada dia começa com '# '. Exercícios no formato: Nome | Séries x Reps | CargaKG)\n" +
+    "---DIETA---\n(refeições, uma por linha)\n" +
     "---MACROS---\nKcal: X | Carb: Xg | Prot: Xg | Gord: Xg";
 
   try {
-    rawAIText = await callGroq([{ role: "user", content: prompt }], 4096);
-    if (!rawAIText || rawAIText.trim().length < 50) throw new Error("Resposta vazia da IA.");
-    processAIResponse(rawAIText, name);
+    rawAIText = await callAI([{ role: "user", content: prompt }], 4096, false);
+    if (!rawAIText || rawAIText.trim().length < 50) throw new Error("Resposta muito curta da IA.");
 
-    // Gera periodização (semanas 2-4) em background
-    generatePeriodization(rawAIText, name, weight);
+    processAIResponse(rawAIText, name);
+    generatePeriodization(rawAIText);
 
     document.getElementById("profileForm").style.display = "none";
     document.getElementById("resultsSection").style.display = "block";
     registerTrainingDay();
     renderTrophies();
     showToast("✅ Plano criado com sucesso!");
-  } catch (err) {
-    console.error(err);
-    showToast("❌ " + (err.message || "Erro ao gerar plano."));
+    updateApiStatus("online", API_PROVIDERS[activeProvider] ? API_PROVIDERS[activeProvider].name : "IA");
+  } catch(err) {
+    console.error("generatePlan error:", err);
+    var errMsg = err.message || "Erro desconhecido";
+    showToast("❌ " + errMsg);
+    updateApiStatus("offline", "Erro");
+    // Mostra mensagem amigável no chat
+    chatHistory = [{ role: "ai", msg: "❌ Não consegui gerar o plano. Tente novamente. Erro: " + errMsg }];
+    document.getElementById("profileForm").style.display = "none";
+    document.getElementById("resultsSection").style.display = "block";
+    renderChat();
   } finally {
-    btnText.style.display = "block";
-    loader.style.display = "none";
-    document.getElementById("btnGenerate").disabled = false;
+    setBtnLoading(false);
   }
 }
 
-// ─── PERIODIZAÇÃO (SEMANAS 2-4 em background) ───
-async function generatePeriodization(basePlan, name, weight) {
-  var prompt = "Baseado neste plano da Semana 1:\n" + basePlan + "\n\n" +
-    "Crie as Semanas 2, 3 e 4 com progressao de carga (aumento de 5-10% por semana).\n" +
-    "Mantenha os mesmos exercicios mas aumente as cargas progressivamente.\n" +
-    "FORMATO - use exatamente estes separadores:\n---SEMANA2---\n(treino semana 2)\n---SEMANA3---\n(treino semana 3)\n---SEMANA4---\n(treino semana 4)";
+function setBtnLoading(loading) {
+  var btn = document.getElementById("btnGenerate");
+  var txt = document.getElementById("btnText");
+  var loader = document.getElementById("btnLoader");
+  if (!btn || !txt || !loader) return;
+  btn.disabled = loading;
+  txt.style.display = loading ? "none" : "block";
+  loader.style.display = loading ? "block" : "none";
+}
+
+// ── PERIODIZAÇÃO BACKGROUND ──
+async function generatePeriodization(basePlan) {
+  if (!hasAnyKey()) return;
+  var prompt =
+    "Baseado neste plano da Semana 1:\n" + basePlan + "\n\n" +
+    "Crie as Semanas 2, 3 e 4 com progressão de carga (+5-10% por semana).\n" +
+    "Mantenha os mesmos exercícios mas aumente as cargas progressivamente.\n" +
+    "Use EXATAMENTE estes separadores:\n---SEMANA2---\n(treino semana 2)\n---SEMANA3---\n(treino semana 3)\n---SEMANA4---\n(treino semana 4)";
   try {
-    var result = await callGroq([{ role: "user", content: prompt }], 4096);
-    var s2 = extractBetween(result, "---SEMANA2---", "---SEMANA3---");
-    var s3 = extractBetween(result, "---SEMANA3---", "---SEMANA4---");
-    var s4 = result.split("---SEMANA4---")[1] || "";
-    weekPlans[2] = s2.trim();
-    weekPlans[3] = s3.trim();
-    weekPlans[4] = s4.trim();
-  } catch (e) {
-    console.log("Periodizacao background:", e.message);
+    var result = await callAI([{ role: "user", content: prompt }], 4096, false);
+    if (result) {
+      weekPlans[2] = extractBetween(result, "---SEMANA2---", "---SEMANA3---").trim();
+      weekPlans[3] = extractBetween(result, "---SEMANA3---", "---SEMANA4---").trim();
+      var s4 = result.split("---SEMANA4---");
+      weekPlans[4] = s4.length > 1 ? s4[1].trim() : "";
+    }
+  } catch(e) {
+    console.log("Periodização background:", e.message);
   }
 }
 
@@ -975,30 +1453,31 @@ function extractBetween(text, start, end) {
   return to === -1 ? text.substring(from) : text.substring(from, to);
 }
 
-// ─── PROCESSAR RESPOSTA DA IA ───
+// ── PROCESSAR RESPOSTA DA IA ──
 function processAIResponse(text, userName) {
-  var chatPart = "Seu plano foi estruturado. Vamos começar!";
+  var chatPart = "";
   var treinoPart = "";
   var dietaPart = "";
   var macrosPart = "";
 
   try {
-    var parts = text.split("---TREINO---");
-    chatPart = parts[0].replace("---CHAT---", "").trim();
-    if (parts[1]) {
-      var parts2 = parts[1].split("---DIETA---");
-      treinoPart = parts2[0].trim();
+    var p1 = text.split("---TREINO---");
+    chatPart = p1[0].replace("---CHAT---","").trim();
+    if (p1[1]) {
+      var p2 = p1[1].split("---DIETA---");
+      treinoPart = p2[0].trim();
       weekPlans[1] = treinoPart;
-      if (parts2[1]) {
-        var parts3 = parts2[1].split("---MACROS---");
-        dietaPart = parts3[0].trim();
-        macrosPart = parts3[1] ? parts3[1].trim() : "";
+      if (p2[1]) {
+        var p3 = p2[1].split("---MACROS---");
+        dietaPart = p3[0].trim();
+        macrosPart = p3[1] ? p3[1].trim() : "";
       }
     }
-  } catch (e) {
+  } catch(e) {
     chatPart = text;
   }
 
+  if (!chatPart) chatPart = "Seu plano foi criado! Vamos começar 💪";
   chatHistory = [{ role: "ai", msg: chatPart }];
   renderChat();
   renderWorkout(treinoPart);
@@ -1006,24 +1485,25 @@ function processAIResponse(text, userName) {
   parseAndShowMacros(macrosPart);
 }
 
-// ─── SEMANAS DO TREINO ───
+// ── SEMANAS ──
 function showWeek(n, el) {
   currentWeek = n;
   document.querySelectorAll(".week-tab").forEach(function(t) { t.classList.remove("active"); });
-  el.classList.add("active");
+  if (el) el.classList.add("active");
   if (weekPlans[n]) {
     renderWorkout(weekPlans[n]);
   } else {
     document.getElementById("workoutContent").innerHTML =
       "<div style='text-align:center;padding:30px;color:var(--text-muted);'>" +
       "<div class='loader-white' style='margin:0 auto 12px;'></div>" +
-      "<p style='font-size:13px;'>Gerando semana " + n + "...</p></div>";
+      "<p style='font-size:13px;'>Gerando semana " + n + "... aguarde.</p></div>";
   }
 }
 
-// ─── CHAT PERSONAL ───
+// ── CHAT ──
 function renderChat() {
   var box = document.getElementById("chatBox");
+  if (!box) return;
   box.innerHTML = "";
   chatHistory.forEach(function(item) {
     var div = document.createElement("div");
@@ -1035,74 +1515,79 @@ function renderChat() {
 }
 
 async function sendChatMessage() {
+  if (!hasAnyKey()) { showToast("Configure uma API primeiro!"); return; }
   var input = document.getElementById("chatInput");
   var btn = document.getElementById("btnSend");
-  var msg = input.value.trim();
+  var msg = (input.value || "").trim();
   if (!msg) return;
 
   chatHistory.push({ role: "user", msg: msg });
   input.value = "";
-  btn.disabled = true;
+  if (btn) btn.disabled = true;
   renderChat();
 
-  var loading = document.createElement("div");
-  loading.className = "chat-bubble chat-ai";
-  loading.innerHTML = "<span class='loader-white'></span>";
-  document.getElementById("chatBox").appendChild(loading);
-  document.getElementById("chatBox").scrollTop = 9999;
+  var loadingDiv = document.createElement("div");
+  loadingDiv.className = "chat-bubble chat-ai";
+  loadingDiv.innerHTML = "<span class='loader-white'></span>";
+  var box = document.getElementById("chatBox");
+  if (box) { box.appendChild(loadingDiv); box.scrollTop = 9999; }
 
-  var history = chatHistory.slice(-6).map(function(h) {
-    return { role: h.role === "user" ? "user" : "assistant", content: h.msg };
-  });
-  var messages = [
-    { role: "system", content: "Você é um Personal Trainer e Nutricionista de Elite na plataforma FitPlan PRO. Responda de forma objetiva e motivadora em no máximo 3 frases." }
-  ].concat(history);
+  var apiMessages = [
+    { role: "system", content: "Você é um Personal Trainer e Nutricionista de Elite. Responda de forma objetiva e motivadora em no máximo 3 frases." }
+  ].concat(
+    chatHistory.slice(-8).map(function(h) {
+      return { role: h.role === "user" ? "user" : "assistant", content: h.msg };
+    })
+  );
 
   try {
-    var answer = await callGroq(messages, 512);
-    loading.remove();
-    chatHistory.push({ role: "ai", msg: answer.trim() });
+    var answer = await callAI(apiMessages, 512, false);
+    if (loadingDiv.parentNode) loadingDiv.remove();
+    chatHistory.push({ role: "ai", msg: answer });
     renderChat();
-  } catch (e) {
-    loading.remove();
+  } catch(e) {
+    if (loadingDiv.parentNode) loadingDiv.remove();
     chatHistory.pop();
+    chatHistory.push({ role: "ai", msg: "❌ Erro: " + (e.message || "Tente novamente.") });
     renderChat();
-    showToast("❌ " + (e.message || "Erro no chat."));
+    showToast("❌ " + (e.message || "Erro no chat"));
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 
-// ─── MACROS ───
+// ── MACROS ──
 function parseAndShowMacros(str) {
   if (!str) return;
-  var parts = str.split("|");
-  parts.forEach(function(p) {
+  str.split("|").forEach(function(p) {
     var low = p.toLowerCase();
-    var val = p.split(":")[1] ? p.split(":")[1].trim() : "--";
-    if (low.includes("kcal")) document.getElementById("macroKcal").innerText = val;
-    if (low.includes("carb")) document.getElementById("macroCarb").innerText = val;
-    if (low.includes("prot")) document.getElementById("macroProt").innerText = val;
-    if (low.includes("gord")) document.getElementById("macroGord").innerText = val;
+    var parts = p.split(":");
+    var val = parts[1] ? parts[1].trim() : "--";
+    if (low.includes("kcal")) { var el = document.getElementById("macroKcal"); if(el) el.innerText = val; }
+    if (low.includes("carb")) { var el2 = document.getElementById("macroCarb"); if(el2) el2.innerText = val; }
+    if (low.includes("prot")) { var el3 = document.getElementById("macroProt"); if(el3) el3.innerText = val; }
+    if (low.includes("gord")) { var el4 = document.getElementById("macroGord"); if(el4) el4.innerText = val; }
   });
 }
 
-// ─── RENDER TREINO ───
+// ── RENDER TREINO ──
 function renderWorkout(text) {
   var container = document.getElementById("workoutContent");
+  if (!container) return;
   container.innerHTML = "";
-  if (!text) {
-    container.innerHTML = "<p style='color:var(--text-muted);font-size:13px;'>Nenhum treino disponível.</p>";
+  if (!text || text.trim().length === 0) {
+    container.innerHTML = "<p style='color:var(--text-muted);font-size:13px;padding:12px 0;'>Nenhum treino disponível. Gere um plano primeiro.</p>";
     return;
   }
-  var lines = text.split("\n").filter(function(l) { return l.trim().length > 0; });
   var counter = 0;
-
+  var lines = text.split("\n");
   lines.forEach(function(linha) {
+    linha = linha.trim();
+    if (!linha) return;
     if (linha.startsWith("#")) {
       var dh = document.createElement("div");
       dh.className = "day-header";
-      dh.innerText = linha.replace("#", "").trim();
+      dh.innerText = linha.replace(/^#+\s*/, "");
       container.appendChild(dh);
     } else if (linha.includes("|")) {
       counter++;
@@ -1110,11 +1595,12 @@ function renderWorkout(text) {
       var nome = parts[0] || "Exercício";
       var series = parts[1] || "3x10";
       var cargaStr = parts[2] || "10kg";
-      var cargaNum = parseInt(cargaStr.replace(/[^0-9]/g, "")) || 10;
+      var cargaNum = parseInt(cargaStr.replace(/[^0-9]/g,"")) || 10;
       var gifId = "gif_" + counter;
       var inputId = "wi_" + counter;
       var timerId = "ti_" + counter;
       var isPR = personalRecords[nome] && cargaNum > personalRecords[nome];
+      var nomeEsc = nome.replace(/\\/g,"\\\\").replace(/"/g,"&quot;");
       var el = document.createElement("div");
       el.className = "exercise-item" + (isPR ? " pr-record" : "");
       el.innerHTML =
@@ -1124,21 +1610,21 @@ function renderWorkout(text) {
             "<div class='ex-meta'>" + series + "</div>" +
           "</div>" +
           "<div style='display:flex;align-items:center;gap:6px;'>" +
-            "<span class='pr-badge' style='" + (isPR ? "display:inline;" : "") + "'>🏆 PR</span>" +
-            "<button class='btn-secondary' onclick='loadGif(\"" + nome.replace(/"/g,"") + "\",\"" + gifId + "\")' style='padding:6px;border-radius:50%;'><i data-lucide='play' size='14'></i></button>" +
+            "<span class='pr-badge' style='display:" + (isPR ? "inline" : "none") + ";'>🏆 PR</span>" +
+            "<button class='btn-secondary' onclick='loadGif(\"" + nomeEsc + "\",\"" + gifId + "\")' style='padding:6px;border-radius:50%;'><i data-lucide='play' size='14'></i></button>" +
           "</div>" +
         "</div>" +
         "<div id='" + gifId + "' class='gif-frame'></div>" +
         "<div class='ex-action-row'>" +
           "<label style='font-size:11px;color:var(--text-muted);font-family:var(--font-mono);'>KG</label>" +
-          "<input type='number' id='" + inputId + "' class='load-input' value='" + cargaNum + "'>" +
-          "<button class='btn-secondary' style='flex:1;background:var(--primary-dim);color:var(--primary);border-color:var(--primary);' onclick='saveLoad(\"" + nome.replace(/"/g,"") + "\",\"" + inputId + "\")'>✓ Feito</button>" +
+          "<input type='number' id='" + inputId + "' class='load-input' value='" + cargaNum + "' min='0'>" +
+          "<button class='btn-secondary' style='flex:1;background:var(--primary-dim);color:var(--primary);border-color:var(--primary);' onclick='saveLoad(\"" + nomeEsc + "\",\"" + inputId + "\")'>✓ Feito</button>" +
           "<div class='timer-badge' id='" + timerId + "' onclick='startRestTimer(\"" + timerId + "\")'><i data-lucide='timer' size='12'></i> <span>60s</span></div>" +
         "</div>";
       container.appendChild(el);
-    } else {
+    } else if (linha.length > 1) {
       var p = document.createElement("p");
-      p.style.cssText = "font-size:13px;color:var(--text-muted);margin-bottom:8px;";
+      p.style.cssText = "font-size:13px;color:var(--text-muted);margin-bottom:6px;";
       p.innerText = linha;
       container.appendChild(p);
     }
@@ -1146,9 +1632,10 @@ function renderWorkout(text) {
   lucide.createIcons();
 }
 
-// ─── RENDER DIETA ───
+// ── RENDER DIETA ──
 function renderDiet(text) {
   var container = document.getElementById("dietContent");
+  if (!container) return;
   container.innerHTML = "";
   if (!text) return;
   var imgs = {
@@ -1161,46 +1648,51 @@ function renderDiet(text) {
     fruta: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=150&h=150&fit=crop",
     def: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=150&h=150&fit=crop"
   };
-  text.split("\n").filter(function(l){ return l.trim(); }).forEach(function(linha) {
+  text.split("\n").filter(function(l){ return l.trim().length > 1; }).forEach(function(linha) {
     var low = linha.toLowerCase();
     var img = imgs.def;
-    if (low.includes("ovo") || low.includes("omelete")) img = imgs.ovo;
-    else if (low.includes("frango") || low.includes("peito")) img = imgs.frango;
-    else if (low.includes("carne") || low.includes("bife")) img = imgs.carne;
-    else if (low.includes("arroz") || low.includes("batata")) img = imgs.arroz;
-    else if (low.includes("salada") || low.includes("vegetal")) img = imgs.salada;
-    else if (low.includes("whey") || low.includes("shake")) img = imgs.whey;
-    else if (low.includes("fruta") || low.includes("banana")) img = imgs.fruta;
+    if (low.includes("ovo")||low.includes("omelete")) img = imgs.ovo;
+    else if (low.includes("frango")||low.includes("peito")) img = imgs.frango;
+    else if (low.includes("carne")||low.includes("bife")) img = imgs.carne;
+    else if (low.includes("arroz")||low.includes("batata")) img = imgs.arroz;
+    else if (low.includes("salada")||low.includes("vegetal")) img = imgs.salada;
+    else if (low.includes("whey")||low.includes("shake")) img = imgs.whey;
+    else if (low.includes("fruta")||low.includes("banana")) img = imgs.fruta;
     var el = document.createElement("div");
     el.className = "food-item";
-    el.innerHTML = "<img src='" + img + "' class='food-img' alt='Alimento'><div class='food-desc'>" + linha + "</div>";
+    el.innerHTML = "<img src='" + img + "' class='food-img' alt='Alimento' loading='lazy'>" +
+                   "<div class='food-desc'>" + linha + "</div>";
     container.appendChild(el);
   });
 }
 
-// ─── TIMER DE DESCANSO ───
+// ── TIMER DE DESCANSO ──
 var activeTimers = {};
 function startRestTimer(id) {
   if (activeTimers[id]) {
     clearInterval(activeTimers[id].interval);
     delete activeTimers[id];
     var el = document.getElementById(id);
+    if (!el) return;
     el.classList.remove("running");
-    el.querySelector("span").innerText = "60s";
+    var sp = el.querySelector("span");
+    if (sp) sp.innerText = "60s";
     return;
   }
   var el = document.getElementById(id);
+  if (!el) return;
   el.classList.add("running");
   var left = 60;
   activeTimers[id] = {
     interval: setInterval(function() {
       left--;
-      el.querySelector("span").innerText = left + "s";
+      var sp = el.querySelector("span");
+      if (sp) sp.innerText = left + "s";
       if (left <= 0) {
         clearInterval(activeTimers[id].interval);
         delete activeTimers[id];
         el.classList.remove("running");
-        el.querySelector("span").innerText = "60s";
+        if (sp) sp.innerText = "60s";
         showToast("💪 Fim do descanso! Próxima série!");
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       }
@@ -1208,22 +1700,23 @@ function startRestTimer(id) {
   };
 }
 
-// ─── SALVAR CARGA + PR ───
+// ── SALVAR CARGA ──
 function saveLoad(nome, inputId) {
-  var val = parseInt(document.getElementById(inputId).value) || 0;
+  var inputEl = document.getElementById(inputId);
+  if (!inputEl) return;
+  var val = parseInt(inputEl.value) || 0;
   if (val <= 0) { showToast("Insira uma carga válida!"); return; }
-  var hoje = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-  var rec = weightHistory.find(function(w) { return w.date === hoje; });
+  var hoje = new Date().toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit" });
+  var rec = weightHistory.find(function(w){ return w.date === hoje; });
   if (rec) rec.totalLoad += val;
   else weightHistory.push({ date: hoje, totalLoad: val });
   localStorage.setItem("fp_weight_history", JSON.stringify(weightHistory));
 
-  // Checar PR
   var isPR = !personalRecords[nome] || val > personalRecords[nome];
   if (isPR) {
     personalRecords[nome] = val;
     localStorage.setItem("fp_prs", JSON.stringify(personalRecords));
-    showToast("🏆 Novo recorde pessoal em " + nome + "! " + val + "kg!");
+    showToast("🏆 Novo PR em " + nome + "! " + val + "kg!");
   } else {
     showToast("✅ " + val + "kg salvo!");
   }
@@ -1234,20 +1727,20 @@ function saveLoad(nome, inputId) {
   renderTrophies();
 }
 
-// ─── STREAK ───
+// ── STREAK ──
 function registerTrainingDay() {
   var hoje = new Date().toDateString();
   if (lastTrainDate === hoje) return;
   var ontem = new Date(Date.now() - 86400000).toDateString();
-  if (lastTrainDate === ontem) streakDays++;
-  else if (lastTrainDate !== hoje) streakDays = 1;
+  streakDays = (lastTrainDate === ontem) ? streakDays + 1 : 1;
   lastTrainDate = hoje;
   localStorage.setItem("fp_streak", JSON.stringify({ days: streakDays, lastDate: lastTrainDate }));
   updateStreakUI();
 }
 
 function updateStreakUI() {
-  document.getElementById("streakCount").innerText = streakDays;
+  var el = document.getElementById("streakCount");
+  if (el) el.innerText = streakDays;
 }
 
 function clearHistory() {
@@ -1259,16 +1752,18 @@ function clearHistory() {
   showToast("Histórico limpo.");
 }
 
-// ─── GRÁFICO ───
+// ── GRÁFICO ──
 function initChart() {
-  var ctx = document.getElementById("progressChart").getContext("2d");
+  var canvas = document.getElementById("progressChart");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d");
   evolutionChartInstance = new Chart(ctx, {
     type: "line",
     data: {
-      labels: weightHistory.map(function(w) { return w.date; }),
+      labels: weightHistory.map(function(w){ return w.date; }),
       datasets: [{
         label: "Volume (kg)",
-        data: weightHistory.map(function(w) { return w.totalLoad; }),
+        data: weightHistory.map(function(w){ return w.totalLoad; }),
         borderColor: "#32D74B",
         backgroundColor: "rgba(50,215,75,0.12)",
         borderWidth: 3,
@@ -1292,40 +1787,38 @@ function initChart() {
 
 function updateChart() {
   if (!evolutionChartInstance) return;
-  evolutionChartInstance.data.labels = weightHistory.map(function(w) { return w.date; });
-  evolutionChartInstance.data.datasets[0].data = weightHistory.map(function(w) { return w.totalLoad; });
+  evolutionChartInstance.data.labels = weightHistory.map(function(w){ return w.date; });
+  evolutionChartInstance.data.datasets[0].data = weightHistory.map(function(w){ return w.totalLoad; });
   evolutionChartInstance.update();
 }
 
-// ─── RELATÓRIO MENSAL ───
+// ── RELATÓRIO MENSAL ──
 function renderMonthlyReport() {
   var el = document.getElementById("monthlyReport");
   if (!el) return;
-  var totalSessoes = weightHistory.length;
-  var totalVolume = weightHistory.reduce(function(a, b) { return a + b.totalLoad; }, 0);
-  var maxVolume = weightHistory.reduce(function(a, b) { return Math.max(a, b.totalLoad); }, 0);
-  var totalPRs = Object.keys(personalRecords).length;
+  var totalVolume = weightHistory.reduce(function(a,b){ return a + b.totalLoad; }, 0);
+  var maxVolume = weightHistory.reduce(function(a,b){ return Math.max(a, b.totalLoad); }, 0);
   el.innerHTML =
     "<div class='report-card'>" +
-      "<div class='report-stat'><span class='report-stat-label'>🗓 Sessões de treino</span><span class='report-stat-value'>" + totalSessoes + "</span></div>" +
-      "<div class='report-stat'><span class='report-stat-label'>📦 Volume total acumulado</span><span class='report-stat-value'>" + totalVolume + " kg</span></div>" +
-      "<div class='report-stat'><span class='report-stat-label'>🔥 Melhor sessão</span><span class='report-stat-value'>" + maxVolume + " kg</span></div>" +
-      "<div class='report-stat'><span class='report-stat-label'>🏆 Recordes pessoais</span><span class='report-stat-value'>" + totalPRs + " PRs</span></div>" +
-      "<div class='report-stat'><span class='report-stat-label'>⚡ Sequência atual</span><span class='report-stat-value'>" + streakDays + " dias</span></div>" +
+    "<div class='report-stat'><span class='report-stat-label'>🗓 Sessões</span><span class='report-stat-value'>" + weightHistory.length + "</span></div>" +
+    "<div class='report-stat'><span class='report-stat-label'>📦 Volume total</span><span class='report-stat-value'>" + totalVolume + " kg</span></div>" +
+    "<div class='report-stat'><span class='report-stat-label'>🔥 Melhor sessão</span><span class='report-stat-value'>" + maxVolume + " kg</span></div>" +
+    "<div class='report-stat'><span class='report-stat-label'>🏆 Recordes pessoais</span><span class='report-stat-value'>" + Object.keys(personalRecords).length + " PRs</span></div>" +
+    "<div class='report-stat'><span class='report-stat-label'>⚡ Sequência</span><span class='report-stat-value'>" + streakDays + " dias</span></div>" +
     "</div>";
 }
 
-// ─── CONQUISTAS ───
+// ── CONQUISTAS ──
 var trophyDefs = [
-  { id: "first", icon: "🎯", name: "1ª Sessão", check: function() { return weightHistory.length >= 1; } },
-  { id: "week", icon: "📅", name: "7 Sessões", check: function() { return weightHistory.length >= 7; } },
-  { id: "month", icon: "🏅", name: "30 Sessões", check: function() { return weightHistory.length >= 30; } },
-  { id: "streak3", icon: "🔥", name: "3 dias seguidos", check: function() { return streakDays >= 3; } },
-  { id: "streak7", icon: "💫", name: "7 dias seguidos", check: function() { return streakDays >= 7; } },
-  { id: "streak30", icon: "⚡", name: "30 dias seguidos", check: function() { return streakDays >= 30; } },
-  { id: "pr1", icon: "🏆", name: "Primeiro PR", check: function() { return Object.keys(personalRecords).length >= 1; } },
-  { id: "pr5", icon: "👑", name: "5 PRs", check: function() { return Object.keys(personalRecords).length >= 5; } },
-  { id: "vol500", icon: "💪", name: "500kg acumulado", check: function() { return weightHistory.reduce(function(a,b){return a+b.totalLoad;},0) >= 500; } }
+  { id: "first",   icon:"🎯", name:"1ª Sessão",      check: function(){ return weightHistory.length >= 1; } },
+  { id: "week",    icon:"📅", name:"7 Sessões",       check: function(){ return weightHistory.length >= 7; } },
+  { id: "month",   icon:"🏅", name:"30 Sessões",      check: function(){ return weightHistory.length >= 30; } },
+  { id: "str3",    icon:"🔥", name:"3 dias seguidos", check: function(){ return streakDays >= 3; } },
+  { id: "str7",    icon:"💫", name:"7 dias seguidos", check: function(){ return streakDays >= 7; } },
+  { id: "str30",   icon:"⚡", name:"30 dias seguidos",check: function(){ return streakDays >= 30; } },
+  { id: "pr1",     icon:"🏆", name:"Primeiro PR",     check: function(){ return Object.keys(personalRecords).length >= 1; } },
+  { id: "pr5",     icon:"👑", name:"5 PRs",           check: function(){ return Object.keys(personalRecords).length >= 5; } },
+  { id: "vol500",  icon:"💪", name:"500kg acumulado", check: function(){ return weightHistory.reduce(function(a,b){ return a+b.totalLoad; },0) >= 500; } }
 ];
 
 function renderTrophies() {
@@ -1341,36 +1834,41 @@ function renderTrophies() {
   });
 }
 
-// ─── GIF EXERCÍCIO ───
+// ── GIF EXERCÍCIO ──
 async function loadGif(query, frameId) {
   var frame = document.getElementById(frameId);
+  if (!frame) return;
   if (frame.style.display === "block") { frame.style.display = "none"; return; }
   frame.innerHTML = "<div style='display:flex;justify-content:center;align-items:center;height:100%;'><span class='loader-white'></span></div>";
   frame.style.display = "block";
-  var url = "https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=" + encodeURIComponent(query + " exercise gym") + "&limit=1&rating=g";
   try {
+    var url = "https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q=" + encodeURIComponent(query + " exercise gym") + "&limit=1&rating=g";
     var res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
     var data = await res.json();
     if (data.data && data.data.length > 0) {
       frame.innerHTML = "<iframe src='https://giphy.com/embed/" + data.data[0].id + "' width='100%' height='100%' frameBorder='0' allowFullScreen></iframe>";
     } else {
-      frame.innerHTML = "<div style='padding:20px;text-align:center;font-size:12px;color:var(--text-muted);'>Mídia não encontrada</div>";
+      frame.innerHTML = "<div style='padding:20px;text-align:center;font-size:12px;color:var(--text-muted);'>Nenhuma mídia encontrada</div>";
     }
-  } catch (e) {
-    frame.innerHTML = "<div style='padding:20px;text-align:center;font-size:12px;color:var(--danger);'>Erro ao carregar</div>";
+  } catch(e) {
+    frame.innerHTML = "<div style='padding:20px;text-align:center;font-size:12px;color:var(--danger);'>Erro ao carregar GIF</div>";
   }
 }
 
-// ─── SCANNER DE PRATO ───
+// ── SCANNER DE PRATO ──
 async function scanFood(event) {
-  var file = event.target.files[0];
+  if (!hasAnyKey()) { showToast("Configure uma API primeiro!"); return; }
+  var file = event && event.target && event.target.files && event.target.files[0];
   if (!file) return;
+
   var preview = document.getElementById("scannerPreview");
   var result = document.getElementById("scannerResult");
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = "block";
-  result.style.display = "block";
-  result.innerHTML = "<div style='display:flex;align-items:center;gap:8px;'><span class='loader-white'></span> Analisando prato com IA...</div>";
+  if (preview) { preview.src = URL.createObjectURL(file); preview.style.display = "block"; }
+  if (result) {
+    result.style.display = "block";
+    result.innerHTML = "<div style='display:flex;align-items:center;gap:8px;'><span class='loader-white'></span> Analisando prato com IA...</div>";
+  }
 
   try {
     var base64 = await fileToBase64(file);
@@ -1378,34 +1876,33 @@ async function scanFood(event) {
       role: "user",
       content: [
         { type: "image_url", image_url: { url: "data:" + file.type + ";base64," + base64 } },
-        { type: "text", text: "Analise este prato de comida. Identifique os alimentos visíveis e estime: calorias totais, proteínas (g), carboidratos (g), gorduras (g) e peso aproximado (g). Seja objetivo e direto. Use emojis para cada alimento identificado." }
+        { type: "text", text: "Analise este prato de comida. Identifique os alimentos visíveis e estime: calorias totais, proteínas (g), carboidratos (g), gorduras (g). Use emojis para cada alimento identificado. Seja direto e objetivo." }
       ]
     }];
-
-    // Groq com visão (llama-4-scout)
-    var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getActiveGroqKey() },
-      body: JSON.stringify({ model: "meta-llama/llama-4-scout-17b-16e-instruct", messages: messages, max_tokens: 600 })
-    });
-    var data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    result.innerHTML = data.choices[0].message.content.replace(/\n/g, "<br>");
-  } catch (e) {
-    result.innerHTML = "❌ " + (e.message || "Erro ao analisar imagem.");
+    var answer = await callAI(messages, 600, true);
+    if (result) result.innerHTML = answer.replace(/\n/g,"<br>");
+  } catch(e) {
+    if (result) result.innerHTML = "❌ " + (e.message || "Erro ao analisar imagem. Tente novamente.");
+    showToast("❌ Erro no scanner: " + (e.message || ""));
   }
+
+  // Limpa input para permitir novo upload
+  if (event && event.target) event.target.value = "";
 }
 
-// ─── ANÁLISE FOTO CORPORAL ───
+// ── ANÁLISE FOTO CORPORAL ──
 async function analyzePhoto(event) {
-  var file = event.target.files[0];
+  if (!hasAnyKey()) { showToast("Configure uma API primeiro!"); return; }
+  var file = event && event.target && event.target.files && event.target.files[0];
   if (!file) return;
+
   var preview = document.getElementById("photoPreview");
   var result = document.getElementById("photoAiResult");
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = "block";
-  result.style.display = "block";
-  result.innerHTML = "<div style='display:flex;align-items:center;gap:8px;'><span class='loader-white'></span> Analisando composição corporal...</div>";
+  if (preview) { preview.src = URL.createObjectURL(file); preview.style.display = "block"; }
+  if (result) {
+    result.style.display = "block";
+    result.innerHTML = "<div style='display:flex;align-items:center;gap:8px;'><span class='loader-white'></span> Analisando composição corporal...</div>";
+  }
 
   try {
     var base64 = await fileToBase64(file);
@@ -1413,82 +1910,88 @@ async function analyzePhoto(event) {
       role: "user",
       content: [
         { type: "image_url", image_url: { url: "data:" + file.type + ";base64," + base64 } },
-        { type: "text", text: "Você é um Personal Trainer especialista em composição corporal. Analise esta foto e forneça: 1) Estimativa de percentual de gordura 2) Pontos fortes visíveis 3) Grupos musculares que precisam de mais atenção 4) Motivação personalizada. Seja respeitoso, encorajador e profissional." }
+        { type: "text", text: "Você é um Personal Trainer especialista em composição corporal. Analise esta foto de forma respeitosa e profissional. Forneça: 1) Estimativa de % gordura corporal 2) Pontos fortes visíveis 3) Grupos musculares para focar 4) Mensagem motivacional personalizada." }
       ]
     }];
-    var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getActiveGroqKey() },
-      body: JSON.stringify({ model: "meta-llama/llama-4-scout-17b-16e-instruct", messages: messages, max_tokens: 700 })
-    });
-    var data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    result.innerHTML = data.choices[0].message.content.replace(/\n/g, "<br>");
-  } catch (e) {
-    result.innerHTML = "❌ " + (e.message || "Erro ao analisar foto.");
+    var answer = await callAI(messages, 700, true);
+    if (result) result.innerHTML = answer.replace(/\n/g,"<br>");
+  } catch(e) {
+    if (result) result.innerHTML = "❌ " + (e.message || "Erro ao analisar foto. Tente novamente.");
+    showToast("❌ Erro: " + (e.message || ""));
   }
+
+  if (event && event.target) event.target.value = "";
 }
 
 function fileToBase64(file) {
   return new Promise(function(resolve, reject) {
     var reader = new FileReader();
-    reader.onload = function() { resolve(reader.result.split(",")[1]); };
-    reader.onerror = reject;
+    reader.onload = function() {
+      var res = reader.result;
+      if (!res || !res.includes(",")) { reject(new Error("Arquivo inválido")); return; }
+      resolve(res.split(",")[1]);
+    };
+    reader.onerror = function() { reject(new Error("Erro ao ler arquivo")); };
     reader.readAsDataURL(file);
   });
 }
 
-// ─── CHECK-IN SEMANAL ───
+// ── CHECK-IN SEMANAL ──
 function selectEmoji(btn, group) {
   var row = btn.closest(".emoji-row");
-  row.querySelectorAll(".emoji-btn").forEach(function(b) { b.classList.remove("selected"); });
+  if (!row) return;
+  row.querySelectorAll(".emoji-btn").forEach(function(b){ b.classList.remove("selected"); });
   btn.classList.add("selected");
   checkinData[group] = btn.innerText.split("\n")[0];
 }
 
 async function submitCheckin() {
-  var sleep = checkinData.sleep || "não informado";
+  if (!hasAnyKey()) { showToast("Configure uma API!"); return; }
+  var sleepVal = checkinData.sleep || "não informado";
   var pain = checkinData.pain || "não informado";
   var goal = checkinData.goal || "não informado";
 
-  var prompt = "Personal Trainer, o aluno fez o check-in semanal:\n" +
-    "- Sono: " + sleep + "\n- Dores: " + pain + "\n- Metas: " + goal + "\n\n" +
-    "Com base nisso, dê 3 ajustes concisos no plano desta semana (máx 4 linhas cada). Seja direto e motivador.";
-
   closeModal("modalCheckin");
   showToast("⚡ Ajustando plano...");
+  updateApiStatus("connecting", "Ajustando...");
+
+  var prompt =
+    "Personal Trainer, aluno fez check-in:\n" +
+    "- Sono: " + sleepVal + "\n- Dores: " + pain + "\n- Metas: " + goal + "\n\n" +
+    "Dê 3 ajustes concisos no plano desta semana. Seja direto e motivador. Máx 4 linhas por ajuste.";
 
   try {
-    var answer = await callGroq([{ role: "user", content: prompt }], 600);
-    chatHistory.push({ role: "ai", msg: "📊 Check-in analisado!\n\n" + answer.trim() });
+    var answer = await callAI([{ role: "user", content: prompt }], 600, false);
+    chatHistory.push({ role: "ai", msg: "📊 Check-in analisado!\n\n" + answer });
     renderChat();
-    switchTab("tab-chat", document.querySelector(".tab-btn"));
-    document.querySelectorAll(".tab-btn")[0].classList.add("active");
+    switchTab("tab-chat", document.querySelectorAll(".tab-btn")[0]);
+    if (document.querySelectorAll(".tab-btn")[0]) document.querySelectorAll(".tab-btn")[0].classList.add("active");
     showToast("✅ Plano ajustado com base no check-in!");
-  } catch (e) {
-    showToast("❌ " + (e.message || "Erro no check-in."));
+    updateApiStatus("online", API_PROVIDERS[activeProvider] ? API_PROVIDERS[activeProvider].name : "IA");
+  } catch(e) {
+    showToast("❌ " + (e.message || "Erro no check-in"));
+    updateApiStatus("offline", "Erro");
   }
 }
 
-// ─── NOTIFICAÇÕES ───
+// ── NOTIFICAÇÕES ──
 function toggleNotif(key) {
-  var el = document.getElementById("toggle" + key.charAt(0).toUpperCase() + key.slice(1));
+  var id = "toggle" + key.charAt(0).toUpperCase() + key.slice(1);
+  var el = document.getElementById(id);
   if (el) el.classList.toggle("on");
 }
 
 function saveNotifSettings() {
   var settings = {
-    treino: document.getElementById("toggleTreino").classList.contains("on"),
-    agua: document.getElementById("toggleAgua").classList.contains("on"),
-    checkin: document.getElementById("toggleCheckin").classList.contains("on"),
-    time: document.getElementById("notifTime").value
+    treino: document.getElementById("toggleTreino") && document.getElementById("toggleTreino").classList.contains("on"),
+    agua: document.getElementById("toggleAgua") && document.getElementById("toggleAgua").classList.contains("on"),
+    checkin: document.getElementById("toggleCheckin") && document.getElementById("toggleCheckin").classList.contains("on"),
+    time: document.getElementById("notifTime") ? document.getElementById("notifTime").value : "07:00"
   };
   localStorage.setItem("fp_notif", JSON.stringify(settings));
-
   if (settings.treino && "Notification" in window) {
     Notification.requestPermission().then(function(perm) {
-      if (perm === "granted") showToast("✅ Notificações ativadas!");
-      else showToast("⚠️ Permissão negada. Ative nas configurações do navegador.");
+      showToast(perm === "granted" ? "✅ Notificações ativadas!" : "⚠️ Ative notificações nas configurações do navegador.");
     });
   } else {
     showToast("✅ Configurações salvas!");
@@ -1496,261 +1999,14 @@ function saveNotifSettings() {
   closeModal("modalNotif");
 }
 
-// ─── EXPORT WHATSAPP ───
+// ── EXPORT WHATSAPP ──
 function exportToWhatsApp() {
   if (!rawAIText) { showToast("Gere um plano primeiro!"); return; }
-  window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent("*Meu Plano FitPlan Pro IA*\n\n" + rawAIText), "_blank");
+  var text = "*Meu Plano FitPlan AI*\n\n" + rawAIText.substring(0, 4000);
+  window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), "_blank");
 }
 
-
-// ─── PAYWALL / PRO ───
-var PRO_FEATURES_LIMIT = { plansGenerated: 0, scansUsed: 0, photosUsed: 0 };
-var isPro = false;
-
-function initProState() {
-  isPro = localStorage.getItem("fp_is_pro") === "true";
-  var stats = localStorage.getItem("fp_usage");
-  if (stats) PRO_FEATURES_LIMIT = JSON.parse(stats);
-  applyProUI();
-}
-
-function applyProUI() {
-  var scannerBanner = document.getElementById("scannerBanner");
-  var photoBanner = document.getElementById("photoBanner");
-  var scannerUpload = document.querySelector(".photo-upload-area[onclick*='scannerInput']");
-  var photoUpload = document.querySelector(".photo-upload-area[onclick*='photoInput']");
-
-  if (isPro) {
-    if (scannerBanner) scannerBanner.style.display = "none";
-    if (photoBanner) photoBanner.style.display = "none";
-    if (scannerUpload) scannerUpload.style.display = "block";
-    if (photoUpload) photoUpload.style.display = "block";
-  } else {
-    // Free: 1 scan e 1 foto grátis
-    var scanLocked = PRO_FEATURES_LIMIT.scansUsed >= 1;
-    var photoLocked = PRO_FEATURES_LIMIT.photosUsed >= 1;
-    if (scannerBanner) scannerBanner.style.display = scanLocked ? "flex" : "none";
-    if (photoBanner) photoBanner.style.display = photoLocked ? "flex" : "none";
-    if (scannerUpload) scannerUpload.style.display = scanLocked ? "none" : "block";
-    if (photoUpload) photoUpload.style.display = photoLocked ? "none" : "block";
-  }
-}
-
-function openPaywall() {
-  document.getElementById("paywallOverlay").classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-function closePaywall() {
-  document.getElementById("paywallOverlay").classList.remove("open");
-  document.body.style.overflow = "";
-}
-
-document.getElementById("paywallOverlay").addEventListener("click", function(e) {
-  if (e.target === document.getElementById("paywallOverlay")) closePaywall();
-});
-
-var selectedPlan = "annual";
-function selectPlan(plan) {
-  selectedPlan = plan;
-  document.getElementById("planMonthly").classList.toggle("selected", plan === "monthly");
-  document.getElementById("planAnnual").classList.toggle("selected", plan === "annual");
-  var btn = document.getElementById("btnUpgrade");
-  btn.innerText = plan === "annual" ? "⚡ Começar PRO — R$9,90/mês" : "⚡ Começar PRO — R$19,90/mês";
-}
-
-function handleUpgrade() {
-  // Aqui você integra Hotmart, Stripe ou Lemon Squeezy
-  // Por ora abre uma URL de checkout (substitua pela sua)
-  var urls = {
-    annual: "https://hotmart.com/seu-produto-anual",   // <- substitua
-    monthly: "https://hotmart.com/seu-produto-mensal"  // <- substitua
-  };
-  showToast("🔗 Redirecionando para o checkout...");
-  setTimeout(function() {
-    window.open(urls[selectedPlan], "_blank");
-  }, 600);
-}
-
-function restorePurchase() {
-  // Em produção: verificar token/webhook do Hotmart
-  var code = prompt("Digite seu código de ativação PRO:");
-  if (code && code.length > 4) {
-    activatePro();
-  } else {
-    showToast("❌ Código inválido.");
-  }
-}
-
-function activatePro() {
-  isPro = true;
-  localStorage.setItem("fp_is_pro", "true");
-  applyProUI();
-  closePaywall();
-  showToast("👑 PRO ativado! Bem-vindo!");
-  // Atualiza badge header
-  var btn = document.querySelector(".header-pro-btn");
-  if (btn) { btn.innerText = "👑 PRO"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.onclick = null; }
-}
-
-// Intercepta scanner para contar uso
-var _origScanFood = scanFood;
-scanFood = async function(event) {
-  if (!isPro && PRO_FEATURES_LIMIT.scansUsed >= 1) { openPaywall(); return; }
-  await _origScanFood(event);
-  if (!isPro) {
-    PRO_FEATURES_LIMIT.scansUsed++;
-    localStorage.setItem("fp_usage", JSON.stringify(PRO_FEATURES_LIMIT));
-    applyProUI();
-  }
-};
-
-// Intercepta foto para contar uso
-var _origAnalyzePhoto = analyzePhoto;
-analyzePhoto = async function(event) {
-  if (!isPro && PRO_FEATURES_LIMIT.photosUsed >= 1) { openPaywall(); return; }
-  await _origAnalyzePhoto(event);
-  if (!isPro) {
-    PRO_FEATURES_LIMIT.photosUsed++;
-    localStorage.setItem("fp_usage", JSON.stringify(PRO_FEATURES_LIMIT));
-    applyProUI();
-  }
-};
-
-
-// ─── GERENCIAMENTO DA CHAVE GROQ ───
-var userGroqKey = "";
-var keyVisible = false;
-
-function getActiveGroqKey() {
-  return userGroqKey || "";
-}
-
-function loadSavedKey() {
-  var saved = localStorage.getItem("fp_groq_key");
-  if (saved && saved.startsWith("gsk_") && saved.length > 20) {
-    userGroqKey = saved;
-    return true;
-  }
-  return false;
-}
-
-function validateKeyInput(input) {
-  var val = input.value.trim();
-  var btn = document.getElementById("btnConnect");
-  var errEl = document.getElementById("apikeyError");
-  if (val.length === 0) {
-    input.className = "apikey-input";
-    btn.disabled = true;
-    errEl.style.display = "none";
-  } else if (val.startsWith("gsk_") && val.length >= 20) {
-    input.className = "apikey-input success";
-    btn.disabled = false;
-    errEl.style.display = "none";
-  } else {
-    input.className = "apikey-input error";
-    btn.disabled = true;
-    errEl.style.display = "block";
-  }
-}
-
-function toggleKeyVisibility() {
-  keyVisible = !keyVisible;
-  var input = document.getElementById("apikeyInput");
-  input.type = keyVisible ? "text" : "password";
-  var eyeBtn = document.getElementById("eyeBtn");
-  eyeBtn.innerHTML = keyVisible
-    ? '<i data-lucide="eye-off" size="18"></i>'
-    : '<i data-lucide="eye" size="18"></i>';
-  lucide.createIcons();
-}
-
-async function connectGroqKey() {
-  var key = document.getElementById("apikeyInput").value.trim();
-  if (!key.startsWith("gsk_") || key.length < 20) return;
-
-  var btn = document.getElementById("btnConnect");
-  var txt = document.getElementById("connectText");
-  var loader = document.getElementById("connectLoader");
-  btn.disabled = true;
-  txt.style.display = "none";
-  loader.style.display = "block";
-
-  // Testa a chave com uma requisição mínima
-  try {
-    var res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-      body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "user", content: "ok" }], max_tokens: 5 })
-    });
-    var data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-
-    // Sucesso
-    userGroqKey = key;
-    localStorage.setItem("fp_groq_key", key);
-    updateKeyStatusText();
-    hideApiKeyScreen();
-    showToast("✅ IA conectada com sucesso!");
-  } catch (e) {
-    txt.style.display = "block";
-    loader.style.display = "none";
-    btn.disabled = false;
-    var errEl = document.getElementById("apikeyError");
-    errEl.innerText = "❌ " + (e.message || "Chave inválida ou sem conexão.");
-    errEl.style.display = "block";
-    document.getElementById("apikeyInput").className = "apikey-input error";
-  }
-}
-
-function skipApiKey() {
-  userGroqKey = "";
-  hideApiKeyScreen();
-  showToast("⚠️ Modo demo: IA desativada");
-}
-
-function hideApiKeyScreen() {
-  var screen = document.getElementById("apikeyScreen");
-  screen.classList.add("hidden");
-  setTimeout(function() { screen.style.display = "none"; }, 400);
-}
-
-function changeApiKey() {
-  userGroqKey = "";
-  localStorage.removeItem("fp_groq_key");
-  var screen = document.getElementById("apikeyScreen");
-  screen.style.display = "flex";
-  screen.classList.remove("hidden");
-  document.getElementById("apikeyInput").value = "";
-  document.getElementById("apikeyInput").className = "apikey-input";
-  document.getElementById("btnConnect").disabled = true;
-  document.getElementById("apikeyError").style.display = "none";
-  document.body.style.overflow = "hidden";
-}
-
-function updateKeyStatusText() {
-  var el = document.getElementById("keyStatusText");
-  if (!el) return;
-  if (userGroqKey) {
-    el.innerText = "Conectada: " + userGroqKey.substring(0,8) + "••••••••••••";
-    el.style.color = "var(--primary)";
-  } else {
-    el.innerText = "Nenhuma chave configurada";
-    el.style.color = "var(--danger)";
-  }
-}
-
-function initApiKey() {
-  if (loadSavedKey()) {
-    hideApiKeyScreen();
-    updateKeyStatusText();
-  } else {
-    // Mostra tela de configuração
-    document.getElementById("apikeyScreen").style.display = "flex";
-    lucide.createIcons();
-  }
-}
-
-// ─── INICIALIZAR ÍCONES ───
+// ── INICIALIZAR ÍCONES ──
 lucide.createIcons();
 </script>
 </body>
