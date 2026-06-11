@@ -1,964 +1,252 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FitPlan AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#060608;--s1:#0f0f12;--s2:#18181d;--s3:#222228;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
-  --green:#00E676;--green-dim:rgba(0,230,118,0.12);--green-glow:rgba(0,230,118,0.25);
-  --blue:#2979FF;--blue-dim:rgba(41,121,255,0.13);
-  --red:#FF3D3D;--gold:#FFD600;--purple:#9C6FFF;
-  --text:#F5F5F7;--muted:#6E6E7A;--muted2:#9A9AA8;
-  --r-xl:24px;--r-lg:18px;--r-md:12px;--r-sm:8px;
-  --font:'Inter',sans-serif;--font-head:'Space Grotesk',sans-serif;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:120px;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
-body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(0,230,118,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
-
-/* ── LAYOUT ── */
-.app{max-width:580px;margin:0 auto;padding:0 14px;position:relative;z-index:1;}
-
-/* ── HEADER ── */
-.header{display:flex;justify-content:space-between;align-items:center;padding:14px 0 14px;position:sticky;top:0;background:rgba(6,6,8,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:200;border-bottom:1px solid var(--border);margin-bottom:22px;}
-.brand{display:flex;align-items:center;gap:10px;}
-.brand-logo{width:34px;height:34px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.brand-name{font-family:var(--font-head);font-size:20px;font-weight:700;letter-spacing:-0.3px;}
-.brand-name span{color:var(--green);}
-.hdr-right{display:flex;align-items:center;gap:10px;}
-.streak{display:flex;align-items:center;gap:5px;background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.25);border-radius:100px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--gold);}
-.ai-pill{display:flex;align-items:center;gap:6px;background:var(--green-dim);border:1px solid rgba(0,230,118,0.2);border-radius:100px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--green);}
-.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 var(--green-glow)}50%{opacity:.7;box-shadow:0 0 0 5px transparent}}
-
-/* ── CARDS ── */
-.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px;margin-bottom:14px;}
-.card-sm{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;}
-
-/* ── SECTION LABELS ── */
-.sec-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
-.sec-label i{font-style:normal;font-size:14px;}
-
-/* ── INPUTS ── */
-.field{margin-bottom:14px;}
-.field label{display:block;font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:6px;letter-spacing:.3px;}
-.inp{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:13px 14px;border-radius:var(--r-md);font-size:15px;font-family:var(--font);outline:none;transition:border-color .2s,box-shadow .2s;}
-.inp:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim);}
-.inp::placeholder{color:var(--muted);}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-
-/* ── CHIPS ── */
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-.chip{background:var(--bg);border:1px solid var(--border2);color:var(--muted2);padding:9px 16px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;user-select:none;}
-.chip:active{transform:scale(.96);}
-.chip.on{background:var(--green-dim);border-color:var(--green);color:var(--green);}
-
-/* ── BUTTONS ── */
-.btn-primary{width:100%;background:var(--green);color:#000;border:none;padding:17px;border-radius:var(--r-lg);font-size:15px;font-weight:800;font-family:var(--font-head);cursor:pointer;display:flex;justify-content:center;align-items:center;gap:9px;transition:all .2s;letter-spacing:-.2px;}
-.btn-primary:active{transform:scale(.98);background:#00c45f;}
-.btn-primary:disabled{opacity:.55;cursor:not-allowed;}
-.btn-ghost{background:var(--s2);color:var(--text);border:1px solid var(--border2);padding:9px 14px;border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;}
-.btn-ghost:active{transform:scale(.97);}
-.btn-danger{background:rgba(255,61,61,0.1);color:var(--red);border:1px solid rgba(255,61,61,0.2);padding:9px 14px;border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer;width:100%;}
-
-/* ── TABS ── */
-.tab-bar{display:flex;gap:4px;background:var(--s1);padding:5px;border-radius:var(--r-lg);margin-bottom:14px;overflow-x:auto;scrollbar-width:none;border:1px solid var(--border);}
-.tab-bar::-webkit-scrollbar{display:none;}
-.tab-btn{flex-shrink:0;padding:9px 13px;background:transparent;border:none;color:var(--muted);font-size:11.5px;font-weight:700;border-radius:var(--r-md);cursor:pointer;white-space:nowrap;transition:all .25s;display:flex;align-items:center;gap:5px;letter-spacing:.2px;}
-.tab-btn.on{background:var(--s3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.3);}
-.tab-pane{display:none;animation:fadeUp .35s ease;}
-.tab-pane.on{display:block;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── CHAT ── */
-.chat-wrap{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;padding-right:2px;margin-bottom:14px;scroll-behavior:smooth;}
-.chat-wrap::-webkit-scrollbar{width:3px;}
-.chat-wrap::-webkit-scrollbar-track{background:transparent;}
-.chat-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
-.bubble{max-width:84%;padding:12px 15px;border-radius:18px;font-size:14px;line-height:1.6;}
-.bubble.ai{background:var(--s2);border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start;color:var(--text);}
-.bubble.user{background:var(--blue);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;}
-.chat-in{display:flex;gap:8px;}
-.chat-in .inp{flex:1;}
-.btn-send{background:var(--green);color:#000;border:none;border-radius:var(--r-md);width:48px;min-width:48px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
-.btn-send:disabled{opacity:.5;cursor:not-allowed;}
-.btn-send:active{transform:scale(.95);}
-
-/* ── WORKOUT ── */
-.week-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
-.wk-btn{background:var(--bg);border:1px solid var(--border2);color:var(--muted);padding:6px 14px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
-.wk-btn.on{background:var(--blue-dim);border-color:var(--blue);color:#7EB8FF;}
-.day-hdr{color:var(--green);font-size:13px;font-weight:700;font-family:var(--font-head);margin:18px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
-.ex-card{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-lg);padding:14px;margin-bottom:9px;transition:border-color .2s;}
-.ex-card.pr{border-color:var(--gold);}
-.ex-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-.ex-name{font-size:15px;font-weight:700;margin-bottom:3px;}
-.ex-sets{font-size:11px;color:var(--blue);font-weight:700;letter-spacing:.3px;}
-.pr-tag{background:rgba(255,214,0,0.12);border:1px solid rgba(255,214,0,0.3);color:var(--gold);font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;}
-.ex-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
-.kg-inp{width:66px;background:var(--s2);border:1px solid var(--border2);color:var(--green);padding:8px;border-radius:var(--r-sm);text-align:center;font-weight:700;outline:none;font-size:14px;font-family:'Space Grotesk',sans-serif;}
-.kg-inp:focus{border-color:var(--green);}
-.btn-done{flex:1;background:var(--green-dim);color:var(--green);border:1px solid rgba(0,230,118,0.2);padding:9px 12px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
-.btn-done:active{background:rgba(0,230,118,0.25);}
-.timer-btn{background:var(--s2);border:1px solid var(--border2);color:#7EB8FF;padding:8px 12px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .2s;user-select:none;white-space:nowrap;}
-.timer-btn.run{background:rgba(41,121,255,0.15);border-color:var(--blue);}
-.gif-box{display:none;width:100%;height:190px;border-radius:var(--r-sm);margin-top:10px;border:1px solid var(--border);overflow:hidden;background:var(--bg);}
-
-/* ── DIET ── */
-.macro-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
-.macro-cell{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-md);padding:10px 6px;text-align:center;}
-.macro-val{font-family:var(--font-head);font-weight:700;font-size:14px;}
-.macro-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:2px;}
-.food-row{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);padding:11px;border-radius:var(--r-md);margin-bottom:9px;}
-.food-img{width:48px;height:48px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0;}
-.food-txt{font-size:13px;line-height:1.5;color:var(--text);flex:1;}
-
-/* ── SCANNER / PHOTO ── */
-.upload-zone{border:2px dashed var(--border2);border-radius:var(--r-xl);padding:30px 16px;text-align:center;cursor:pointer;transition:all .25s;background:var(--bg);position:relative;overflow:hidden;}
-.upload-zone::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(0,230,118,0.03));pointer-events:none;}
-.upload-zone:hover,.upload-zone:active{border-color:var(--green);background:var(--green-dim);}
-.upload-icon{font-size:40px;margin-bottom:10px;display:block;}
-.upload-title{font-weight:700;font-size:15px;margin-bottom:4px;}
-.upload-sub{font-size:12px;color:var(--muted);}
-.scan-preview{width:100%;border-radius:var(--r-lg);margin-top:12px;display:none;max-height:280px;object-fit:cover;}
-.scan-result{background:var(--bg);border:1px solid var(--green);border-radius:var(--r-lg);padding:14px;margin-top:12px;font-size:14px;line-height:1.65;display:none;}
-.photo-result{background:var(--bg);border:1px solid var(--purple);border-radius:var(--r-lg);padding:14px;margin-top:12px;font-size:14px;line-height:1.65;display:none;}
-.vision-warn{background:rgba(255,214,0,0.07);border:1px solid rgba(255,214,0,0.2);border-radius:var(--r-md);padding:10px 12px;font-size:12px;color:rgba(255,214,0,0.85);margin-bottom:12px;line-height:1.5;}
-
-/* ── PROGRESS ── */
-.chart-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;height:240px;position:relative;width:100%;}
-.stat-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:10px;}
-.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
-.stat-row:last-child{border-bottom:none;}
-.stat-lbl{font-size:13px;color:var(--muted2);}
-.stat-val{font-size:14px;font-weight:700;font-family:var(--font-head);}
-
-/* ── TROPHIES ── */
-.trophy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.trophy{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 8px;text-align:center;transition:all .3s;}
-.trophy.won{border-color:var(--gold);background:rgba(255,214,0,0.06);}
-.t-icon{font-size:26px;margin-bottom:7px;filter:grayscale(1) opacity(.25);}
-.trophy.won .t-icon{filter:none;}
-.t-name{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-.trophy.won .t-name{color:var(--gold);}
-
-/* ── MODALS ── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:600;display:flex;align-items:flex-end;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s;}
-.modal-bg.open{opacity:1;pointer-events:all;}
-.modal{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r-xl) var(--r-xl) 20px 20px;padding:22px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;transform:translateY(40px);transition:transform .3s;}
-.modal-bg.open .modal{transform:translateY(0);}
-.modal-title{font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:3px;}
-.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px;}
-.modal-x{float:right;background:var(--s3);border:none;color:var(--muted2);cursor:pointer;font-size:18px;line-height:1;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
-
-/* ── CHECKIN ── */
-.cq{margin-bottom:14px;}
-.cq p{font-size:14px;font-weight:600;margin-bottom:8px;}
-.emoji-row{display:flex;gap:8px;}
-.e-btn{flex:1;background:var(--bg);border:2px solid var(--border2);border-radius:var(--r-md);padding:10px 4px;font-size:22px;cursor:pointer;transition:all .2s;text-align:center;line-height:1;}
-.e-btn.on{border-color:var(--green);background:var(--green-dim);transform:scale(1.06);}
-
-/* ── TOGGLE ── */
-.notif-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
-.notif-row:last-child{border-bottom:none;}
-.toggle{width:46px;height:26px;background:var(--s3);border-radius:100px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;}
-.toggle.on{background:var(--green);}
-.knob{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
-.toggle.on .knob{transform:translateX(20px);}
-
-/* ── ACTION BAR ── */
-.action-bar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-
-/* ── LOADER ── */
-.spin{border:3px solid rgba(0,0,0,.2);border-left-color:#000;border-radius:50%;width:18px;height:18px;animation:rot .7s linear infinite;display:inline-block;}
-.spin-w{border:2.5px solid rgba(255,255,255,.15);border-left-color:#fff;border-radius:50%;width:15px;height:15px;animation:rot .7s linear infinite;display:inline-block;}
-@keyframes rot{to{transform:rotate(360deg)}}
-
-/* ── TOAST ── */
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--s2);color:var(--text);padding:11px 20px;border-radius:100px;font-size:13px;font-weight:600;box-shadow:0 12px 40px rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.68,-.55,.27,1.55);z-index:9999;border:1px solid var(--border2);white-space:nowrap;max-width:90vw;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-
-/* ── DIVIDER ── */
-.div{height:1px;background:var(--border);margin:16px 0;}
-
-/* ── PROFILE HERO ── */
-.profile-hero{background:linear-gradient(135deg,var(--s1) 0%,rgba(0,230,118,0.05) 100%);border:1px solid var(--border);border-radius:var(--r-xl);padding:22px 20px;margin-bottom:14px;position:relative;overflow:hidden;}
-.profile-hero::after{content:'💪';position:absolute;right:18px;bottom:10px;font-size:64px;opacity:.06;}
-.ph-title{font-family:var(--font-head);font-size:22px;font-weight:800;line-height:1.2;margin-bottom:6px;}
-.ph-sub{font-size:13px;color:var(--muted2);line-height:1.5;}
-
-/* ── EMPTY STATE ── */
-.empty{text-align:center;padding:32px 16px;color:var(--muted);}
-.empty-icon{font-size:40px;margin-bottom:10px;}
-.empty p{font-size:13px;line-height:1.6;}
-
-/* ── BOTTOM NAV ── */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,8,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:300;}
-.bnav-inner{max-width:580px;margin:0 auto;display:flex;justify-content:space-around;padding:0 8px;}
-.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:600;padding:6px 12px;cursor:pointer;transition:color .2s;letter-spacing:.3px;}
-.bnav-btn.on{color:var(--green);}
-.bnav-icon{font-size:20px;line-height:1;}
-
-/* ── RESPONSIVE ── */
-@media(max-width:360px){.grid3{grid-template-columns:repeat(3,1fr);gap:6px;}.macro-row{gap:5px;}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitPlan - Seu Personal Trainer com IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background-color: #09090b;
+            color: #f4f4f5;
+            font-family: 'Inter', sans-serif;
+        }
+        .card-bg {
+            background-color: #141416;
+            border: 1px solid #27272a;
+        }
+    </style>
 </head>
-<body>
-<div class="app">
-  <header class="header">
-    <div class="brand">
-      <div class="brand-logo">⚡</div>
-      <div class="brand-name">Fit<span>Plan</span></div>
-    </div>
-    <div class="hdr-right">
-      <div class="streak">🔥 <span id="streakN">0</span></div>
-      <div class="ai-pill"><div class="ai-dot"></div> IA Ativa</div>
-    </div>
-  </header>
+<body class="flex flex-col items-center justify-start min-h-screen p-4 sm:p-6 selection:bg-emerald-500 selection:text-black">
 
-  <div id="formSection">
-    <div class="profile-hero">
-      <div class="ph-title">Seu Personal<br>Trainer com IA</div>
-      <div class="ph-sub">Plano personalizado com nutrição,<br>treino e análise de progresso.</div>
-    </div>
-    <div class="card">
-      <div class="sec-label"><i>👤</i> Seus Dados</div>
-      <div class="field"><label>Como quer ser chamado?</label><input type="text" id="uName" class="inp" placeholder="Seu nome"></div>
-      <div class="grid3">
-        <div class="field"><label>Idade</label><input type="number" id="uAge" class="inp" value="25" min="10" max="100"></div>
-        <div class="field"><label>Peso (kg)</label><input type="number" id="uWeight" class="inp" value="75"></div>
-        <div class="field"><label>Altura (cm)</label><input type="number" id="uHeight" class="inp" value="175"></div>
-      </div>
-      <div class="sec-label" style="margin-top:4px;"><i>🎯</i> Objetivo</div>
-      <div class="chips">
-        <div class="chip on" data-v="Hipertrofia">💪 Hipertrofia</div>
-        <div class="chip" data-v="Emagrecimento">🔥 Secar</div>
-        <div class="chip" data-v="Condicionamento">❤️ Saúde</div>
-      </div>
-      <div class="field"><label>Contexto extra (opcional)</label><textarea id="uCtx" class="inp" rows="2" placeholder="Tenho dor no joelho, treino 4x semana..."></textarea></div>
-      <button class="btn-primary" id="btnGen" onclick="gerarPlano()">
-        <span id="btnTxt">⚡ Criar Plano com IA</span>
-        <span id="btnLoad" style="display:none"><span class="spin"></span></span>
-      </button>
-    </div>
-  </div>
+    <div class="w-full max-w-md flex flex-col gap-5">
+        
+        <header class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-2 text-xl font-bold tracking-tight">
+                <div class="bg-emerald-500 text-black p-1.5 rounded-xl flex items-center justify-center">
+                    <i data-lucide="zap" class="w-5 h-5 fill-current"></i>
+                </div>
+                <span>Fit<span class="text-emerald-500">Plan</span></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-zinc-800/80 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm border border-zinc-700">
+                    <span class="text-orange-500">🔥</span>
+                    <span class="font-bold text-zinc-300">0</span>
+                </div>
+                <div class="bg-emerald-950/50 text-emerald-400 border border-emerald-800/60 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    IA Ativa
+                </div>
+            </div>
+        </header>
 
-  <div id="resultSection" style="display:none;">
-    <div class="action-bar">
-      <button class="btn-ghost" onclick="abrirModal('mCheckin')">📊 Check-in</button>
-      <button class="btn-ghost" onclick="exportWpp()">📤 WhatsApp</button>
-      <button class="btn-ghost" onclick="window.print()">🖨️ PDF</button>
-    </div>
+        <div class="card-bg rounded-3xl p-6 relative overflow-hidden group">
+            <div class="absolute right-4 bottom-2 opacity-10 text-emerald-500 group-hover:scale-110 transition-transform duration-300">
+                <i data-lucide="dumbbell" class="w-28 h-28"></i>
+            </div>
+            <h1 class="text-2xl font-black text-zinc-100 mb-1">Seu Personal Trainer com IA</h1>
+            <p class="text-zinc-400 text-sm leading-relaxed max-w-[85%]">
+                Plano personalizado com nutrição, treino e análise de progresso.
+            </p>
+        </div>
 
-    <div class="tab-bar">
-      <button class="tab-btn on" onclick="goTab('tChat',this)">💬 Personal</button>
-      <button class="tab-btn" onclick="goTab('tTreino',this)">🏋️ Treino</button>
-      <button class="tab-btn" onclick="goTab('tDieta',this)">🥗 Dieta</button>
-      <button class="tab-btn" onclick="goTab('tScanner',this)">📸 Scanner</button>
-      <button class="tab-btn" onclick="goTab('tEvolucao',this)">📈 Evolução</button>
-      <button class="tab-btn" onclick="goTab('tConquistas',this)">🏆 Conquistas</button>
-    </div>
+        <main class="card-bg rounded-3xl p-6 flex flex-col gap-6">
+            
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-2 text-zinc-400 text-xs font-bold tracking-widest uppercase">
+                    <i data-lucide="user" class="w-4 h-4 text-emerald-500"></i>
+                    Seus Dados
+                </div>
 
-    <div id="tChat" class="tab-pane on card">
-      <div class="chat-wrap" id="chatBox"></div>
-      <div class="chat-in">
-        <input type="text" id="chatInp" class="inp" placeholder="Pergunte ao seu personal..." onkeydown="if(event.key==='Enter')enviarChat()">
-        <button class="btn-send" id="btnSend" onclick="enviarChat()">➤</button>
-      </div>
-    </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold text-zinc-400">Como quer ser chamado?</label>
+                    <input type="text" id="nome" value="Jeferson" class="w-full bg-zinc-900/90 border border-zinc-800 rounded-xl px-4 py-3.5 text-zinc-200 font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
+                </div>
 
-    <div id="tTreino" class="tab-pane card">
-      <div class="sec-label"><i>📅</i> Plano 4 Semanas</div>
-      <div class="week-tabs">
-        <div class="wk-btn on" onclick="verSemana(1,this)">Semana 1</div>
-        <div class="wk-btn" onclick="verSemana(2,this)">Semana 2</div>
-        <div class="wk-btn" onclick="verSemana(3,this)">Semana 3</div>
-        <div class="wk-btn" onclick="verSemana(4,this)">Semana 4</div>
-      </div>
-      <div id="workoutContent"></div>
-    </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-zinc-400">Idade</label>
+                        <input type="number" id="idade" value="25" class="w-full bg-zinc-900/90 border border-zinc-800 rounded-xl px-3 py-3.5 text-center text-zinc-200 font-medium focus:outline-none focus:border-emerald-500 transition-all">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-zinc-400">Peso (kg)</label>
+                        <input type="number" id="peso" value="75" class="w-full bg-zinc-900/90 border border-zinc-800 rounded-xl px-3 py-3.5 text-center text-zinc-200 font-medium focus:outline-none focus:border-emerald-500 transition-all">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-zinc-400">Altura (cm)</label>
+                        <input type="number" id="altura" value="175" class="w-full bg-zinc-900/90 border border-zinc-800 rounded-xl px-3 py-3.5 text-center text-zinc-200 font-medium focus:outline-none focus:border-emerald-500 transition-all">
+                    </div>
+                </div>
+            </div>
 
-    <div id="tDieta" class="tab-pane card">
-      <div class="sec-label"><i>🥗</i> Plano Alimentar</div>
-      <div class="macro-row">
-        <div class="macro-cell" style="border-color:rgba(255,61,61,.3)"><div class="macro-val" id="mKcal" style="color:var(--red)">--</div><div class="macro-lbl">Kcal</div></div>
-        <div class="macro-cell" style="border-color:rgba(41,121,255,.3)"><div class="macro-val" id="mCarb" style="color:#7EB8FF">--</div><div class="macro-lbl">Carb</div></div>
-        <div class="macro-cell" style="border-color:rgba(0,230,118,.3)"><div class="macro-val" id="mProt" style="color:var(--green)">--</div><div class="macro-lbl">Prot</div></div>
-        <div class="macro-cell" style="border-color:rgba(255,214,0,.3)"><div class="macro-val" id="mGord" style="color:var(--gold)">--</div><div class="macro-lbl">Gord</div></div>
-      </div>
-      <div id="dietContent"></div>
-    </div>
+            <div class="flex flex-col gap-3">
+                <div class="flex items-center gap-2 text-zinc-400 text-xs font-bold tracking-widest uppercase">
+                    <i data-lucide="target" class="w-4 h-4 text-emerald-500"></i>
+                    Objetivo
+                </div>
 
-    <div id="tScanner" class="tab-pane card">
-      <div class="sec-label"><i>🍽️</i> Scanner de Alimentos</div>
-      <p style="font-size:13px;color:var(--muted2);margin-bottom:14px;">Fotografe seu prato — a IA estima calorias e macros instantaneamente.</p>
-      <div class="upload-zone" onclick="document.getElementById('scanFile').click()">
-        <span class="upload-icon">📷</span>
-        <div class="upload-title">Fotografar prato</div>
-        <div class="upload-sub">Toque para abrir a câmera ou galeria</div>
-      </div>
-      <input type="file" id="scanFile" accept="image/*" capture="environment" style="display:none;" onchange="scanAlimento(event)">
-      <img id="scanPrev" class="scan-preview" alt="">
-      <div id="scanRes" class="scan-result"></div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="selecionarObjetivo('hipertrofia', this)" class="btn-objetivo flex items-center justify-center gap-1 py-3 px-2 rounded-xl border font-semibold text-xs transition-all bg-emerald-950/40 border-emerald-500/80 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.1)]">
+                        💪 Hipertrofia
+                    </button>
+                    <button type="button" onclick="selecionarObjetivo('secar', this)" class="btn-objetivo flex items-center justify-center gap-1 py-3 px-2 rounded-xl border border-zinc-800 bg-zinc-900/40 text-zinc-400 font-semibold text-xs hover:border-zinc-700 transition-all">
+                        🔥 Secar
+                    </button>
+                    <button type="button" onclick="selecionarObjetivo('saude', this)" class="btn-objetivo flex items-center justify-center gap-1 py-3 px-2 rounded-xl border border-zinc-800 bg-zinc-900/40 text-zinc-400 font-semibold text-xs hover:border-zinc-700 transition-all">
+                        ❤️ Saúde
+                    </button>
+                </div>
+            </div>
 
-      <div class="div"></div>
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-zinc-400 flex items-center gap-1.5">
+                    Contexto extra (opcional)
+                </label>
+                <textarea id="contexto" placeholder="Tenho dor no joelho, treino 4x semana..." rows="3" class="w-full bg-zinc-900/90 border border-zinc-800 rounded-xl p-4 text-zinc-200 text-sm focus:outline-none focus:border-emerald-500 transition-all resize-none"></textarea>
+            </div>
 
-      <div class="sec-label"><i>💪</i> Análise Corporal</div>
-      <p style="font-size:13px;color:var(--muted2);margin-bottom:14px;">Tire uma foto do corpo — a IA analisa sua composição e evolução.</p>
-      <div class="upload-zone" onclick="document.getElementById('photoFile').click()">
-        <span class="upload-icon">🏋️</span>
-        <div class="upload-title">Foto do corpo</div>
-        <div class="upload-sub">A IA analisa % gordura e pontos para melhorar</div>
-      </div>
-      <input type="file" id="photoFile" accept="image/*" capture="user" style="display:none;" onchange="analisarFoto(event)">
-      <img id="photoPrev" class="scan-preview" alt="">
-      <div id="photoRes" class="photo-result"></div>
+            <button id="btnCriarPlano" onclick="enviarDados()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_4px_20px_rgba(16,185,129,0.25)]">
+                <i data-lucide="zap" class="w-5 h-5 fill-current"></i>
+                Criar Plano com IA
+            </button>
+
+        </main>
+
+        <div id="toast" class="hidden transform translate-y-4 opacity-0 transition-all duration-300 w-full card-bg border-red-900/50 p-4 rounded-2xl flex items-start gap-3 shadow-xl">
+            <div class="bg-red-950/80 text-red-400 p-2 rounded-xl flex items-center justify-center border border-red-900/50" id="toastIconContainer">
+                <i data-lucide="circle-x" id="toastIcon" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 flex flex-col gap-0.5">
+                <span class="text-sm font-bold text-zinc-200" id="toastTitle">Erro de Conexão</span>
+                <span class="text-xs text-zinc-400 leading-normal" id="toastMessage">Incapaz de buscar os dados do servidor.</span>
+            </div>
+        </div>
+
     </div>
 
-    <div id="tEvolucao" class="tab-pane card">
-      <div class="sec-label"><i>📊</i> Volume de Carga</div>
-      <div class="chart-box"><canvas id="chartCanvas"></canvas></div>
-      <div class="div"></div>
-      <div id="monthlyReport"></div>
-      <div class="div"></div>
-      <button class="btn-danger" onclick="limparHistorico()">🗑 Resetar histórico de cargas</button>
-    </div>
+    <script>
+        // Inicializa os ícones do Lucide
+        lucide.createIcons();
 
-    <div id="tConquistas" class="tab-pane card">
-      <div class="sec-label"><i>🏆</i> Suas Conquistas</div>
-      <div class="trophy-grid" id="trophyGrid"></div>
-    </div>
-  </div>
-</div>
+        let objetivoSelecionado = 'hipertrofia';
 
-<nav class="bottom-nav" id="bottomNav" style="display:none;">
-  <div class="bnav-inner">
-    <button class="bnav-btn on" onclick="goTab('tChat',null,'bnav-0')"><span class="bnav-icon">💬</span>Personal</button>
-    <button class="bnav-btn" onclick="goTab('tTreino',null,'bnav-1')"><span class="bnav-icon">🏋️</span>Treino</button>
-    <button class="bnav-btn" onclick="goTab('tDieta',null,'bnav-2')"><span class="bnav-icon">🥗</span>Dieta</button>
-    <button class="bnav-btn" onclick="goTab('tScanner',null,'bnav-3')"><span class="bnav-icon">📸</span>Scanner</button>
-    <button class="bnav-btn" onclick="goTab('tEvolucao',null,'bnav-4')"><span class="bnav-icon">📈</span>Evolução</button>
-  </div>
-</nav>
+        // Função simples para alternar os botões de objetivo
+        function selecionarObjetivo(objetivo, elemento) {
+            objetivoSelecionado = objetivo;
+            
+            // Reseta todos os botões
+            document.querySelectorAll('.btn-objetivo').forEach(btn => {
+                btn.className = "btn-objetivo flex items-center justify-center gap-1 py-3 px-2 rounded-xl border border-zinc-800 bg-zinc-900/40 text-zinc-400 font-semibold text-xs hover:border-zinc-700 transition-all";
+            });
 
-<div class="toast" id="toastEl"></div>
+            // Ativa o selecionado
+            elemento.className = "btn-objetivo flex items-center justify-center gap-1 py-3 px-2 rounded-xl border font-semibold text-xs transition-all bg-emerald-950/40 border-emerald-500/80 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.1)]";
+        }
 
-<div class="modal-bg" id="mCheckin">
-  <div class="modal">
-    <button class="modal-x" onclick="fecharModal('mCheckin')">✕</button>
-    <div class="modal-title">Check-in Semanal</div>
-    <div class="modal-sub">3 perguntas → IA ajusta seu plano</div>
-    <div class="cq"><p>1. Como foi o sono?</p>
-      <div class="emoji-row">
-        <button class="e-btn" onclick="selE(this,'sleep')">😴<small>Ótimo</small></button>
-        <button class="e-btn" onclick="selE(this,'sleep')">😐<small>Regular</small></button>
-        <button class="e-btn" onclick="selE(this,'sleep')">😩<small>Ruim</small></button>
-      </div>
-    </div>
-    <div class="cq"><p>2. Sentiu dores?</p>
-      <div class="emoji-row">
-        <button class="e-btn" onclick="selE(this,'pain')">✅<small>Nenhuma</small></button>
-        <button class="e-btn" onclick="selE(this,'pain')">⚠️<small>Leve</small></button>
-        <button class="e-btn" onclick="selE(this,'pain')">🚨<small>Forte</small></button>
-      </div>
-    </div>
-    <div class="cq"><p>3. Bateu as metas?</p>
-      <div class="emoji-row">
-        <button class="e-btn" onclick="selE(this,'goal')">🏆<small>Todas</small></button>
-        <button class="e-btn" onclick="selE(this,'goal')">👍<small>A maioria</small></button>
-        <button class="e-btn" onclick="selE(this,'goal')">😞<small>Poucas</small></button>
-      </div>
-    </div>
-    <button class="btn-primary" onclick="enviarCheckin()" style="margin-top:8px;">Ajustar Plano com IA</button>
-  </div>
-</div>
+        // Função que trata a requisição corrigindo os bugs de JSON e CORS
+        async function enviarDados() {
+            const btn = document.getElementById('btnCriarPlano');
+            const toast = document.getElementById('toast');
+            
+            // Captura os dados da tela
+            const payload = {
+                nome: document.getElementById('nome').value,
+                idade: parseInt(document.getElementById('idade').value),
+                peso: parseFloat(document.getElementById('peso').value),
+                altura: parseInt(document.getElementById('altura').value),
+                objetivo: objetivoSelecionado,
+                contexto: document.getElementById('contexto').value
+            };
 
-<div class="modal-bg" id="mNotif">
-  <div class="modal">
-    <button class="modal-x" onclick="fecharModal('mNotif')">✕</button>
-    <div class="modal-title">Notificações</div>
-    <div class="notif-row"><div><div style="font-size:14px;font-weight:600;">Lembrete de Treino</div><div style="font-size:12px;color:var(--muted);">Notificação diária</div></div><div class="toggle" id="togTreino" onclick="this.classList.toggle('on')"><div class="knob"></div></div></div>
-    <div class="notif-row" style="padding-top:14px;"><label style="font-size:13px;color:var(--muted2);">Horário</label><input type="time" id="notifHora" class="inp" style="width:120px;padding:8px 12px;" value="07:00"></div>
-    <div class="notif-row"><div><div style="font-size:14px;font-weight:600;">Hidratação</div><div style="font-size:12px;color:var(--muted);">A cada 2h</div></div><div class="toggle" id="togAgua" onclick="this.classList.toggle('on')"><div class="knob"></div></div></div>
-    <button class="btn-primary" onclick="salvarNotif()" style="margin-top:14px;">Salvar</button>
-  </div>
-</div>
+            // Efeito de Carregando no Botão
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Gerando Plano...`;
+            esconderToast();
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-// ══════════════════════════════════════════
-//  IA — ANTHROPIC API CORRIGIDA (SEM ERRO DE CORS)
-// ══════════════════════════════════════════
-async function callAI(messages, maxTok, imageData) {
-  maxTok = maxTok || 1500;
+            // ⚠️ ATENÇÃO: Substitua pelo link correto da sua API na Vercel ou Supabase Edge Function
+            const URL_DA_API = 'https://SUA_API_AQUI.vercel.app/api/gerar-plano'; 
 
-  var apiMessages = messages.map(function(m) {
-    if (imageData && m.role === 'user' && m._hasImage) {
-      return {
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: imageData.type,
-              data: imageData.data
+            try {
+                const response = await fetch(URL_DA_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // 🔥 CORREÇÃO PRINCIPAL: Se o servidor responder com erro (Ex: 404, 500 ou erro de CORS)
+                if (!response.ok) {
+                    // Evita rodar o .json() e captura o erro como texto para análise
+                    const textoErro = await response.text();
+                    
+                    // Se a mensagem começar com algo relacionado ao proxy/CORS, traduz para o usuário
+                    if (textoErro.includes("corsd") || textoErro.toLowerCase().includes("cors")) {
+                        throw new Error("Bloqueio de CORS: O backend precisa permitir requisições vindas do GitHub Pages.");
+                    }
+                    
+                    throw new Error(`Erro do Servidor (${response.status}): ${textoErro.substring(0, 50)}...`);
+                }
+
+                // Se chegou aqui, a resposta é um JSON válido
+                const data = await response.json();
+                
+                // Sucesso! Trate os dados recebidos aqui (ex: redirecionar ou mostrar na tela)
+                exibirToast("Plano Gerado!", "Seu plano foi criado com sucesso pela IA.", "success");
+                console.log("Sucesso:", data);
+
+            } catch (error) {
+                console.error("Erro capturado:", error);
+                
+                // Trata especificamente o 'Failed to fetch' (queda de rede ou CORS extremo)
+                if (error.message === "Failed to fetch") {
+                    exibirToast("Unexpected token 'S'", "O servidor retornou um texto com erro CORS em vez de JSON. Verifique as configurações de origem no backend.", "error");
+                } else {
+                    exibirToast("Erro na Requisição", error.message, "error");
+                }
+            } finally {
+                // Restaura o botão
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="zap" class="w-5 h-5 fill-current"></i> Criar Plano com IA`;
+                lucide.createIcons(); // Atualiza os ícones do botão
             }
-          },
-          { type: 'text', text: m.content }
-        ]
-      };
-    }
-    return { role: m.role, content: m.content };
-  });
+        }
 
-  var body = {
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: maxTok,
-    messages: apiMessages
-  };
+        function exibirToast(titulo, mensagem, tipo) {
+            const toast = document.getElementById('toast');
+            const tTitle = document.getElementById('toastTitle');
+            const tMessage = document.getElementById('toastMessage');
+            const tIconCont = document.getElementById('toastIconContainer');
+            const tIcon = document.getElementById('toastIcon');
 
-  if (messages[0] && messages[0].role === 'system') {
-    body.system = messages[0].content;
-    body.messages = apiMessages.slice(1);
-  }
+            tTitle.innerText = titulo;
+            tMessage.innerText = mensagem;
 
-  // CORREÇÃO DE CORS: Usando um gateway de proxy público para passar a requisição sem bloqueio do navegador
-  // Caso use em produção estável, o ideal é rodar via Supabase Edge Functions ou Vercel Serverless
-  var proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-  var targetUrl = 'https://api.anthropic.com/v1/messages';
+            if (tipo === "success") {
+                toast.className = "w-full card-bg border-emerald-900/50 p-4 rounded-2xl flex items-start gap-3 shadow-xl transition-all duration-300";
+                tIconCont.className = "bg-emerald-950/80 text-emerald-400 p-2 rounded-xl flex items-center justify-center border border-emerald-900/50";
+                tIcon.setAttribute('data-lucide', 'circle-check');
+            } else {
+                toast.className = "w-full card-bg border-red-900/50 p-4 rounded-2xl flex items-start gap-3 shadow-xl transition-all duration-300";
+                tIconCont.className = "bg-red-950/80 text-red-400 p-2 rounded-xl flex items-center justify-center border border-red-900/50";
+                tIcon.setAttribute('data-lucide', 'circle-x');
+            }
 
-  var res;
-  try {
-    // Tenta primeiro direto caso esteja rodando em ambiente que ignore o CORS do client
-    res = await fetch(targetUrl, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'x-api-key': 'SUA_CHAVE_AQUI', // Lembre-se de injetar se necessário
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(body)
-    });
-  } catch(corsErr) {
-    // Se falhar por CORS, ele automaticamente usa o Fallback com cabeçalho limpo via Proxy
-    res = await fetch(proxyUrl + targetUrl, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(body)
-    });
-  }
+            lucide.createIcons();
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 50);
+        }
 
-  var data = await res.json();
-  if (!res.ok) throw new Error(data.error ? data.error.message : 'Erro na IA');
-  if (!data.content || !data.content[0]) throw new Error('Resposta vazia da IA');
-  return data.content.map(function(b){ return b.text || ''; }).join('');
-}
-
-// Converte file para base64
-function toBase64(file) {
-  return new Promise(function(res, rej) {
-    var r = new FileReader();
-    r.onload = function() {
-      var result = r.result;
-      if (!result || !result.includes(',')) return rej(new Error('Arquivo inválido'));
-      res({ data: result.split(',')[1], type: file.type });
-    };
-    r.onerror = function() { rej(new Error('Erro ao ler arquivo')); };
-    r.readAsDataURL(file);
-  });
-}
-
-// ══════════════════════════════════════════
-//  ESTADO GLOBAL
-// ══════════════════════════════════════════
-var objetivo = 'Hipertrofia';
-var chatHist = [];
-var weightHist = [];
-var weekPlans = {1:'',2:'',3:'',4:''};
-var prs = {};
-var streakDays = 0;
-var lastTrainDate = '';
-var rawText = '';
-var checkinData = {};
-var chart = null;
-var activeTimers = {};
-
-// ══════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════
-window.onload = function() {
-  try {
-    var wh = localStorage.getItem('fp_wh'); if (wh) weightHist = JSON.parse(wh);
-    else weightHist = [{date:'10/05',totalLoad:120},{date:'12/05',totalLoad:135},{date:'14/05',totalLoad:148}];
-    var pr = localStorage.getItem('fp_pr'); if (pr) prs = JSON.parse(pr);
-    var sk = localStorage.getItem('fp_streak'); if (sk) { var s = JSON.parse(sk); streakDays = s.d||0; lastTrainDate = s.l||''; }
-  } catch(e) {}
-
-  document.querySelectorAll('.chip').forEach(function(c) {
-    c.addEventListener('click', function() {
-      document.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('on'); });
-      this.classList.add('on');
-      objetivo = this.dataset.v;
-    });
-  });
-
-  updateStreakUI();
-  initChart();
-  renderTrophies();
-  renderReport();
-};
-
-// ══════════════════════════════════════════
-//  UI HELPERS
-// ══════════════════════════════════════════
-var _toastT = null;
-function toast(msg) {
-  var el = document.getElementById('toastEl');
-  el.textContent = msg; el.classList.add('show');
-  if (_toastT) clearTimeout(_toastT);
-  _toastT = setTimeout(function(){ el.classList.remove('show'); }, 3200);
-}
-
-function abrirModal(id) { var el = document.getElementById(id); if(el){ el.classList.add('open'); document.body.style.overflow='hidden'; } }
-function fecharModal(id) { var el = document.getElementById(id); if(el){ el.classList.remove('open'); document.body.style.overflow=''; } }
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('modal-bg')) { e.target.classList.remove('open'); document.body.style.overflow=''; }
-});
-
-function goTab(id, btn, bnavId) {
-  document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('on'); });
-  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('on'); });
-  document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('on'); });
-  var pane = document.getElementById(id); if (pane) pane.classList.add('on');
-  if (btn) btn.classList.add('on');
-  var bnavMap = {'tChat':'bnav-0','tTreino':'bnav-1','tDieta':'bnav-2','tScanner':'bnav-3','tEvolucao':'bnav-4'};
-  var bIdx = bnavMap[id];
-  if (bIdx) {
-    var bEl = document.querySelector('.bottom-nav .bnav-btn:nth-child('+(parseInt(bIdx.split('-')[1])+1)+')');
-    if (bEl) bEl.classList.add('on');
-  }
-  var tabMap = {'tChat':0,'tTreino':1,'tDieta':2,'tScanner':3,'tEvolucao':4,'tConquistas':5};
-  var tIdx = tabMap[id];
-  if (tIdx !== undefined) {
-    var tEl = document.querySelectorAll('.tab-btn')[tIdx];
-    if (tEl) tEl.classList.add('on');
-  }
-  if (id === 'tEvolucao') updateChart();
-  if (id === 'tConquistas') renderTrophies();
-}
-
-function setBtnLoading(on) {
-  var btn = document.getElementById('btnGen');
-  var txt = document.getElementById('btnTxt');
-  var ldr = document.getElementById('btnLoad');
-  btn.disabled = on;
-  txt.style.display = on ? 'none' : 'block';
-  ldr.style.display = on ? 'inline-block' : 'none';
-}
-
-// ══════════════════════════════════════════
-//  GERAR PLANO
-// ══════════════════════════════════════════
-async function gerarPlano() {
-  var nome = (document.getElementById('uName').value||'').trim() || 'Atleta';
-  var idade = document.getElementById('uAge').value || '25';
-  var peso = document.getElementById('uWeight').value || '75';
-  var altura = document.getElementById('uHeight').value || '175';
-  var ctx = (document.getElementById('uCtx').value||'').trim();
-
-  setBtnLoading(true);
-  toast('⚡ Gerando seu plano personalizado...');
-
-  var prompt = 'Atue como Personal Trainer e Nutricionista de Elite. Responda em português brasileiro.\n' +
-    'Usuário: ' + nome + ', ' + idade + ' anos, ' + peso + 'kg, ' + altura + 'cm.\n' +
-    'Objetivo: ' + objetivo + '. Contexto: ' + (ctx||'nenhum') + '\n\n' +
-    'RETORNE EXATAMENTE NESTE FORMATO (sem markdown extra):\n' +
-    '---CHAT---\n(mensagem motivacional pessoal de 2 frases)\n' +
-    '---TREINO---\n(ficha. Cada dia começa with "# Dia X — Nome". Exercícios: Nome | Séries x Reps | CargaKG)\n' +
-    '---DIETA---\n(refeições, uma por linha com emoji)\n' +
-    '---MACROS---\nKcal: X | Carb: Xg | Prot: Xg | Gord: Xg';
-
-  try {
-    rawText = await callAI([{role:'user',content:prompt}], 2000);
-    if (!rawText || rawText.length < 50) throw new Error('Resposta muito curta.');
-    processarResposta(rawText, nome);
-    gerarPeriodizacao(rawText);
-    document.getElementById('formSection').style.display = 'none';
-    document.getElementById('resultSection').style.display = 'block';
-    document.getElementById('bottomNav').style.display = 'block';
-    registrarTreino();
-    renderTrophies();
-    toast('✅ Plano criado com sucesso!');
-  } catch(e) {
-    toast('❌ ' + (e.message||'Erro ao gerar plano'));
-    setBtnLoading(false);
-  }
-}
-
-async function gerarPeriodizacao(basePlano) {
-  try {
-    var prompt = 'Plano Semana 1:\n' + basePlano + '\n\nCrie Semanas 2, 3 e 4 com progressão de carga +5-10% por semana. Mesmo formato.\nFormato:\n---SEMANA2---\n(treino)\n---SEMANA3---\n(treino)\n---SEMANA4---\n(treino)';
-    var r = await callAI([{role:'user',content:prompt}], 2000);
-    if (!r) return;
-    weekPlans[2] = extrair(r,'---SEMANA2---','---SEMANA3---').trim();
-    weekPlans[3] = extrair(r,'---SEMANA3---','---SEMANA4---').trim();
-    var s4 = r.split('---SEMANA4---'); weekPlans[4] = s4.length>1 ? s4[1].trim() : '';
-  } catch(e) { console.log('Periodização falhou:', e.message); }
-}
-
-function extrair(t,s,e) {
-  var i = t.indexOf(s); if(i<0) return '';
-  var from = i+s.length, to = t.indexOf(e,from);
-  return to<0 ? t.substring(from) : t.substring(from,to);
-}
-
-function processarResposta(text, nome) {
-  var chatP='', treinoP='', dietaP='', macrosP='';
-  try {
-    var p = text.split('---TREINO---');
-    chatP = p[0].replace('---CHAT---','').trim();
-    if(p[1]) {
-      var p2 = p[1].split('---DIETA---');
-      treinoP = p2[0].trim(); weekPlans[1] = treinoP;
-      if(p2[1]) { var p3 = p2[1].split('---MACROS---'); dietaP = p3[0].trim(); macrosP = p3[1]?p3[1].trim():''; }
-    }
-  } catch(e) { chatP = text; }
-  if(!chatP) chatP = 'Seu plano está pronto! Vamos lá, ' + nome + '! 💪';
-  chatHist = [{role:'assistant',content:chatP}];
-  renderChat();
-  renderTreino(treinoP);
-  renderDieta(dietaP);
-  parseMacros(macrosP);
-}
-
-// ══════════════════════════════════════════
-//  CHAT
-// ══════════════════════════════════════════
-function renderChat() {
-  var box = document.getElementById('chatBox'); if(!box) return;
-  box.innerHTML = '';
-  chatHist.forEach(function(m) {
-    var d = document.createElement('div');
-    d.className = 'bubble ' + (m.role==='user'?'user':'ai');
-    d.innerHTML = (m.content||'').replace(/\n/g,'<br>');
-    box.appendChild(d);
-  });
-  box.scrollTop = box.scrollHeight;
-}
-
-async function enviarChat() {
-  var inp = document.getElementById('chatInp');
-  var btn = document.getElementById('btnSend');
-  var msg = (inp.value||'').trim(); if(!msg) return;
-  chatHist.push({role:'user',content:msg}); inp.value='';
-  if(btn) btn.disabled = true;
-  renderChat();
-
-  var loading = document.createElement('div');
-  loading.className='bubble ai'; loading.innerHTML='<span class="spin-w"></span>';
-  var box = document.getElementById('chatBox');
-  if(box) { box.appendChild(loading); box.scrollTop=9999; }
-
-  var apiMsgs = [
-    {role:'system',content:'Você é um Personal Trainer e Nutricionista de Elite. Responda em no máximo 3 frases, de forma objetiva e motivadora, em português.'}
-  ].concat(chatHist.slice(-10).map(function(h){ return {role:h.role==='user'?'user':'assistant',content:h.content}; }));
-
-  try {
-    var ans = await callAI(apiMsgs, 400);
-    if(loading.parentNode) loading.remove();
-    chatHist.push({role:'assistant',content:ans}); renderChat();
-  } catch(e) {
-    if(loading.parentNode) loading.remove();
-    chatHist.push({role:'assistant',content:'❌ Erro: '+(e.message||'Tente novamente.')});
-    renderChat(); toast('❌ '+e.message);
-  } finally {
-    if(btn) btn.disabled=false;
-  }
-}
-
-// ══════════════════════════════════════════
-//  TREINO
-// ══════════════════════════════════════════
-function verSemana(n, el) {
-  document.querySelectorAll('.wk-btn').forEach(function(b){ b.classList.remove('on'); });
-  if(el) el.classList.add('on');
-  if(weekPlans[n]) renderTreino(weekPlans[n]);
-  else {
-    var c = document.getElementById('workoutContent');
-    if(c) c.innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Gerando semana '+n+'...<br>Aguarde alguns segundos.</p></div>';
-  }
-}
-
-function renderTreino(text) {
-  var c = document.getElementById('workoutContent'); if(!c) return; c.innerHTML='';
-  if(!text||!text.trim()) { c.innerHTML='<div class="empty"><div class="empty-icon">🏋️</div><p>Gere um plano para ver o treino aqui.</p></div>'; return; }
-  var cnt=0;
-  text.split('\n').forEach(function(l) {
-    l=l.trim(); if(!l) return;
-    if(l.startsWith('#')) {
-      var dh=document.createElement('div'); dh.className='day-hdr'; dh.textContent='🗓 '+l.replace(/^#+\s*/,''); c.appendChild(dh);
-    } else if(l.includes('|')) {
-      cnt++;
-      var pts=l.split('|').map(function(x){return x.trim();});
-      var nome=pts[0]||'Exercício', series=pts[1]||'3x10', cargaStr=pts[2]||'10kg';
-      var cargaN=parseInt(cargaStr.replace(/[^0-9]/g,''))||10;
-      var gId='gif'+cnt, iId='wi'+cnt, tId='ti'+cnt;
-      var isPR=prs[nome]&&cargaN>prs[nome];
-      var ne=nome.replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
-      var el=document.createElement('div');
-      el.className='ex-card'+(isPR?' pr':'');
-      el.innerHTML=
-        '<div class="ex-top">'+
-          '<div><div class="ex-name">'+nome+'</div><div class="ex-sets">'+series+'</div></div>'+
-          '<div style="display:flex;align-items:center;gap:6px;">'+
-            (isPR?'<span class="pr-tag">🏆 PR</span>':'')+
-            '<button class="btn-ghost" onclick="carregarGif(\''+ne+'\',\''+gId+'\')" style="padding:7px;border-radius:50%;width:32px;height:32px;">▶</button>'+
-          '</div>'+
-        '</div>'+
-        '<div id="'+gId+'" class="gif-box"></div>'+
-        '<div class="ex-row">'+
-          '<label style="font-size:10px;color:var(--muted);font-weight:700;">KG</label>'+
-          '<input type="number" id="'+iId+'" class="kg-inp" value="'+cargaN+'" min="0">'+
-          '<button class="btn-done" onclick="salvarCarga(\''+ne+'\',\''+iId+'\')">✓ Feito</button>'+
-          '<div class="timer-btn" id="'+tId+'" onclick="startTimer(\''+tId+'\')">⏱ <span>60s</span></div>'+
-        '</div>';
-      c.appendChild(el);
-    } else if(l.length>1) {
-      var p=document.createElement('p'); p.style.cssText='font-size:13px;color:var(--muted2);margin-bottom:5px;'; p.textContent=l; c.appendChild(p);
-    }
-  });
-}
-
-// ══════════════════════════════════════════
-//  DIETA
-// ══════════════════════════════════════════
-function renderDieta(text) {
-  var c=document.getElementById('dietContent'); if(!c) return; c.innerHTML='';
-  if(!text) return;
-  var imgs={ovo:'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=100&h=100&fit=crop',frango:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=100&h=100&fit=crop',carne:'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=100&h=100&fit=crop',arroz:'https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?w=100&h=100&fit=crop',salada:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100&h=100&fit=crop',whey:'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=100&h=100&fit=crop',fruta:'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=100&h=100&fit=crop',def:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=100&h=100&fit=crop'};
-  text.split('\n').filter(function(l){return l.trim().length>1;}).forEach(function(l){
-    var low=l.toLowerCase(), img=imgs.def;
-    if(low.includes('ovo')||low.includes('omelete'))img=imgs.ovo;
-    else if(low.includes('frango')||low.includes('peito'))img=imgs.frango;
-    else if(low.includes('carne')||low.includes('bife'))img=imgs.carne;
-    else if(low.includes('arroz')||low.includes('batata'))img=imgs.arroz;
-    else if(low.includes('salada')||low.includes('vegetal'))img=imgs.salada;
-    else if(low.includes('whey')||low.includes('shake'))img=imgs.whey;
-    else if(low.includes('fruta')||low.includes('banana'))img=imgs.fruta;
-    var el=document.createElement('div'); el.className='food-row';
-    el.innerHTML='<img src="'+img+'" class="food-img" loading="lazy" alt=""><div class="food-txt">'+l+'</div>';
-    c.appendChild(el);
-  });
-}
-
-function parseMacros(str) {
-  if(!str) return;
-  str.split('|').forEach(function(p){
-    var low=p.toLowerCase(), val=(p.split(':')[1]||'--').trim();
-    if(low.includes('kcal')){var e=document.getElementById('mKcal');if(e)e.textContent=val;}
-    if(low.includes('carb')){var e2=document.getElementById('mCarb');if(e2)e2.textContent=val;}
-    if(low.includes('prot')){var e3=document.getElementById('mProt');if(e3)e3.textContent=val;}
-    if(low.includes('gord')){var e4=document.getElementById('mGord');if(e4)e4.textContent=val;}
-  });
-}
-
-// ══════════════════════════════════════════
-//  SCANNER DE ALIMENTO 
-// ══════════════════════════════════════════
-async function scanAlimento(ev) {
-  var file = ev&&ev.target&&ev.target.files&&ev.target.files[0]; if(!file) return;
-  var prev = document.getElementById('scanPrev');
-  var res = document.getElementById('scanRes');
-  if(prev){ prev.src=URL.createObjectURL(file); prev.style.display='block'; }
-  if(res){ res.style.display='block'; res.innerHTML='<span class="spin-w"></span> Analisando prato com IA...'; }
-
-  try {
-    var b64 = await toBase64(file);
-    var texto = 'Você é nutricionista. Analise esta imagem de prato/alimento. Identifique os alimentos com emojis. Estime calorias totais, proteínas (g), carboidratos (g) e gorduras (g). Seja direto e use o formato:\n\n🍽️ **Alimentos identificados:** [lista]\n📊 **Calorias totais:** ~X kcal\n💪 **Proteínas:** ~Xg\n🍞 **Carboidratos:** ~Xg\n🧈 **Gorduras:** ~Xg\n💡 **Observação:** [dica rápida]';
-    var ans = await callAI([{role:'user',content:texto,_hasImage:true}], 600, b64);
-    if(res) res.innerHTML = ans.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-  } catch(e) {
-    if(res) res.innerHTML='❌ '+( e.message||'Erro ao analisar. Tente novamente.');
-    toast('❌ '+( e.message||'Erro no scanner'));
-  }
-  if(ev&&ev.target) ev.target.value='';
-}
-
-// ══════════════════════════════════════════
-//  ANÁLISE CORPORAL
-// ══════════════════════════════════════════
-async function analisarFoto(ev) {
-  var file = ev&&ev.target&&ev.target.files&&ev.target.files[0]; if(!file) return;
-  var prev = document.getElementById('photoPrev');
-  var res = document.getElementById('photoRes');
-  if(prev){ prev.src=URL.createObjectURL(file); prev.style.display='block'; }
-  if(res){ res.style.display='block'; res.innerHTML='<span class="spin-w"></span> Analisando composição corporal...'; }
-
-  try {
-    var b64 = await toBase64(file);
-    var texto = 'Você é um Personal Trainer especialista em composição corporal. Analise esta foto de forma respeitosa e profissional. Forneça:\n\n1) **% Gordura Estimada:** (range estimado)\n2) **Pontos fortes:** o que já está bom\n3) **Foco de desenvolvimento:** quais grupos musculares priorizar\n4) **Dica de treino:** ajuste específico\n5) **Mensagem motivacional:** curta e poderosa\n\nSeja respeitoso, construtivo e motivador.';
-    var ans = await callAI([{role:'user',content:texto,_hasImage:true}], 700, b64);
-    if(res) res.innerHTML = ans.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-  } catch(e) {
-    if(res) res.innerHTML='❌ '+(e.message||'Erro ao analisar. Tente novamente.');
-    toast('❌ '+(e.message||'Erro na análise'));
-  }
-  if(ev&&ev.target) ev.target.value='';
-}
-
-// ══════════════════════════════════════════
-//  CHECK-IN
-// ══════════════════════════════════════════
-function selE(btn, g) {
-  var row = btn.closest('.emoji-row'); if(!row) return;
-  row.querySelectorAll('.e-btn').forEach(function(b){ b.classList.remove('on'); });
-  btn.classList.add('on');
-  checkinData[g] = btn.textContent.trim().split('\n')[0];
-}
-
-async function enviarCheckin() {
-  fecharModal('mCheckin'); toast('⚡ Ajustando plano...');
-  var prompt = 'Personal Trainer, check-in do aluno:\n- Sono: '+(checkinData.sleep||'não informado')+'\n- Dores: '+(checkinData.pain||'não informado')+'\n- Metas: '+(checkinData.goal||'não informado')+'\n\nDê 3 ajustes concisos para esta semana em português.';
-  try {
-    var ans = await callAI([{role:'user',content:prompt}], 500);
-    chatHist.push({role:'assistant',content:'📊 Check-in semanal!\n\n'+ans}); renderChat();
-    goTab('tChat', document.querySelector('.tab-btn'));
-    toast('✅ Plano ajustado!');
-  } catch(e) { toast('❌ '+(e.message||'Erro check-in')); }
-}
-
-// ══════════════════════════════════════════
-//  TIMER DESCANSO
-// ══════════════════════════════════════════
-function startTimer(id) {
-  if(activeTimers[id]){ clearInterval(activeTimers[id]); delete activeTimers[id]; var el=document.getElementById(id); if(el){el.classList.remove('run');var sp=el.querySelector('span');if(sp)sp.textContent='60s';} return; }
-  var el=document.getElementById(id); if(!el) return;
-  el.classList.add('run'); var left=60;
-  activeTimers[id]=setInterval(function(){
-    left--;
-    var sp=el.querySelector('span'); if(sp)sp.textContent=left+'s';
-    if(left<=0){ clearInterval(activeTimers[id]); delete activeTimers[id]; el.classList.remove('run'); if(sp)sp.textContent='60s'; toast('💪 Fim do descanso! Próxima série!'); if(navigator.vibrate)navigator.vibrate([200,100,200]); }
-  },1000);
-}
-
-// ══════════════════════════════════════════
-//  SALVAR CARGA
-// ══════════════════════════════════════════
-function salvarCarga(nome, iId) {
-  var inp=document.getElementById(iId); if(!inp) return;
-  var val=parseInt(inp.value)||0;
-  if(val<=0){ toast('Insira uma carga válida!'); return; }
-  var hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-  var rec=weightHist.find(function(w){return w.date===hoje;});
-  if(rec) rec.totalLoad+=val; else weightHist.push({date:hoje,totalLoad:val});
-  localStorage.setItem('fp_wh',JSON.stringify(weightHist));
-  var isPR=!prs[nome]||val>prs[nome];
-  if(isPR){ prs[nome]=val; localStorage.setItem('fp_pr',JSON.stringify(prs)); toast('🏆 Novo PR em '+nome+'! '+val+'kg!'); }
-  else toast('✅ '+val+'kg salvo!');
-  registrarTreino(); updateChart(); renderReport(); renderTrophies();
-}
-
-// ══════════════════════════════════════════
-//  GIF EXERCÍCIO
-// ══════════════════════════════════════════
-async function carregarGif(q, fId) {
-  var f=document.getElementById(fId); if(!f) return;
-  if(f.style.display==='block'){f.style.display='none';return;}
-  f.innerHTML='<div style="display:flex;justify-content:center;align-items:center;height:100%;"><span class="spin-w"></span></div>';
-  f.style.display='block';
-  try {
-    var r=await fetch('https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q='+encodeURIComponent(q+' exercise gym')+'&limit=1&rating=g');
-    var d=await r.json();
-    if(d.data&&d.data.length>0) f.innerHTML='<iframe src="https://giphy.com/embed/'+d.data[0].id+'" width="100%" height="100%" frameBorder="0" allowFullScreen></iframe>';
-    else f.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--muted);">GIF não encontrado</div>';
-  } catch(e){ f.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--red);">Erro ao carregar</div>'; }
-}
-
-// ══════════════════════════════════════════
-//  STREAK
-// ══════════════════════════════════════════
-function registrarTreino() {
-  var hoje=new Date().toDateString(); if(lastTrainDate===hoje) return;
-  var ontem=new Date(Date.now()-86400000).toDateString();
-  streakDays=(lastTrainDate===ontem)?streakDays+1:1;
-  lastTrainDate=hoje;
-  localStorage.setItem('fp_streak',JSON.stringify({d:streakDays,l:lastTrainDate}));
-  updateStreakUI();
-}
-function updateStreakUI(){ var el=document.getElementById('streakN'); if(el) el.textContent=streakDays; }
-function limparHistorico(){ if(!confirm('Limpar histórico de cargas?')) return; weightHist=[]; localStorage.removeItem('fp_wh'); updateChart(); renderReport(); toast('Histórico limpo.'); }
-
-// ══════════════════════════════════════════
-//  GRÁFICO
-// ══════════════════════════════════════════
-function initChart() {
-  var cv=document.getElementById('chartCanvas'); if(!cv) return;
-  chart=new Chart(cv.getContext('2d'),{type:'line',data:{
-    labels:weightHist.map(function(w){return w.date;}),
-    datasets:[{label:'Volume (kg)',data:weightHist.map(function(w){return w.totalLoad;}),borderColor:'#00E676',backgroundColor:'rgba(0,230,118,0.08)',borderWidth:2.5,pointBackgroundColor:'#060608',pointBorderColor:'#00E676',pointRadius:4,fill:true,tension:0.35}]
-  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6E6E7A',font:{size:11}}},x:{grid:{display:false},ticks:{color:'#6E6E7A',font:{size:11}}}}}});
-}
-function updateChart(){ if(!chart) return; chart.data.labels=weightHist.map(function(w){return w.date;}); chart.data.datasets[0].data=weightHist.map(function(w){return w.totalLoad;}); chart.update(); }
-
-// ══════════════════════════════════════════
-//  RELATÓRIO
-// ══════════════════════════════════════════
-function renderReport() {
-  var el=document.getElementById('monthlyReport'); if(!el) return;
-  var tv=weightHist.reduce(function(a,b){return a+b.totalLoad;},0);
-  var mx=weightHist.reduce(function(a,b){return Math.max(a,b.totalLoad);},0);
-  el.innerHTML='<div class="stat-card">'+
-    '<div class="sec-label" style="margin-bottom:10px;"><i>📋</i> Relatório</div>'+
-    '<div class="stat-row"><span class="stat-lbl">🗓 Sessões registradas</span><span class="stat-val">'+weightHist.length+'</span></div>'+
-    '<div class="stat-row"><span class="stat-lbl">📦 Volume total</span><span class="stat-val">'+tv+' kg</span></div>'+
-    '<div class="stat-row"><span class="stat-lbl">🔥 Melhor sessão</span><span class="stat-val">'+mx+' kg</span></div>'+
-    '<div class="stat-row"><span class="stat-lbl">🏆 PRs conquistados</span><span class="stat-val">'+Object.keys(prs).length+'</span></div>'+
-    '<div class="stat-row"><span class="stat-lbl">⚡ Sequência atual</span><span class="stat-val">'+streakDays+' dias</span></div>'+
-    '</div>';
-}
-
-// ══════════════════════════════════════════
-//  CONQUISTAS
-// ══════════════════════════════════════════
-var trophies=[
-  {icon:'🎯',name:'1ª Sessão',check:function(){return weightHist.length>=1;}},
-  {icon:'📅',name:'7 Sessões',check:function(){return weightHist.length>=7;}},
-  {icon:'🏅',name:'30 Sessões',check:function(){return weightHist.length>=30;}},
-  {icon:'🔥',name:'3 dias seguidos',check:function(){return streakDays>=3;}},
-  {icon:'💫',name:'7 dias seguidos',check:function(){return streakDays>=7;}},
-  {icon:'⚡',name:'30 dias seguidos',check:function(){return streakDays>=30;}},
-  {icon:'🏆',name:'Primeiro PR',check:function(){return Object.keys(prs).length>=1;}},
-  {icon:'👑',name:'5 PRs',check:function(){return Object.keys(prs).length>=5;}},
-  {icon:'💪',name:'500kg acumulado',check:function(){return weightHist.reduce(function(a,b){return a+b.totalLoad;},0)>=500;}}
-];
-function renderTrophies(){
-  var g=document.getElementById('trophyGrid'); if(!g) return; g.innerHTML='';
-  trophies.forEach(function(t){ var u=t.check(); var el=document.createElement('div'); el.className='trophy'+(u?' won':''); el.innerHTML='<div class="t-icon">'+t.icon+'</div><div class="t-name">'+t.name+'</div>'; g.appendChild(el); });
-}
-
-// ══════════════════════════════════════════
-//  NOTIFICAÇÕES
-// ══════════════════════════════════════════
-function salvarNotif(){
-  var s={treino:document.getElementById('togTreino').classList.contains('on'),agua:document.getElementById('togAgua').classList.contains('on'),hora:document.getElementById('notifHora').value};
-  localStorage.setItem('fp_notif',JSON.stringify(s));
-  if(s.treino&&'Notification'in window) Notification.requestPermission().then(function(p){ toast(p==='granted'?'✅ Notificações ativas!':'⚠️ Ative nas configurações.'); });
-  else toast('✅ Configurações salvas!');
-  fecharModal('mNotif');
-}
-
-// ══════════════════════════════════════════
-//  EXPORTAR WHATSAPP
-// ══════════════════════════════════════════
-function exportWpp(){ if(!rawText){toast('Gere um plano primeiro!');return;} window.open('https://api.whatsapp.com/send?text='+encodeURIComponent('*Meu Plano FitPlan AI*\n\n'+rawText.substring(0,3900)),'_blank'); }
-</script>
+        function esconderToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('translate-y-4', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 300);
+        }
+    </script>
 </body>
 </html>
