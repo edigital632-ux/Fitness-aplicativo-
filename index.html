@@ -138,7 +138,7 @@ body{padding-bottom:120px;}
 .food-txt{font-size:13px;line-height:1.5;flex:1;}
 
 /* ── SCANNER ── */
-.upload-zone{border:2px dashed var(--b2);border-radius:var(--r1);padding:28px 16px;text-align:center;cursor:pointer;transition:all .25s;background:var(--bg);position:relative;overflow:hidden;}
+.upload-zone{border:2px dashed var(--b2);border-radius:var(--r1);padding:28px 16px;text-align:center;cursor:pointer;transition:all .25s;background:var(--bg);position:relative;overflow:hidden;display:block;}
 .upload-zone:hover,.upload-zone:active{border-color:var(--green);background:var(--gdim);}
 .upload-icon{font-size:40px;margin-bottom:10px;display:block;}
 .upload-title{font-weight:700;font-size:15px;margin-bottom:4px;}
@@ -347,11 +347,11 @@ body{padding-bottom:120px;}
     <div id="tScanner" class="tab-pane card">
       <div class="sec-label">🍽️ Scanner de Alimentos</div>
       <p style="font-size:13px;color:var(--muted2);margin-bottom:14px;">Fotografe seu prato — a IA estima calorias e macros instantaneamente.</p>
-      <div class="upload-zone" onclick="document.getElementById('scanFile').click()">
+      <label class="upload-zone" for="scanFile">
         <span class="upload-icon">📷</span>
         <div class="upload-title">Fotografar prato</div>
         <div class="upload-sub">Toque para abrir a câmera</div>
-      </div>
+      </label>
       <input type="file" id="scanFile" accept="image/*" capture="environment" style="display:none" onchange="scanAlimento(event)">
       <img id="scanPrev" class="scan-prev" alt="">
       <div id="scanRes" class="scan-result"></div>
@@ -360,11 +360,11 @@ body{padding-bottom:120px;}
 
       <div class="sec-label">💪 Análise Corporal</div>
       <p style="font-size:13px;color:var(--muted2);margin-bottom:14px;">Foto do corpo — a IA analisa composição e evolução.</p>
-      <div class="upload-zone" onclick="document.getElementById('photoFile').click()">
+      <label class="upload-zone" for="photoFile">
         <span class="upload-icon">🏋️</span>
         <div class="upload-title">Foto do corpo</div>
         <div class="upload-sub">A IA analisa % gordura e pontos para melhorar</div>
-      </div>
+      </label>
       <input type="file" id="photoFile" accept="image/*" capture="user" style="display:none" onchange="analisarFoto(event)">
       <img id="photoPrev" class="scan-prev" alt="">
       <div id="photoRes" class="photo-result"></div>
@@ -458,12 +458,19 @@ var G = {
 // ══════════════════════════════════════
 //  GROQ API  (CORS liberado, suporta visão)
 // ══════════════════════════════════════
+// Modelos atualizados em 28/07/2026 — a Groq descontinuou
+// llama-3.3-70b-versatile e llama-4-scout-17b-16e-instruct (visão) em 17/06/2026.
+// Texto  -> openai/gpt-oss-120b
+// Visão  -> qwen/qwen3.6-27b
+var MODEL_TEXT = 'openai/gpt-oss-120b';
+var MODEL_VISION = 'qwen/qwen3.6-27b';
+
 async function callGroq(messages, maxTok, imageData) {
   maxTok = maxTok || 1400;
   if (!G.apiKey) { throw new Error('Configure sua chave Groq primeiro! Toque em "Configurar IA" no topo.'); }
 
-  // Monta mensagens — visão via llama-3.2-11b-vision-instruct
-  var model = imageData ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile';
+  // Monta mensagens — visão via modelo multimodal atual da Groq
+  var model = imageData ? MODEL_VISION : MODEL_TEXT;
   var apiMessages = messages.map(function(m) {
     if (imageData && m._hasImage) {
       return {
@@ -493,6 +500,7 @@ async function callGroq(messages, maxTok, imageData) {
     // Rate limit — informa claramente
     if (res.status === 429) throw new Error('Limite de uso atingido por hoje. O Groq reseta em ~24h. Tente amanhã!');
     if (res.status === 401) throw new Error('Chave inválida. Verifique em console.groq.com/keys');
+    if (res.status === 400 && /decommissioned|deprecat/i.test(errMsg)) throw new Error('Modelo de IA desatualizado no código. Avise o desenvolvedor para atualizar o nome do modelo.');
     throw new Error(errMsg);
   }
 
