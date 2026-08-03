@@ -441,7 +441,7 @@ body{padding-bottom:120px;}
       <div class="chat-wrap" id="chatBox"></div>
       <div class="chat-in">
         <input type="text" id="chatInp" class="inp" placeholder="Pergunte ao seu personal..."
-          onkeydown="if(event.key==='Enter'&&!chatBusy)enviarChat()">
+          onkeydown="if(event.key==='Enter'&&!G.chatBusy)enviarChat()">
         <button class="btn-send" id="btnSend" onclick="enviarChat()">➤</button>
       </div>
     </div>
@@ -718,8 +718,7 @@ function sairDaConta() {
   fbAuth.signOut();
 }
 
-// Roteador principal de autenticação: mostra tela de login/cadastro
-// OU o app (com trava local opcional de senha/rosto por usuário).
+// Roteador principal de autenticação
 fbAuth.onAuthStateChanged(function(user) {
   if (user) {
     G.uid = user.uid;
@@ -727,7 +726,7 @@ fbAuth.onAuthStateChanged(function(user) {
     var emailEl = document.getElementById('secAccountEmail'); if (emailEl) emailEl.textContent = user.email || '';
     carregarDadosDoUsuario();
     document.getElementById('app').style.display = '';
-    initSecurity(); // decide se mostra lockScreen local (trava extra) ou libera direto
+    initSecurity(); // decide se mostra lockScreen local ou libera direto
   } else {
     G.uid = null;
     document.getElementById('app').style.display = 'none';
@@ -737,8 +736,6 @@ fbAuth.onAuthStateChanged(function(user) {
   }
 });
 
-// Chaves de localStorage isoladas por usuário (uid), para permitir
-// múltiplas contas no mesmo navegador/aparelho sem misturar dados.
 function lsKey(base) { return base + (G.uid ? ('_' + G.uid) : ''); }
 
 function carregarDadosDoUsuario() {
@@ -746,9 +743,19 @@ function carregarDadosDoUsuario() {
     var key = localStorage.getItem(lsKey('fp_key'));
     if (key) { G.apiKey = key; document.getElementById('apiKeyInp').value = key; updateApiPill(true); document.getElementById('apiBanner').classList.remove('show'); }
     else { G.apiKey=''; document.getElementById('apiKeyInp').value=''; updateApiPill(false); document.getElementById('apiBanner').classList.add('show'); }
+    
     var wh = localStorage.getItem(lsKey('fp_wh')); G.weightHist = wh ? JSON.parse(wh) : [];
     var pr = localStorage.getItem(lsKey('fp_pr')); G.prs = pr ? JSON.parse(pr) : {};
     var sk = localStorage.getItem(lsKey('fp_sk')); G.streak = sk ? JSON.parse(sk) : {days:0,last:''};
+    
+    var savedText = localStorage.getItem(lsKey('fp_raw'));
+    if (savedText) {
+      G.rawText = savedText;
+      processarResposta(savedText);
+      document.getElementById('formSection').style.display = 'none';
+      document.getElementById('resultSection').style.display = 'block';
+      document.getElementById('bottomNav').style.display = 'block';
+    }
   } catch(e) {}
   updateStreakUI();
   renderChart();
@@ -778,10 +785,6 @@ var G = {
 // ══════════════════════════════════════
 //  GROQ API  (CORS liberado, suporta visão)
 // ══════════════════════════════════════
-// Modelos atualizados em 28/07/2026 — a Groq descontinuou
-// llama-3.3-70b-versatile e llama-4-scout-17b-16e-instruct (visão) em 17/06/2026.
-// Texto  -> openai/gpt-oss-120b
-// Visão  -> qwen/qwen3.6-27b
 var MODEL_TEXT = 'openai/gpt-oss-120b';
 var MODEL_VISION = 'qwen/qwen3.6-27b';
 
@@ -789,7 +792,6 @@ async function callGroq(messages, maxTok, imageData) {
   maxTok = maxTok || 1400;
   if (!G.apiKey) { throw new Error('Configure sua chave Groq primeiro! Toque em "Configurar IA" no topo.'); }
 
-  // Monta mensagens — visão via modelo multimodal atual da Groq
   var model = imageData ? MODEL_VISION : MODEL_TEXT;
   var apiMessages = messages.map(function(m) {
     if (imageData && m._hasImage) {
@@ -817,10 +819,8 @@ async function callGroq(messages, maxTok, imageData) {
 
   if (!res.ok) {
     var errMsg = (data.error && data.error.message) || ('Erro ' + res.status);
-    // Rate limit — informa claramente
-    if (res.status === 429) throw new Error('Limite de uso atingido por hoje. O Groq reseta em ~24h. Tente amanhã!');
-    if (res.status === 401) throw new Error('Chave inválida. Verifique em console.groq.com/keys');
-    if (res.status === 400 && /decommissioned|deprecat/i.test(errMsg)) throw new Error('Modelo de IA desatualizado no código. Avise o desenvolvedor para atualizar o nome do modelo.');
+    if (res.status === 429) throw new Error('Limite de uso atingido. Tente novamente mais tarde.');
+    if (res.status === 401) throw new Error('Chave inválida. Verifique sua configuração.');
     throw new Error(errMsg);
   }
 
@@ -828,7 +828,6 @@ async function callGroq(messages, maxTok, imageData) {
   return data.choices[0].message.content;
 }
 
-// Converte file para base64
 function toBase64(file) {
   return new Promise(function(resolve, reject) {
     var reader = new FileReader();
@@ -846,15 +845,12 @@ function toBase64(file) {
 //  INIT
 // ══════════════════════════════════════
 window.onload = function() {
-  // Chips objetivo
   document.querySelectorAll('.chip').forEach(function(c) {
     c.addEventListener('click', function() {
       document.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('on'); });
       this.classList.add('on'); G.objetivo = this.dataset.v;
     });
   });
-  // O carregamento de dados do usuário e da tela (auth/app) acontece
-  // em fbAuth.onAuthStateChanged, definido acima.
 };
 
 // ══════════════════════════════════════
@@ -913,7 +909,6 @@ function goTab(id, btn, bnavIdx) {
   document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('on'); });
   var pane = document.getElementById(id); if(pane) pane.classList.add('on');
   if (btn) btn.classList.add('on');
-  // Sync tab-bar
   if (bnavIdx === undefined && _tabMap[id] !== undefined) bnavIdx = _tabMap[id];
   if (bnavIdx !== undefined) {
     var tBtn = document.querySelectorAll('.tab-btn')[bnavIdx]; if(tBtn) tBtn.classList.add('on');
@@ -940,14 +935,8 @@ function addBubble(role, content) {
 }
 
 // ══════════════════════════════════════
-//  SEGURANÇA LOCAL — SENHA + BIOMETRIA (extra, por usuário)
+//  SEGURANÇA LOCAL
 // ══════════════════════════════════════
-// Esta é uma trava OPCIONAL adicional, só neste aparelho, em cima da
-// conta já autenticada via Firebase (e-mail + senha). A "senha" local
-// fica guardada como hash SHA-256, isolada por uid. O reconhecimento
-// facial roda 100% no navegador via face-api.js — nenhuma imagem sai
-// do aparelho, só o "descritor" numérico do rosto é salvo localmente.
-
 async function sha256Hex(text) {
   var enc = new TextEncoder().encode('fitplan_v1_' + text);
   var buf = await crypto.subtle.digest('SHA-256', enc);
@@ -975,15 +964,10 @@ function initSecurity() {
     setTimeout(function(){ var i=document.getElementById('lockInp'); if(i) i.focus(); }, 300);
   } else {
     document.getElementById('lockScreen').classList.remove('show');
-    document.getElementById('bottomNav').style.display = G.rawText ? 'block' : (document.getElementById('resultSection').style.display==='none' ? 'none' : 'block');
+    document.getElementById('bottomNav').style.display = G.rawText ? 'flex' : (document.getElementById('resultSection').style.display==='none' ? 'none' : 'flex');
   }
 }
 
-// ── IA de Reconhecimento Facial — face-api.js (gratuita, open-source) ──
-// Roda 100% no navegador do usuário. Nenhuma foto ou vídeo do rosto
-// sai do aparelho ou é enviada a qualquer servidor — a IA só gera um
-// "descritor" (128 números) que fica salvo no localStorage e é usado
-// para comparar rostos localmente (distância euclidiana).
 var FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
 var FACE_MATCH_THRESHOLD = 0.5;
 var faceModelsReady = false;
@@ -1014,20 +998,9 @@ function pararCameraFacial(stream) {
   if (stream) stream.getTracks().forEach(function(t){ t.stop(); });
 }
 
-// ── Cadastro do rosto (dentro do modal Segurança) ──
 async function cadastrarRosto() {
-  var wrap = document.getElementById('faceCamWrapSetup');
-  var video = document.getElementById('faceVideoSetup');
-  var ring = document.getElementById('faceRingSetup');
-  var status = document.getElementById('faceStatusSetup');
-  var btn = document.getElementById('btnRegBio');
-  var cancelBtn = document.getElementById('btnFaceSetupCancel');
-
-  wrap.classList.add('show');
-  btn.disabled = true;
-  cancelBtn.style.display = 'block';
-  status.textContent = 'Carregando IA...';
-  ring.className = 'face-ring';
+  var wrap = document.getElementById('faceCamWrapSetup'), video = document.getElementById('faceVideoSetup'), ring = document.getElementById('faceRingSetup'), status = document.getElementById('faceStatusSetup'), btn = document.getElementById('btnRegBio'), cancelBtn = document.getElementById('btnFaceSetupCancel');
+  wrap.classList.add('show'); btn.disabled = true; cancelBtn.style.display = 'block'; status.textContent = 'Carregando IA...'; ring.className = 'face-ring';
 
   try {
     await loadFaceModels();
@@ -1037,34 +1010,20 @@ async function cadastrarRosto() {
     var tentativas = 0, descritor = null;
     while (tentativas < 50 && !descritor) {
       tentativas++;
-      var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks().withFaceDescriptor();
-      if (det) {
-        ring.className = 'face-ring detected';
-        status.textContent = 'Rosto detectado! Capturando...';
-        descritor = Array.from(det.descriptor);
-      } else {
-        ring.className = 'face-ring';
-        status.textContent = 'Procurando rosto...';
-        await new Promise(function(r){ setTimeout(r, 250); });
-      }
+      var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+      if (det) { ring.className = 'face-ring detected'; status.textContent = 'Rosto detectado! Capturando...'; descritor = Array.from(det.descriptor); }
+      else { ring.className = 'face-ring'; status.textContent = 'Procurando rosto...'; await new Promise(function(r){ setTimeout(r, 250); }); }
     }
     if (!descritor) throw new Error('Não foi possível detectar seu rosto. Tente em um local bem iluminado.');
 
     localStorage.setItem(lsKey('fp_sec_face'), JSON.stringify(descritor));
-    status.textContent = '✅ Rosto cadastrado com sucesso!';
-    ring.className = 'face-ring match';
-    toast('✅ Reconhecimento facial ativado!');
+    status.textContent = '✅ Rosto cadastrado com sucesso!'; ring.className = 'face-ring match'; toast('✅ Reconhecimento facial ativado!');
     setTimeout(function(){ pararCameraFacial(faceStream); faceStream=null; wrap.classList.remove('show'); refreshSecurityModal(); }, 1200);
   } catch(e) {
-    status.textContent = '❌ ' + (e.message || 'Erro ao cadastrar rosto.');
-    ring.className = 'face-ring nomatch';
-    toast('❌ ' + (e.message || 'Erro ao cadastrar rosto.'));
+    status.textContent = '❌ ' + (e.message || 'Erro ao cadastrar rosto.'); ring.className = 'face-ring nomatch'; toast('❌ ' + (e.message || 'Erro ao cadastrar rosto.'));
     pararCameraFacial(faceStream); faceStream = null;
     setTimeout(function(){ wrap.classList.remove('show'); }, 1800);
-  } finally {
-    btn.disabled = false; cancelBtn.style.display = 'none';
-  }
+  } finally { btn.disabled = false; cancelBtn.style.display = 'none'; }
 }
 
 function pararCadastroRosto() {
@@ -1075,117 +1034,61 @@ function pararCadastroRosto() {
 
 function removerRosto() {
   if (!confirm('Remover o rosto cadastrado?')) return;
-  localStorage.removeItem(lsKey('fp_sec_face'));
-  refreshSecurityModal();
-  toast('🗑 Reconhecimento facial removido.');
+  localStorage.removeItem(lsKey('fp_sec_face')); refreshSecurityModal(); toast('🗑 Reconhecimento facial removido.');
 }
 
-// ── Desbloqueio por rosto (na tela de bloqueio) ──
 async function iniciarReconhecimentoFacial() {
   var stored = localStorage.getItem(lsKey('fp_sec_face'));
   if (!stored) { toast('❌ Nenhum rosto cadastrado. Configure em 🔒 Segurança.'); return; }
-
-  var wrap = document.getElementById('faceCamWrap');
-  var video = document.getElementById('faceVideo');
-  var ring = document.getElementById('faceRing');
-  var status = document.getElementById('faceStatus');
-  var cancelBtn = document.getElementById('btnFaceCancel');
-  var errEl = document.getElementById('lockErr');
-
-  wrap.classList.add('show');
-  cancelBtn.style.display = 'block';
-  status.textContent = 'Carregando IA...';
-  errEl.textContent = '';
-  ring.className = 'face-ring';
+  var wrap = document.getElementById('faceCamWrap'), video = document.getElementById('faceVideo'), ring = document.getElementById('faceRing'), status = document.getElementById('faceStatus'), cancelBtn = document.getElementById('btnFaceCancel'), errEl = document.getElementById('lockErr');
+  wrap.classList.add('show'); cancelBtn.style.display = 'block'; status.textContent = 'Carregando IA...'; errEl.textContent = ''; ring.className = 'face-ring';
 
   try {
-    await loadFaceModels();
-    faceStream = await abrirCameraFacial(video);
-    status.textContent = 'Procurando rosto...';
-    var descritorSalvo = new Float32Array(JSON.parse(stored));
-
-    faceLoopActive = true;
+    await loadFaceModels(); faceStream = await abrirCameraFacial(video); status.textContent = 'Procurando rosto...';
+    var descritorSalvo = new Float32Array(JSON.parse(stored)); faceLoopActive = true;
     var tentativas = 0, maxTentativas = 80;
     while (faceLoopActive && tentativas < maxTentativas) {
       tentativas++;
-      var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks().withFaceDescriptor();
+      var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
       if (!faceLoopActive) break;
       if (det) {
-        var dist = faceapi.euclideanDistance(det.descriptor, descritorSalvo);
-        if (dist < FACE_MATCH_THRESHOLD) {
-          ring.className = 'face-ring match';
-          status.textContent = '✅ Rosto reconhecido!';
-          pararReconhecimentoFacial(true);
-          desbloquearApp();
-          toast('✅ Desbloqueado por reconhecimento facial!');
-          return;
-        } else {
-          ring.className = 'face-ring nomatch';
-          status.textContent = 'Rosto não reconhecido...';
-        }
-      } else {
-        ring.className = 'face-ring';
-        status.textContent = 'Procurando rosto...';
-      }
+        if (faceapi.euclideanDistance(det.descriptor, descritorSalvo) < FACE_MATCH_THRESHOLD) {
+          ring.className = 'face-ring match'; status.textContent = '✅ Rosto reconhecido!'; pararReconhecimentoFacial(true); desbloquearApp(); toast('✅ Desbloqueado por reconhecimento facial!'); return;
+        } else { ring.className = 'face-ring nomatch'; status.textContent = 'Rosto não reconhecido...'; }
+      } else { ring.className = 'face-ring'; status.textContent = 'Procurando rosto...'; }
       await new Promise(function(r){ setTimeout(r, 300); });
     }
-    if (faceLoopActive) {
-      errEl.textContent = '❌ Rosto não reconhecido. Tente novamente ou use a senha.';
-      pararReconhecimentoFacial(false);
-    }
-  } catch(e) {
-    errEl.textContent = '❌ ' + (e.message || 'Erro ao acessar a câmera.');
-    pararReconhecimentoFacial(false);
-  }
+    if (faceLoopActive) { errEl.textContent = '❌ Rosto não reconhecido. Tente novamente ou use a senha.'; pararReconhecimentoFacial(false); }
+  } catch(e) { errEl.textContent = '❌ ' + (e.message || 'Erro ao acessar a câmera.'); pararReconhecimentoFacial(false); }
 }
 
 function pararReconhecimentoFacial(silencioso) {
-  faceLoopActive = false;
-  pararCameraFacial(faceStream); faceStream = null;
-  var wrap = document.getElementById('faceCamWrap');
-  if (wrap) wrap.classList.remove('show');
-  var cancelBtn = document.getElementById('btnFaceCancel');
-  if (cancelBtn) cancelBtn.style.display = 'none';
+  faceLoopActive = false; pararCameraFacial(faceStream); faceStream = null;
+  var wrap = document.getElementById('faceCamWrap'); if (wrap) wrap.classList.remove('show');
+  var cancelBtn = document.getElementById('btnFaceCancel'); if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
 function updateSecPillUI(enabled) {
-  var pill = document.getElementById('secPill');
-  var txt = document.getElementById('secPillTxt');
-  var dot = pill.querySelector('.ai-dot');
+  var pill = document.getElementById('secPill'), txt = document.getElementById('secPillTxt'), dot = pill.querySelector('.ai-dot');
   if (enabled) {
     pill.style.background = 'var(--gdim)'; pill.style.borderColor = 'rgba(0,230,118,0.2)'; pill.style.color = 'var(--green)';
-    dot.style.background = 'var(--green)';
-    txt.textContent = '🔒 Ativa';
+    dot.style.background = 'var(--green)'; txt.textContent = '🔒 Ativa';
   } else {
     pill.style.background = 'var(--s2)'; pill.style.borderColor = 'var(--b2)'; pill.style.color = 'var(--muted2)';
-    dot.style.background = 'var(--muted2)';
-    txt.textContent = '🔓 Segurança';
+    dot.style.background = 'var(--muted2)'; txt.textContent = '🔓 Segurança';
   }
 }
 
 function toggleLockEye() {
-  var i = document.getElementById('lockInp');
-  i.type = i.type === 'password' ? 'text' : 'password';
+  var i = document.getElementById('lockInp'); i.type = i.type === 'password' ? 'text' : 'password';
 }
 
 async function tentarSenha() {
-  var inp = document.getElementById('lockInp');
-  var val = (inp.value||'').trim();
-  var err = document.getElementById('lockErr');
-  var storedHash = localStorage.getItem(lsKey('fp_sec_hash'));
+  var inp = document.getElementById('lockInp'), val = (inp.value||'').trim(), err = document.getElementById('lockErr'), storedHash = localStorage.getItem(lsKey('fp_sec_hash'));
   if (!storedHash) { err.textContent = 'Nenhuma senha configurada.'; return; }
   if (!val) { err.textContent = 'Digite sua senha.'; return; }
-  var h = await sha256Hex(val);
-  if (h === storedHash) {
-    err.textContent = '';
-    desbloquearApp();
-  } else {
-    err.textContent = '❌ Senha incorreta. Tente novamente.';
-    inp.value = '';
-    inp.focus();
-    if (navigator.vibrate) navigator.vibrate(200);
-  }
+  if (await sha256Hex(val) === storedHash) { err.textContent = ''; desbloquearApp(); }
+  else { err.textContent = '❌ Senha incorreta. Tente novamente.'; inp.value = ''; inp.focus(); if (navigator.vibrate) navigator.vibrate(200); }
 }
 
 function desbloquearApp() {
@@ -1198,11 +1101,9 @@ function desbloquearApp() {
 }
 
 function refreshSecurityModal() {
-  var hasPass = !!localStorage.getItem(lsKey('fp_sec_hash'));
-  var hasFace = !!localStorage.getItem(lsKey('fp_sec_face'));
+  var hasPass = !!localStorage.getItem(lsKey('fp_sec_hash')), hasFace = !!localStorage.getItem(lsKey('fp_sec_face'));
   var dotPass = document.getElementById('secDotPass'), dotBio = document.getElementById('secDotBio');
-  dotPass.className = 'sec-dot ' + (hasPass?'on':'off');
-  dotBio.className = 'sec-dot ' + (hasFace?'on':'off');
+  dotPass.className = 'sec-dot ' + (hasPass?'on':'off'); dotBio.className = 'sec-dot ' + (hasFace?'on':'off');
   document.getElementById('secStatusPassTxt').textContent = 'Senha local: ' + (hasPass?'configurada ✓':'não configurada');
   document.getElementById('secStatusBioTxt').textContent = 'Reconhecimento facial: ' + (hasFace?'ativado ✓':'não configurado');
   document.getElementById('btnDisableSec').style.display = (hasPass||hasFace) ? 'block' : 'none';
@@ -1214,32 +1115,22 @@ function refreshSecurityModal() {
 }
 
 async function salvarSenhaSeguranca() {
-  var p1 = document.getElementById('secNewPass').value;
-  var p2 = document.getElementById('secConfirmPass').value;
+  var p1 = document.getElementById('secNewPass').value, p2 = document.getElementById('secConfirmPass').value;
   if (!p1 || p1.length < 4) { toast('❌ A senha deve ter no mínimo 4 caracteres'); return; }
   if (p1 !== p2) { toast('❌ As senhas não coincidem'); return; }
-  var hash = await sha256Hex(p1);
-  localStorage.setItem(lsKey('fp_sec_hash'), hash);
-  localStorage.setItem(lsKey('fp_sec_enabled'), '1');
-  document.getElementById('secNewPass').value = '';
-  document.getElementById('secConfirmPass').value = '';
-  updateSecPillUI(true);
-  refreshSecurityModal();
-  toast('✅ Senha local salva! Trava extra ativada.');
+  localStorage.setItem(lsKey('fp_sec_hash'), await sha256Hex(p1)); localStorage.setItem(lsKey('fp_sec_enabled'), '1');
+  document.getElementById('secNewPass').value = ''; document.getElementById('secConfirmPass').value = '';
+  updateSecPillUI(true); refreshSecurityModal(); toast('✅ Senha local salva! Trava extra ativada.');
 }
 
 function desativarSeguranca() {
-  if (!confirm('Tem certeza que deseja desativar a senha local e o reconhecimento facial? O app ficará sem trava extra neste aparelho (sua conta continua protegida pelo login).')) return;
-  localStorage.removeItem(lsKey('fp_sec_hash'));
-  localStorage.removeItem(lsKey('fp_sec_face'));
-  localStorage.removeItem(lsKey('fp_sec_enabled'));
-  updateSecPillUI(false);
-  refreshSecurityModal();
-  toast('🔓 Trava local desativada.');
+  if (!confirm('Tem certeza que deseja desativar a senha local e o reconhecimento facial?')) return;
+  localStorage.removeItem(lsKey('fp_sec_hash')); localStorage.removeItem(lsKey('fp_sec_face')); localStorage.removeItem(lsKey('fp_sec_enabled'));
+  updateSecPillUI(false); refreshSecurityModal(); toast('🔓 Trava local desativada.');
 }
 
 // ══════════════════════════════════════
-//  GERAR PLANO
+//  GERAR PLANO E INTEGRAÇÕES DE IA
 // ══════════════════════════════════════
 async function gerarPlano() {
   if (!G.apiKey) { document.getElementById('apiBanner').classList.add('show'); toast('⚠️ Configure sua chave Groq primeiro!'); return; }
@@ -1262,371 +1153,341 @@ async function gerarPlano() {
     '---MACROS---\nKcal: X | Carb: Xg | Prot: Xg | Gord: Xg';
 
   try {
-    var raw = await callGroq([{role:'user',content:prompt}], 2000);
-    G.rawText = raw;
-    processarResposta(raw);
-    gerarPeriodizacao(raw);
+    var response = await callGroq([{role: 'user', content: prompt}], 2000);
+    G.rawText = response;
+    localStorage.setItem(lsKey('fp_raw'), response);
+    processarResposta(response);
+
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('resultSection').style.display = 'block';
-    document.getElementById('bottomNav').style.display = 'block';
-    registrarTreino(); renderTrophies();
-    toast('✅ Plano criado com sucesso!');
-  } catch(e) {
-    toast('❌ ' + (e.message||'Erro ao gerar plano'));
+    document.getElementById('bottomNav').style.display = 'flex';
+    goTab('tTreino', document.querySelectorAll('.tab-btn')[1], 1); 
+    registrarStreak();
+  } catch (err) {
+    toast('❌ ' + err.message);
+  } finally {
     setBtnLoading(false);
   }
 }
 
-async function gerarPeriodizacao(basePlano) {
-  try {
-    var prompt = 'Plano Semana 1:\n' + basePlano + '\n\nCrie Semanas 2, 3 e 4 com progressão +5-10%/semana. Mesmo formato.\nFormato:\n---SEMANA2---\n(treino)\n---SEMANA3---\n(treino)\n---SEMANA4---\n(treino)';
-    var r = await callGroq([{role:'user',content:prompt}], 2000);
-    if (!r) return;
-    G.weekPlans[2] = extrair(r,'---SEMANA2---','---SEMANA3---').trim();
-    G.weekPlans[3] = extrair(r,'---SEMANA3---','---SEMANA4---').trim();
-    var s4 = r.split('---SEMANA4---'); G.weekPlans[4] = s4.length>1 ? s4[1].trim() : '';
-  } catch(e) { console.log('Periodização:', e.message); }
-}
+function processarResposta(txt) {
+  var sec = {chat:'', treino:'', dieta:'', macros:''}, cur = '';
+  txt.split('\n').forEach(function(l){
+    if(l.includes('---CHAT---')) cur='chat';
+    else if(l.includes('---TREINO---')) cur='treino';
+    else if(l.includes('---DIETA---')) cur='dieta';
+    else if(l.includes('---MACROS---')) cur='macros';
+    else if(cur) sec[cur] += l + '\n';
+  });
 
-function extrair(t,s,e) {
-  var i=t.indexOf(s); if(i<0) return '';
-  var from=i+s.length, to=t.indexOf(e,from);
-  return to<0 ? t.substring(from) : t.substring(from,to);
-}
-
-function processarResposta(text) {
-  var chatP='', treinoP='', dietaP='', macrosP='';
-  try {
-    var p=text.split('---TREINO---');
-    chatP=p[0].replace('---CHAT---','').trim();
-    if(p[1]){
-      var p2=p[1].split('---DIETA---');
-      treinoP=p2[0].trim(); G.weekPlans[1]=treinoP;
-      if(p2[1]){ var p3=p2[1].split('---MACROS---'); dietaP=p3[0].trim(); macrosP=p3[1]?p3[1].trim():''; }
-    }
-  } catch(e){ chatP=text; }
-  G.chatHist=[{role:'assistant',content:chatP||'Seu plano está pronto! 💪'}];
-  renderChat();
-  renderTreino(treinoP, document.getElementById('workoutContent'));
-  renderDieta(dietaP);
-  parseMacros(macrosP);
-}
-
-// ══════════════════════════════════════
-//  CHAT
-// ══════════════════════════════════════
-function renderChat() {
-  var box = document.getElementById('chatBox'); if(!box) return;
-  box.innerHTML='';
-  G.chatHist.forEach(function(m){ addBubble(m.role,m.content); });
-}
-
-var chatBusy = false;
-async function enviarChat() {
-  if (chatBusy) return;
-  var inp = document.getElementById('chatInp');
-  var msg = (inp.value||'').trim(); if(!msg) return;
-  G.chatHist.push({role:'user',content:msg}); inp.value='';
-  addBubble('user',msg);
-  var btn = document.getElementById('btnSend'); if(btn) btn.disabled=true;
-  chatBusy = true;
-
-  // Loading bubble
+  // Chat
   var box = document.getElementById('chatBox');
-  var ld = document.createElement('div'); ld.className='bubble ai';
-  ld.innerHTML='<span class="spin-w"></span>';
-  box.appendChild(ld); box.scrollTop=9999;
+  box.innerHTML = '';
+  var msg = sec.chat.trim() || 'Seu plano está pronto! Como posso ajudar hoje?';
+  addBubble('ai', msg);
+  G.chatHist = [
+    {role:'system', content: 'Você é um personal trainer de elite. Responda de forma direta e curta. Ajude o atleta.'},
+    {role:'assistant', content: msg}
+  ];
 
-  var apiMsgs = [{role:'system',content:'Você é Personal Trainer e Nutricionista de Elite. Responda em no máximo 3 frases, objetivamente, em português.'}]
-    .concat(G.chatHist.slice(-10).map(function(h){ return {role:h.role==='user'?'user':'assistant',content:h.content}; }));
+  // Treino (Repetindo base para as 4 semanas inicialmente)
+  var tr = sec.treino.trim();
+  G.weekPlans[1] = tr; G.weekPlans[2] = tr; G.weekPlans[3] = tr; G.weekPlans[4] = tr;
+  verSemana(1, document.querySelector('.wk-btn.on') || document.querySelectorAll('.wk-btn')[0]);
 
-  try {
-    var ans = await callGroq(apiMsgs, 400);
-    if(ld.parentNode) ld.remove();
-    G.chatHist.push({role:'assistant',content:ans});
-    addBubble('assistant',ans);
-  } catch(e) {
-    if(ld.parentNode) ld.remove();
-    G.chatHist.push({role:'assistant',content:'❌ '+( e.message||'Erro. Tente novamente.')});
-    addBubble('assistant','❌ '+(e.message||'Erro. Tente novamente.'));
-    toast('❌ '+e.message);
-  } finally {
-    chatBusy=false; if(btn) btn.disabled=false;
+  // Dieta
+  var dietaHtml = '';
+  sec.dieta.trim().split('\n').forEach(function(linha) {
+    if (!linha.trim()) return;
+    dietaHtml += '<div class="food-row"><div class="food-txt">' + linha + '</div></div>';
+  });
+  document.getElementById('dietContent').innerHTML = dietaHtml || '<div class="empty">Sem dados de dieta.</div>';
+
+  // Macros
+  var m = sec.macros.match(/Kcal:\s*([\d\.]+).*?Carb:\s*([\d\.]+)g?.*?Prot:\s*([\d\.]+)g?.*?Gord:\s*([\d\.]+)g?/i);
+  if (m) {
+    document.getElementById('mKcal').textContent = m[1];
+    document.getElementById('mCarb').textContent = m[2] + 'g';
+    document.getElementById('mProt').textContent = m[3] + 'g';
+    document.getElementById('mGord').textContent = m[4] + 'g';
+  } else {
+    // Fallback parsing case pattern varies
+    var txtMacros = sec.macros.replace(/[^\d\s]/g,'').trim().split(/\s+/);
+    if (txtMacros.length >= 4) {
+      document.getElementById('mKcal').textContent = txtMacros[0];
+      document.getElementById('mCarb').textContent = txtMacros[1] + 'g';
+      document.getElementById('mProt').textContent = txtMacros[2] + 'g';
+      document.getElementById('mGord').textContent = txtMacros[3] + 'g';
+    }
   }
 }
 
-// ══════════════════════════════════════
-//  TREINO
-// ══════════════════════════════════════
-function verSemana(n, el) {
+// ── Funções de Treino ──
+function verSemana(num, btn) {
   document.querySelectorAll('.wk-btn').forEach(function(b){ b.classList.remove('on'); });
-  if(el) el.classList.add('on');
-  var c = document.getElementById('workoutContent');
-  if(G.weekPlans[n]) renderTreino(G.weekPlans[n], c);
-  else { c.innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Gerando semana '+n+'...<br>Aguarde alguns segundos.</p></div>'; }
-}
+  if (btn) btn.classList.add('on');
+  
+  var html = '';
+  var linhas = (G.weekPlans[num] || '').split('\n');
+  
+  linhas.forEach(function(l) {
+    l = l.trim();
+    if (!l) return;
+    if (l.startsWith('#')) {
+      html += '<div class="day-hdr">' + l.replace('#','').trim() + '</div>';
+    } else if (l.includes('|')) {
+      var partes = l.split('|');
+      var nome = partes[0].trim();
+      var series = partes[1] ? partes[1].trim() : '';
+      var carga = (partes[2] || '').replace(/[^\d]/g, '');
+      
+      var isPr = G.prs[nome] ? 'pr' : '';
+      var prBadge = G.prs[nome] ? '<div class="pr-tag">🏆 ' + G.prs[nome] + 'kg PR</div>' : '';
 
-function renderTreino(text, container) {
-  if(!container) return;
-  container.innerHTML='';
-  if(!text||!text.trim()){ container.innerHTML='<div class="empty"><div class="empty-icon">🏋️</div><p>Gere um plano para ver o treino aqui.</p></div>'; return; }
-  var cnt=0;
-  text.split('\n').forEach(function(l) {
-    l=l.trim(); if(!l) return;
-    if(l.startsWith('#')) {
-      var d=document.createElement('div'); d.className='day-hdr'; d.textContent='🗓 '+l.replace(/^#+\s*/,''); container.appendChild(d);
-    } else if(l.includes('|')) {
-      cnt++;
-      var pts=l.split('|').map(function(x){return x.trim();});
-      var nome=pts[0]||'Exercício', series=pts[1]||'3x10', cargaN=parseInt((pts[2]||'10').replace(/[^0-9]/g,''))||10;
-      var gId='gif'+cnt, iId='ki'+cnt, tId='ti'+cnt;
-      var isPR=G.prs[nome]&&cargaN>G.prs[nome];
-      var ne=escHtml(nome);
-      var el=document.createElement('div');
-      el.className='ex-card'+(isPR?' pr':'');
-      el.innerHTML=
-        '<div class="ex-top">'+
-          '<div><div class="ex-name">'+ne+'</div><div class="ex-sets">'+escHtml(series)+'</div></div>'+
-          '<div style="display:flex;align-items:center;gap:6px;">'+
-            (isPR?'<span class="pr-tag">🏆 PR</span>':'')+
-            '<button class="btn-ghost" onclick="toggleGif(\''+ne+'\',\''+gId+'\')" style="padding:7px;border-radius:50%;width:32px;height:32px;font-size:13px;">▶</button>'+
-          '</div>'+
-        '</div>'+
-        '<div id="'+gId+'" class="gif-box"></div>'+
-        '<div class="ex-row">'+
-          '<label style="font-size:10px;color:var(--muted);font-weight:700;">KG</label>'+
-          '<input type="number" id="'+iId+'" class="kg-inp" value="'+cargaN+'" min="0">'+
-          '<button class="btn-done" onclick="salvarCarga(\''+ne+'\',\''+iId+'\')">✓ Feito</button>'+
-          '<div class="timer-btn" id="'+tId+'" onclick="startTimer(\''+tId+'\')">⏱ <span>60s</span></div>'+
-        '</div>';
-      container.appendChild(el);
-    } else if(l.length>1) {
-      var p=document.createElement('p'); p.style.cssText='font-size:13px;color:var(--muted2);margin-bottom:5px;'; p.textContent=l; container.appendChild(p);
+      html += '<div class="ex-card ' + isPr + '">';
+      html += '<div class="ex-top"><div><div class="ex-name">' + nome + '</div><div class="ex-sets">' + series + '</div></div>' + prBadge + '</div>';
+      html += '<div class="ex-row">';
+      html += '<input type="number" class="kg-inp" value="' + carga + '" placeholder="kg">';
+      html += '<button class="btn-done" onclick="concluirSet(this, \'' + nome.replace(/'/g,"\\'") + '\')">Feito</button>';
+      html += '<button class="timer-btn" onclick="toggleTimer(this)">⏱ 60s</button>';
+      html += '</div></div>';
+    } else {
+      html += '<div style="font-size:13px; color:var(--muted2); margin-bottom:8px;">' + l + '</div>';
     }
   });
+  
+  document.getElementById('workoutContent').innerHTML = html || '<div class="empty">Nenhum treino disponível.</div>';
 }
 
-function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function concluirSet(btn, exName) {
+  var row = btn.parentElement;
+  var inp = row.querySelector('.kg-inp');
+  var kg = parseFloat(inp.value) || 0;
+  var top = btn.closest('.ex-card').querySelector('.ex-top');
 
-// ══════════════════════════════════════
-//  DIETA
-// ══════════════════════════════════════
-function renderDieta(text) {
-  var c=document.getElementById('dietContent'); if(!c) return; c.innerHTML='';
-  if(!text) return;
-  var imgs={ovo:'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=100&h=100&fit=crop',frango:'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=100&h=100&fit=crop',carne:'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=100&h=100&fit=crop',arroz:'https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?w=100&h=100&fit=crop',salada:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100&h=100&fit=crop',whey:'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=100&h=100&fit=crop',fruta:'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=100&h=100&fit=crop',def:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=100&h=100&fit=crop'};
-  text.split('\n').filter(function(l){return l.trim().length>1;}).forEach(function(l){
-    var low=l.toLowerCase(),img=imgs.def;
-    if(low.includes('ovo')||low.includes('omelete'))img=imgs.ovo;
-    else if(low.includes('frango')||low.includes('peito'))img=imgs.frango;
-    else if(low.includes('carne')||low.includes('bife'))img=imgs.carne;
-    else if(low.includes('arroz')||low.includes('batata'))img=imgs.arroz;
-    else if(low.includes('salada')||low.includes('vegetal'))img=imgs.salada;
-    else if(low.includes('whey')||low.includes('shake'))img=imgs.whey;
-    else if(low.includes('fruta')||low.includes('banana'))img=imgs.fruta;
-    var el=document.createElement('div'); el.className='food-row';
-    el.innerHTML='<img src="'+img+'" class="food-img" loading="lazy" alt=""><div class="food-txt">'+escHtml(l)+'</div>';
-    c.appendChild(el);
+  var isPr = false;
+  if (kg > 0) {
+    if (!G.prs[exName] || kg > G.prs[exName]) {
+      G.prs[exName] = kg;
+      isPr = true;
+      localStorage.setItem(lsKey('fp_pr'), JSON.stringify(G.prs));
+      renderTrophies();
+    }
+    G.weightHist.push({date: new Date().toISOString(), ex: exName, kg: kg});
+    localStorage.setItem(lsKey('fp_wh'), JSON.stringify(G.weightHist));
+    renderChart(); renderStats();
+  }
+
+  if (isPr) {
+    toast('🏆 Novo PR em ' + exName + ': ' + kg + 'kg!');
+    btn.closest('.ex-card').classList.add('pr');
+    if (!top.querySelector('.pr-tag')) {
+      var tag = document.createElement('div'); tag.className = 'pr-tag'; tag.textContent = '🏆 ' + kg + 'kg PR';
+      top.appendChild(tag);
+    } else {
+      top.querySelector('.pr-tag').textContent = '🏆 ' + kg + 'kg PR';
+    }
+  } else {
+    toast('✅ Série concluída!');
+  }
+
+  btn.style.background = 'var(--green)'; btn.style.color = '#000'; btn.textContent = '✓';
+  setTimeout(function(){ btn.style.background = ''; btn.style.color = ''; btn.textContent = 'Feito'; }, 2000);
+  registrarStreak();
+}
+
+function toggleTimer(btn) {
+  if (btn.dataset.running) {
+    clearInterval(parseInt(btn.dataset.intId));
+    btn.dataset.running = ''; btn.className = 'timer-btn'; btn.textContent = '⏱ 60s';
+  } else {
+    var left = 60;
+    btn.dataset.running = '1'; btn.className = 'timer-btn run'; btn.textContent = '⏳ ' + left + 's';
+    var intId = setInterval(function() {
+      left--;
+      if(left <= 0) {
+        clearInterval(intId); btn.dataset.running = ''; btn.className = 'timer-btn'; btn.textContent = '⏱ 60s';
+        if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        toast('⏰ Tempo de descanso encerrado!');
+      } else {
+        btn.textContent = '⏳ ' + left + 's';
+      }
+    }, 1000);
+    btn.dataset.intId = intId;
+  }
+}
+
+// ── Chat Interativo ──
+async function enviarChat() {
+  var inp = document.getElementById('chatInp');
+  var txt = inp.value.trim();
+  if (!txt || G.chatBusy) return;
+  
+  inp.value = '';
+  addBubble('user', txt);
+  G.chatHist.push({role: 'user', content: txt});
+  
+  var btn = document.getElementById('btnSend');
+  btn.disabled = true; G.chatBusy = true; btn.innerHTML = '<span class="spin"></span>';
+  
+  try {
+    var resp = await callGroq(G.chatHist, 800);
+    addBubble('ai', resp);
+    G.chatHist.push({role: 'assistant', content: resp});
+  } catch(e) {
+    toast('❌ Erro: ' + e.message);
+  } finally {
+    btn.disabled = false; G.chatBusy = false; btn.innerHTML = '➤';
+  }
+}
+
+// ── Scanner de Alimentos e Fotos Corporal ──
+async function scanAlimento(e) {
+  var file = e.target.files[0]; if(!file) return;
+  var prev = document.getElementById('scanPrev'), resBox = document.getElementById('scanRes');
+  prev.src = URL.createObjectURL(file); prev.style.display = 'block';
+  resBox.style.display = 'block'; resBox.innerHTML = '<span class="spin"></span> Analisando com IA Visão...';
+  
+  try {
+    var b64 = await toBase64(file);
+    var prompt = 'Analise esta imagem. Diga qual é o alimento (ou refeição), faça uma estimativa das calorias totais e dos macronutrientes (Carboidratos, Proteínas e Gorduras). Seja breve.';
+    var resp = await callGroq([{role:'user', content: prompt, _hasImage:true}], 600, b64);
+    resBox.innerHTML = resp;
+  } catch(err) {
+    resBox.innerHTML = '❌ Erro: ' + err.message;
+  }
+}
+
+async function analisarFoto(e) {
+  var file = e.target.files[0]; if(!file) return;
+  var prev = document.getElementById('photoPrev'), resBox = document.getElementById('photoRes');
+  prev.src = URL.createObjectURL(file); prev.style.display = 'block';
+  resBox.style.display = 'block'; resBox.innerHTML = '<span class="spin"></span> Avaliando biotipo...';
+  
+  try {
+    var b64 = await toBase64(file);
+    var prompt = 'Analise esta foto corporal anonimizada. Estime o percentual de gordura de forma aproximada, aente os grupos musculares aparentes e dê 2 dicas rápidas do que focar no treino para melhorar a proporção.';
+    var resp = await callGroq([{role:'user', content: prompt, _hasImage:true}], 600, b64);
+    resBox.innerHTML = resp;
+  } catch(err) {
+    resBox.innerHTML = '❌ Erro: ' + err.message;
+  }
+}
+
+// ── Evolução, Charts e Streak ──
+function registrarStreak() {
+  var hoje = new Date().toISOString().split('T')[0];
+  if (G.streak.last !== hoje) {
+    var ontem = new Date(); ontem.setDate(ontem.getDate()-1);
+    if (G.streak.last === ontem.toISOString().split('T')[0]) {
+      G.streak.days++;
+    } else {
+      G.streak.days = 1;
+    }
+    G.streak.last = hoje;
+    localStorage.setItem(lsKey('fp_sk'), JSON.stringify(G.streak));
+    updateStreakUI();
+  }
+}
+
+function updateStreakUI() {
+  document.getElementById('streakNum').textContent = G.streak.days;
+}
+
+function renderChart() {
+  var box = document.getElementById('chartBars');
+  box.innerHTML = '';
+  if (G.weightHist.length === 0) return;
+  
+  // Agrupa os ultimos 10 sets
+  var amostra = G.weightHist.slice(-10);
+  var max = Math.max.apply(null, amostra.map(function(o){ return o.kg; })) || 1;
+  
+  amostra.forEach(function(item, i) {
+    var h = (item.kg / max) * 100;
+    var w = document.createElement('div'); w.className = 'chart-bar-wrap';
+    var b = document.createElement('div'); b.className = 'chart-bar'; b.style.height = h + '%';
+    var l = document.createElement('div'); l.className = 'chart-lbl'; l.textContent = item.kg;
+    w.appendChild(b); w.appendChild(l); box.appendChild(w);
   });
 }
 
-function parseMacros(str) {
-  if(!str) return;
-  str.split('|').forEach(function(p){
-    var low=p.toLowerCase(), val=(p.split(':')[1]||'--').trim();
-    if(low.includes('kcal')){var e=document.getElementById('mKcal');if(e)e.textContent=val;}
-    if(low.includes('carb')){var e=document.getElementById('mCarb');if(e)e.textContent=val;}
-    if(low.includes('prot')){var e=document.getElementById('mProt');if(e)e.textContent=val;}
-    if(low.includes('gord')){var e=document.getElementById('mGord');if(e)e.textContent=val;}
-  });
+function renderStats() {
+  var box = document.getElementById('statBox');
+  var totalSets = G.weightHist.length;
+  var prsCount = Object.keys(G.prs).length;
+  var volTotal = G.weightHist.reduce(function(acc, val){ return acc + val.kg; }, 0);
+  
+  box.innerHTML = 
+    '<div class="stat-row"><span class="stat-lbl">Séries registradas</span><span class="stat-val">' + totalSets + '</span></div>' +
+    '<div class="stat-row"><span class="stat-lbl">Recordes (PRs)</span><span class="stat-val">' + prsCount + '</span></div>' +
+    '<div class="stat-row"><span class="stat-lbl">Carga Movimentada</span><span class="stat-val">' + volTotal + ' kg</span></div>';
 }
 
-// ══════════════════════════════════════
-//  SCANNER DE ALIMENTOS (Visão Real)
-// ══════════════════════════════════════
-async function scanAlimento(ev) {
-  var file=ev&&ev.target&&ev.target.files&&ev.target.files[0]; if(!file) return;
-  var prev=document.getElementById('scanPrev'), res=document.getElementById('scanRes');
-  prev.src=URL.createObjectURL(file); prev.style.display='block';
-  res.style.display='block'; res.textContent=''; res.innerHTML='<span class="spin-w"></span> Analisando prato com IA...';
-
-  try {
-    var b64=await toBase64(file);
-    var txt='Você é nutricionista. Analise esta imagem de prato. Identifique os alimentos com emojis. Estime:\n🍽️ Alimentos: [lista]\n📊 Calorias: ~X kcal\n💪 Proteínas: ~Xg\n🍞 Carboidratos: ~Xg\n🧈 Gorduras: ~Xg\n💡 Dica: [observação rápida]';
-    var ans=await callGroq([{role:'user',content:txt,_hasImage:true}], 600, b64);
-    res.textContent=ans;
-  } catch(e) {
-    res.textContent='❌ '+(e.message||'Erro ao analisar. Tente novamente.');
-    toast('❌ '+e.message);
-  }
-  if(ev.target) ev.target.value='';
+function limparHistorico() {
+  if(!confirm('Apagar todo o histórico de treino e PRs?')) return;
+  G.weightHist = []; G.prs = {};
+  localStorage.removeItem(lsKey('fp_wh')); localStorage.removeItem(lsKey('fp_pr'));
+  renderChart(); renderStats(); renderTrophies(); verSemana(1); toast('🗑 Histórico limpo.');
 }
 
-// ══════════════════════════════════════
-//  ANÁLISE CORPORAL (Visão Real)
-// ══════════════════════════════════════
-async function analisarFoto(ev) {
-  var file=ev&&ev.target&&ev.target.files&&ev.target.files[0]; if(!file) return;
-  var prev=document.getElementById('photoPrev'), res=document.getElementById('photoRes');
-  prev.src=URL.createObjectURL(file); prev.style.display='block';
-  res.style.display='block'; res.textContent=''; res.innerHTML='<span class="spin-w"></span> Analisando composição corporal...';
-
-  try {
-    var b64=await toBase64(file);
-    var txt='Você é Personal Trainer especialista em composição corporal. Analise esta foto de forma respeitosa e profissional.\n1) % Gordura Estimada: (range)\n2) Pontos fortes: o que já está bom\n3) Foco: quais grupos musculares priorizar\n4) Dica de treino específica\n5) Mensagem motivacional curta e poderosa';
-    var ans=await callGroq([{role:'user',content:txt,_hasImage:true}], 700, b64);
-    res.textContent=ans;
-  } catch(e) {
-    res.textContent='❌ '+(e.message||'Erro ao analisar.');
-    toast('❌ '+e.message);
-  }
-  if(ev.target) ev.target.value='';
+function renderTrophies() {
+  var grid = document.getElementById('trophyGrid');
+  var sets = G.weightHist.length;
+  var prs = Object.keys(G.prs).length;
+  
+  var trofeus = [
+    {id: 't1', icon: '🔥', name: 'Primeiro Treino', won: sets > 0},
+    {id: 't2', icon: '🏆', name: '1º Recorde (PR)', won: prs > 0},
+    {id: 't3', icon: '🦍', name: 'Força Bruta', won: prs >= 5},
+    {id: 't4', icon: '📅', name: 'Consistente', won: G.streak.days >= 3},
+    {id: 't5', icon: '💯', name: 'Centurião (100 sets)', won: sets >= 100},
+    {id: 't6', icon: '🚀', name: 'Atleta AI', won: G.rawText !== ''}
+  ];
+  
+  grid.innerHTML = trofeus.map(function(t) {
+    var w = t.won ? ' won' : '';
+    return '<div class="trophy' + w + '"><div class="t-icon">' + t.icon + '</div><div class="t-name">' + t.name + '</div></div>';
+  }).join('');
 }
 
-// ══════════════════════════════════════
-//  GIF EXERCÍCIO
-// ══════════════════════════════════════
-async function toggleGif(nome, fId) {
-  var f=document.getElementById(fId); if(!f) return;
-  if(f.style.display==='block'){f.style.display='none';return;}
-  f.innerHTML='<div style="display:flex;justify-content:center;align-items:center;height:100%;"><span class="spin-w"></span></div>';
-  f.style.display='block';
-  try {
-    var r=await fetch('https://api.giphy.com/v1/gifs/search?api_key=cw7S2GUO7v9JT6Y5M3cl79V69bN00G8L&q='+encodeURIComponent(nome+' exercise gym')+'&limit=1&rating=g');
-    var d=await r.json();
-    if(d.data&&d.data.length>0) f.innerHTML='<iframe src="https://giphy.com/embed/'+d.data[0].id+'" width="100%" height="100%" frameBorder="0" allowFullScreen></iframe>';
-    else f.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--muted);">GIF não encontrado</div>';
-  } catch(e){ f.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--red);">Erro ao carregar</div>'; }
-}
-
-// ══════════════════════════════════════
-//  CHECK-IN
-// ══════════════════════════════════════
-function selE(btn, field) {
-  var row=btn.closest('.emoji-row'); if(!row) return;
-  row.querySelectorAll('.e-btn').forEach(function(b){ b.classList.remove('on'); });
-  btn.classList.add('on'); G.checkin[field]=btn.childNodes[0].textContent.trim();
+// ── Check-in ──
+function selE(btn, cat) {
+  var pa = btn.parentElement;
+  pa.querySelectorAll('.e-btn').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  G.checkin[cat] = btn.textContent.replace(/<small>.*<\/small>/,'').trim();
 }
 
 async function enviarCheckin() {
-  fecharModal('mCheckin'); toast('⚡ Ajustando plano...');
-  var prompt='Personal Trainer, check-in:\n- Sono: '+(G.checkin.sleep||'não informado')+'\n- Dores: '+(G.checkin.pain||'não informado')+'\n- Metas: '+(G.checkin.goal||'não informado')+'\n\nDê 3 ajustes concisos para esta semana em português.';
+  if (!G.checkin.sleep || !G.checkin.pain || !G.checkin.goal) { toast('⚠️ Responda todas as perguntas.'); return; }
+  fecharModal('mCheckin');
+  goTab('tChat', document.querySelectorAll('.tab-btn')[0], 0);
+  
+  var msg = 'Check-in: Sono ' + G.checkin.sleep + ', Dores ' + G.checkin.pain + ', Metas ' + G.checkin.goal + '. Ajuste meu treino ou dieta com base nisso.';
+  addBubble('user', msg); G.chatHist.push({role: 'user', content: msg});
+  
+  var btnSend = document.getElementById('btnSend');
+  btnSend.disabled = true; G.chatBusy = true; btnSend.innerHTML = '<span class="spin"></span>';
+  toast('🤖 A IA está analisando seu check-in...');
+  
   try {
-    var ans=await callGroq([{role:'user',content:prompt}], 500);
-    G.chatHist.push({role:'assistant',content:'📊 Check-in!\n\n'+ans});
-    renderChat(); goTab('tChat', document.querySelectorAll('.tab-btn')[0]);
-    toast('✅ Plano ajustado!');
-  } catch(e){ toast('❌ '+(e.message||'Erro check-in')); }
+    var resp = await callGroq(G.chatHist, 1000);
+    addBubble('ai', resp); G.chatHist.push({role: 'assistant', content: resp});
+    // Attempt re-parse if AI gave full plan
+    if(resp.includes('---TREINO---')) processarResposta(resp);
+  } catch(e) {
+    toast('❌ Erro: ' + e.message);
+  } finally {
+    btnSend.disabled = false; G.chatBusy = false; btnSend.innerHTML = '➤';
+  }
 }
 
-// ══════════════════════════════════════
-//  TIMER DESCANSO
-// ══════════════════════════════════════
-function startTimer(id) {
-  if(G._timerIntervals[id]){ clearInterval(G._timerIntervals[id]); delete G._timerIntervals[id]; var el=document.getElementById(id); if(el){el.classList.remove('run');var sp=el.querySelector('span');if(sp)sp.textContent='60s';} return; }
-  var el=document.getElementById(id); if(!el) return;
-  el.classList.add('run'); var left=60;
-  G._timerIntervals[id]=setInterval(function(){
-    left--;
-    var sp=el.querySelector('span'); if(sp)sp.textContent=left+'s';
-    if(left<=0){ clearInterval(G._timerIntervals[id]); delete G._timerIntervals[id]; el.classList.remove('run'); if(sp)sp.textContent='60s'; toast('💪 Fim do descanso! Próxima série!'); if(navigator.vibrate)navigator.vibrate([200,100,200]); }
-  },1000);
-}
-
-// ══════════════════════════════════════
-//  SALVAR CARGA
-// ══════════════════════════════════════
-function salvarCarga(nome, iId) {
-  var inp=document.getElementById(iId); if(!inp) return;
-  var val=parseInt(inp.value)||0;
-  if(val<=0){ toast('Insira uma carga válida!'); return; }
-  var hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-  var rec=G.weightHist.find(function(w){return w.date===hoje;});
-  if(rec) rec.v+=val; else G.weightHist.push({date:hoje,v:val});
-  localStorage.setItem(lsKey('fp_wh'),JSON.stringify(G.weightHist));
-  var isPR=!G.prs[nome]||val>G.prs[nome];
-  if(isPR){ G.prs[nome]=val; localStorage.setItem(lsKey('fp_pr'),JSON.stringify(G.prs)); toast('🏆 Novo PR em '+nome+'! '+val+'kg!'); }
-  else toast('✅ '+val+'kg salvo!');
-  registrarTreino(); renderChart(); renderStats(); renderTrophies();
-}
-
-// ══════════════════════════════════════
-//  STREAK
-// ══════════════════════════════════════
-function registrarTreino() {
-  var hoje=new Date().toDateString(); if(G.streak.last===hoje) return;
-  var ontem=new Date(Date.now()-86400000).toDateString();
-  G.streak={days:(G.streak.last===ontem?G.streak.days+1:1),last:hoje};
-  localStorage.setItem(lsKey('fp_sk'),JSON.stringify(G.streak));
-  updateStreakUI();
-}
-function updateStreakUI(){ var el=document.getElementById('streakNum'); if(el) el.textContent=G.streak.days; }
-function limparHistorico(){ if(!confirm('Limpar histórico de cargas?')) return; G.weightHist=[]; localStorage.removeItem(lsKey('fp_wh')); renderChart(); renderStats(); toast('Histórico limpo.'); }
-
-// ══════════════════════════════════════
-//  GRÁFICO (HTML puro, sem Chart.js)
-// ══════════════════════════════════════
-function renderChart() {
-  var c=document.getElementById('chartBars'); if(!c) return; c.innerHTML='';
-  var data=G.weightHist.slice(-10);
-  if(!data.length){ c.innerHTML='<div style="width:100%;text-align:center;font-size:12px;color:var(--muted);padding:20px;">Nenhum dado ainda</div>'; return; }
-  var max=data.reduce(function(a,b){return Math.max(a,b.v);},1);
-  data.forEach(function(d){
-    var wrap=document.createElement('div'); wrap.className='chart-bar-wrap';
-    var bar=document.createElement('div'); bar.className='chart-bar'; bar.style.height=Math.max(4,(d.v/max)*100)+'px';
-    var lbl=document.createElement('span'); lbl.className='chart-lbl'; lbl.textContent=d.date;
-    wrap.appendChild(bar); wrap.appendChild(lbl); c.appendChild(wrap);
-  });
-}
-
-// ══════════════════════════════════════
-//  STATS
-// ══════════════════════════════════════
-function renderStats() {
-  var el=document.getElementById('statBox'); if(!el) return;
-  var tv=G.weightHist.reduce(function(a,b){return a+b.v;},0);
-  var mx=G.weightHist.reduce(function(a,b){return Math.max(a,b.v);},0);
-  var rows=[
-    ['🗓 Sessões registradas', G.weightHist.length],
-    ['📦 Volume total', tv+' kg'],
-    ['🔥 Melhor sessão', mx+' kg'],
-    ['🏆 PRs conquistados', Object.keys(G.prs).length],
-    ['⚡ Sequência atual', G.streak.days+' dias']
-  ];
-  el.innerHTML='<div class="sec-label" style="margin-bottom:10px;">📋 Relatório</div>'+
-    rows.map(function(r){return '<div class="stat-row"><span class="stat-lbl">'+r[0]+'</span><span class="stat-val">'+r[1]+'</span></div>';}).join('');
-}
-
-// ══════════════════════════════════════
-//  CONQUISTAS
-// ══════════════════════════════════════
-var TROPHIES=[
-  {icon:'🎯',name:'1ª Sessão',check:function(){return G.weightHist.length>=1;}},
-  {icon:'📅',name:'7 Sessões',check:function(){return G.weightHist.length>=7;}},
-  {icon:'🏅',name:'30 Sessões',check:function(){return G.weightHist.length>=30;}},
-  {icon:'🔥',name:'3 dias seguidos',check:function(){return G.streak.days>=3;}},
-  {icon:'💫',name:'7 dias seguidos',check:function(){return G.streak.days>=7;}},
-  {icon:'⚡',name:'30 dias seguidos',check:function(){return G.streak.days>=30;}},
-  {icon:'🏆',name:'Primeiro PR',check:function(){return Object.keys(G.prs).length>=1;}},
-  {icon:'👑',name:'5 PRs',check:function(){return Object.keys(G.prs).length>=5;}},
-  {icon:'💪',name:'500kg acumulado',check:function(){return G.weightHist.reduce(function(a,b){return a+b.v;},0)>=500;}}
-];
-function renderTrophies(){
-  var g=document.getElementById('trophyGrid'); if(!g) return; g.innerHTML='';
-  TROPHIES.forEach(function(t){
-    var won=t.check(); var el=document.createElement('div');
-    el.className='trophy'+(won?' won':'');
-    el.innerHTML='<div class="t-icon">'+t.icon+'</div><div class="t-name">'+t.name+'</div>';
-    g.appendChild(el);
-  });
-}
-
-// ══════════════════════════════════════
-//  EXPORTAR WHATSAPP
-// ══════════════════════════════════════
-function exportWpp(){
-  if(!G.rawText){toast('Gere um plano primeiro!');return;}
-  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent('*Meu Plano FitPlan AI*\n\n'+G.rawText.substring(0,3900)),'_blank');
+// ── Export ──
+function exportWpp() {
+  if(!G.rawText) return;
+  var txt = encodeURIComponent('Meu plano FitPlan AI:\n\n' + G.rawText);
+  window.open('https://api.whatsapp.com/send?text=' + txt, '_blank');
 }
 </script>
 </body>
