@@ -224,7 +224,7 @@ body{padding-bottom:120px;}
 .empty p{font-size:13px;line-height:1.6;}
 
 /* ── LOCK SCREEN ── */
-.lock-screen{position:fixed;inset:0;background:var(--bg);z-index:5000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;}
+.lock-screen{position:fixed;inset:0;background:var(--bg);z-index:5000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow-y:auto;}
 .lock-screen.show{display:flex;}
 .lock-logo{width:64px;height:64px;background:var(--green);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:18px;box-shadow:0 0 30px var(--gglow);}
 .lock-title{font-family:var(--fhead);font-size:22px;font-weight:800;margin-bottom:6px;}
@@ -256,16 +256,76 @@ body{padding-bottom:120px;}
 .face-ring.match{border-color:var(--green);box-shadow:0 0 24px var(--gglow);}
 .face-ring.nomatch{border-color:var(--red);}
 .face-status{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);color:#fff;font-size:11.5px;text-align:center;padding:8px 6px;font-weight:600;}
+
+/* ── AUTH SCREEN (cadastro / login Firebase) ── */
+.auth-tabs{display:flex;gap:6px;background:var(--s1);padding:5px;border-radius:var(--r2);margin-bottom:18px;border:1px solid var(--b1);width:100%;max-width:320px;}
+.auth-tab{flex:1;padding:10px;background:transparent;border:none;color:var(--muted);font-size:12.5px;font-weight:700;border-radius:var(--r3);cursor:pointer;transition:all .2s;font-family:var(--fhead);}
+.auth-tab.on{background:var(--s3);color:var(--green);}
+.auth-pane{display:none;width:100%;}
+.auth-pane.on{display:block;}
+.auth-link{font-size:12px;color:var(--blue);cursor:pointer;text-align:center;margin-top:4px;}
 </style>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<!-- LOCK SCREEN -->
+<!-- AUTH SCREEN (cadastro / login Firebase — qualquer pessoa pode se cadastrar) -->
+<div class="lock-screen show" id="authScreen">
+  <div class="lock-logo">⚡</div>
+  <div class="lock-title">FitPlan AI</div>
+  <div class="lock-sub" id="authSub">Crie sua conta gratuita ou entre para acessar seu plano.</div>
+
+  <div class="auth-tabs">
+    <button class="auth-tab on" id="tabLogin" onclick="goAuthTab('login')">Entrar</button>
+    <button class="auth-tab" id="tabSignup" onclick="goAuthTab('signup')">Criar conta</button>
+  </div>
+
+  <div class="lock-box">
+    <!-- LOGIN -->
+    <div class="auth-pane on" id="paneLogin">
+      <div class="lock-inp-wrap">
+        <input type="email" id="loginEmail" class="lock-inp" placeholder="E-mail" style="letter-spacing:normal;text-align:left;" autocomplete="username">
+      </div>
+      <div class="lock-inp-wrap">
+        <input type="password" id="loginPass" class="lock-inp" placeholder="Senha" style="letter-spacing:normal;text-align:left;" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')fazerLogin()">
+        <button class="lock-eye" onclick="toggleEye('loginPass')" type="button">👁</button>
+      </div>
+      <div class="lock-err" id="authErrLogin"></div>
+      <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">🔓 Entrar</button>
+      <div class="auth-link" onclick="resetSenha()">Esqueci minha senha</div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div class="auth-pane" id="paneSignup">
+      <div class="lock-inp-wrap">
+        <input type="text" id="signName" class="lock-inp" placeholder="Seu nome" style="letter-spacing:normal;text-align:left;" autocomplete="name">
+      </div>
+      <div class="lock-inp-wrap">
+        <input type="email" id="signEmail" class="lock-inp" placeholder="E-mail" style="letter-spacing:normal;text-align:left;" autocomplete="username">
+      </div>
+      <div class="lock-inp-wrap">
+        <input type="password" id="signPass" class="lock-inp" placeholder="Senha (mín. 6 caracteres)" style="letter-spacing:normal;text-align:left;" autocomplete="new-password">
+        <button class="lock-eye" onclick="toggleEye('signPass')" type="button">👁</button>
+      </div>
+      <div class="lock-inp-wrap">
+        <input type="password" id="signPass2" class="lock-inp" placeholder="Confirmar senha" style="letter-spacing:normal;text-align:left;" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')fazerCadastro()">
+      </div>
+      <div class="lock-err" id="authErrSignup"></div>
+      <button class="btn-primary" id="btnSignup" onclick="fazerCadastro()">✅ Criar minha conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCK SCREEN (trava local extra: senha do app + reconhecimento facial, por usuário) -->
 <div class="lock-screen" id="lockScreen">
   <div class="lock-logo">⚡</div>
   <div class="lock-title">FitPlan AI</div>
-  <div class="lock-sub" id="lockSub">Digite sua senha ou use biometria para desbloquear.</div>
+  <div class="lock-sub" id="lockSub">Digite sua senha do app ou use reconhecimento facial para desbloquear.</div>
   <div class="lock-box">
     <div class="lock-inp-wrap">
       <input type="password" id="lockInp" class="lock-inp" placeholder="Senha" inputmode="text"
@@ -284,10 +344,11 @@ body{padding-bottom:120px;}
       <div class="face-status" id="faceStatus">Iniciando câmera...</div>
     </div>
     <button class="btn-ghost" id="btnFaceCancel" style="display:none;width:100%;margin-top:8px;" onclick="pararReconhecimentoFacial(false)">Cancelar</button>
+    <div class="auth-link" style="margin-top:16px;" onclick="sairDaConta()">Sair desta conta</div>
   </div>
 </div>
 
-<div class="app" id="app">
+<div class="app" id="app" style="display:none;">
 
   <!-- HEADER -->
   <header class="hdr">
@@ -507,11 +568,11 @@ body{padding-bottom:120px;}
   <div class="modal">
     <button class="modal-x" onclick="fecharModal('mSecurity')">✕</button>
     <div class="modal-title">🔒 Segurança do App</div>
-    <div class="modal-sub">Proteja seu FitPlan com senha e/ou biometria (Face ID / Touch ID / Windows Hello, conforme seu aparelho).</div>
+    <div class="modal-sub">Sua conta (<span id="secAccountEmail">-</span>) já é protegida por senha via Firebase. Aqui você pode adicionar uma trava extra neste aparelho: senha local e/ou reconhecimento facial.</div>
 
     <div class="sec-status">
       <div class="sec-dot off" id="secDotPass"></div>
-      <span id="secStatusPassTxt">Senha: não configurada</span>
+      <span id="secStatusPassTxt">Senha local: não configurada</span>
     </div>
     <div class="sec-status">
       <div class="sec-dot off" id="secDotBio"></div>
@@ -519,7 +580,7 @@ body{padding-bottom:120px;}
     </div>
 
     <div class="field">
-      <label>Nova senha</label>
+      <label>Nova senha local (trava do app)</label>
       <input type="password" id="secNewPass" class="inp" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
     </div>
     <div class="field">
@@ -540,18 +601,166 @@ body{padding-bottom:120px;}
     <button class="btn-ghost" id="btnFaceSetupCancel" style="display:none;width:100%;margin-bottom:10px;" onclick="pararCadastroRosto()">Cancelar</button>
     <button class="btn-ghost" id="btnRemoveFace" onclick="removerRosto()" style="display:none;width:100%;margin-bottom:10px;">🗑 Remover rosto cadastrado</button>
 
-    <button class="btn-danger" id="btnDisableSec" onclick="desativarSeguranca()" style="display:none;">🗑 Desativar segurança</button>
+    <button class="btn-danger" id="btnDisableSec" onclick="desativarSeguranca()" style="display:none;">🗑 Desativar trava local</button>
+    <div class="div"></div>
+    <button class="btn-ghost" style="width:100%;color:var(--red);" onclick="sairDaConta()">🚪 Sair da conta</button>
     <div class="api-note" style="margin-top:10px;">
-      🔒 A senha fica salva (com hash) só no seu aparelho. O reconhecimento facial roda 100% no seu navegador com IA gratuita e open-source (face-api.js) — a foto do seu rosto nunca sai do aparelho nem é enviada a servidor nenhum; só um conjunto de números (o "descritor" do rosto) fica salvo localmente para comparação.
+      🔒 A conta em si é autenticada pelo Firebase (e-mail + senha). A senha local e o reconhecimento facial são uma trava extra só deste aparelho: a senha local fica salva com hash, e o rosto roda 100% no navegador (face-api.js) — a imagem nunca sai do aparelho, só um "descritor" numérico fica salvo localmente.
     </div>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════
+//  FIREBASE — CADASTRO E LOGIN ABERTOS
+// ══════════════════════════════════════
+var firebaseConfig = {
+  apiKey: "AIzaSyA69dQ7AQseqB9sodu9xJDBg_StJj6OQgw",
+  authDomain: "gen-lang-client-0846085390.firebaseapp.com",
+  projectId: "gen-lang-client-0846085390",
+  storageBucket: "gen-lang-client-0846085390.firebasestorage.app",
+  messagingSenderId: "330417291724",
+  appId: "1:330417291724:web:770e22995365843f50dd69"
+};
+firebase.initializeApp(firebaseConfig);
+var fbAuth = firebase.auth();
+var fbDb = firebase.firestore();
+fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(e){ console.log('persist err', e); });
+
+function goAuthTab(which) {
+  document.getElementById('tabLogin').classList.toggle('on', which==='login');
+  document.getElementById('tabSignup').classList.toggle('on', which==='signup');
+  document.getElementById('paneLogin').classList.toggle('on', which==='login');
+  document.getElementById('paneSignup').classList.toggle('on', which==='signup');
+}
+
+function toggleEye(id) {
+  var i = document.getElementById(id);
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+function traduzErroFirebase(code) {
+  var map = {
+    'auth/email-already-in-use': 'Este e-mail já está cadastrado. Tente entrar.',
+    'auth/invalid-email': 'E-mail inválido.',
+    'auth/weak-password': 'A senha deve ter no mínimo 6 caracteres.',
+    'auth/user-not-found': 'E-mail não cadastrado. Crie uma conta primeiro.',
+    'auth/wrong-password': 'Senha incorreta.',
+    'auth/invalid-credential': 'E-mail ou senha incorretos.',
+    'auth/too-many-requests': 'Muitas tentativas. Aguarde um momento e tente de novo.',
+    'auth/network-request-failed': 'Falha de conexão. Verifique sua internet.'
+  };
+  return map[code] || 'Erro: ' + (code || 'desconhecido');
+}
+
+async function fazerCadastro() {
+  var nome = (document.getElementById('signName').value||'').trim();
+  var email = (document.getElementById('signEmail').value||'').trim();
+  var p1 = document.getElementById('signPass').value;
+  var p2 = document.getElementById('signPass2').value;
+  var err = document.getElementById('authErrSignup');
+  err.textContent = '';
+  if (!nome) { err.textContent = 'Digite seu nome.'; return; }
+  if (!email) { err.textContent = 'Digite seu e-mail.'; return; }
+  if (!p1 || p1.length < 6) { err.textContent = 'A senha deve ter no mínimo 6 caracteres.'; return; }
+  if (p1 !== p2) { err.textContent = 'As senhas não coincidem.'; return; }
+
+  var btn = document.getElementById('btnSignup');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    var cred = await fbAuth.createUserWithEmailAndPassword(email, p1);
+    await cred.user.updateProfile({ displayName: nome });
+    await fbDb.collection('users').doc(cred.user.uid).set({
+      nome: nome, email: email, criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    toast('✅ Conta criada! Bem-vindo(a), ' + nome + '!');
+    // onAuthStateChanged cuida do resto (esconder tela de auth, mostrar app)
+  } catch(e) {
+    err.textContent = traduzErroFirebase(e.code);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '✅ Criar minha conta';
+  }
+}
+
+async function fazerLogin() {
+  var email = (document.getElementById('loginEmail').value||'').trim();
+  var pass = document.getElementById('loginPass').value;
+  var err = document.getElementById('authErrLogin');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'Preencha e-mail e senha.'; return; }
+
+  var btn = document.getElementById('btnLogin');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+  try {
+    await fbAuth.signInWithEmailAndPassword(email, pass);
+    toast('✅ Login realizado!');
+  } catch(e) {
+    err.textContent = traduzErroFirebase(e.code);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '🔓 Entrar';
+  }
+}
+
+async function resetSenha() {
+  var email = (document.getElementById('loginEmail').value||'').trim();
+  if (!email) { document.getElementById('authErrLogin').textContent = 'Digite seu e-mail acima primeiro.'; return; }
+  try {
+    await fbAuth.sendPasswordResetEmail(email);
+    toast('📧 E-mail de redefinição enviado para ' + email);
+  } catch(e) {
+    document.getElementById('authErrLogin').textContent = traduzErroFirebase(e.code);
+  }
+}
+
+function sairDaConta() {
+  if (!confirm('Sair da sua conta?')) return;
+  fecharModal('mSecurity');
+  fbAuth.signOut();
+}
+
+// Roteador principal de autenticação: mostra tela de login/cadastro
+// OU o app (com trava local opcional de senha/rosto por usuário).
+fbAuth.onAuthStateChanged(function(user) {
+  if (user) {
+    G.uid = user.uid;
+    document.getElementById('authScreen').classList.remove('show');
+    var emailEl = document.getElementById('secAccountEmail'); if (emailEl) emailEl.textContent = user.email || '';
+    carregarDadosDoUsuario();
+    document.getElementById('app').style.display = '';
+    initSecurity(); // decide se mostra lockScreen local (trava extra) ou libera direto
+  } else {
+    G.uid = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('bottomNav').style.display = 'none';
+    document.getElementById('lockScreen').classList.remove('show');
+    document.getElementById('authScreen').classList.add('show');
+  }
+});
+
+// Chaves de localStorage isoladas por usuário (uid), para permitir
+// múltiplas contas no mesmo navegador/aparelho sem misturar dados.
+function lsKey(base) { return base + (G.uid ? ('_' + G.uid) : ''); }
+
+function carregarDadosDoUsuario() {
+  try {
+    var key = localStorage.getItem(lsKey('fp_key'));
+    if (key) { G.apiKey = key; document.getElementById('apiKeyInp').value = key; updateApiPill(true); document.getElementById('apiBanner').classList.remove('show'); }
+    else { G.apiKey=''; document.getElementById('apiKeyInp').value=''; updateApiPill(false); document.getElementById('apiBanner').classList.add('show'); }
+    var wh = localStorage.getItem(lsKey('fp_wh')); G.weightHist = wh ? JSON.parse(wh) : [];
+    var pr = localStorage.getItem(lsKey('fp_pr')); G.prs = pr ? JSON.parse(pr) : {};
+    var sk = localStorage.getItem(lsKey('fp_sk')); G.streak = sk ? JSON.parse(sk) : {days:0,last:''};
+  } catch(e) {}
+  updateStreakUI();
+  renderChart();
+  renderStats();
+  renderTrophies();
+}
+
+// ══════════════════════════════════════
 //  ESTADO GLOBAL
 // ══════════════════════════════════════
 var G = {
+  uid: null,
   apiKey: '',
   objetivo: 'Hipertrofia',
   chatHist: [],
@@ -637,14 +846,6 @@ function toBase64(file) {
 //  INIT
 // ══════════════════════════════════════
 window.onload = function() {
-  // Carregar dados salvos
-  try {
-    var key = localStorage.getItem('fp_key'); if (key) { G.apiKey = key; document.getElementById('apiKeyInp').value = key; updateApiPill(true); document.getElementById('apiBanner').classList.remove('show'); }
-    var wh = localStorage.getItem('fp_wh'); G.weightHist = wh ? JSON.parse(wh) : [{date:'10/05',v:120},{date:'12/05',v:135},{date:'14/05',v:148}];
-    var pr = localStorage.getItem('fp_pr'); G.prs = pr ? JSON.parse(pr) : {};
-    var sk = localStorage.getItem('fp_sk'); if (sk) G.streak = JSON.parse(sk);
-  } catch(e) {}
-
   // Chips objetivo
   document.querySelectorAll('.chip').forEach(function(c) {
     c.addEventListener('click', function() {
@@ -652,12 +853,8 @@ window.onload = function() {
       this.classList.add('on'); G.objetivo = this.dataset.v;
     });
   });
-
-  updateStreakUI();
-  renderChart();
-  renderStats();
-  renderTrophies();
-  initSecurity();
+  // O carregamento de dados do usuário e da tela (auth/app) acontece
+  // em fbAuth.onAuthStateChanged, definido acima.
 };
 
 // ══════════════════════════════════════
@@ -671,7 +868,7 @@ function salvarChave() {
   var k = document.getElementById('apiKeyInp').value.trim();
   if (!k || k.length < 10) { toast('❌ Cole uma chave válida'); return; }
   G.apiKey = k;
-  localStorage.setItem('fp_key', k);
+  localStorage.setItem(lsKey('fp_key'), k);
   updateApiPill(true);
   document.getElementById('apiBanner').classList.remove('show');
   toast('✅ Chave salva! IA pronta.');
@@ -743,14 +940,13 @@ function addBubble(role, content) {
 }
 
 // ══════════════════════════════════════
-//  SEGURANÇA — SENHA + BIOMETRIA (WebAuthn)
+//  SEGURANÇA LOCAL — SENHA + BIOMETRIA (extra, por usuário)
 // ══════════════════════════════════════
-// A "senha" fica guardada como hash SHA-256 (nunca em texto puro).
-// A "biometria" usa o padrão WebAuthn: o navegador aciona o leitor
-// biométrico nativo do aparelho (Face ID / Touch ID / Windows Hello /
-// leitor de digital do Android). O app nunca recebe nem guarda a
-// imagem do rosto — só recebe uma confirmação criptográfica de que
-// o dono do aparelho se autenticou com sucesso.
+// Esta é uma trava OPCIONAL adicional, só neste aparelho, em cima da
+// conta já autenticada via Firebase (e-mail + senha). A "senha" local
+// fica guardada como hash SHA-256, isolada por uid. O reconhecimento
+// facial roda 100% no navegador via face-api.js — nenhuma imagem sai
+// do aparelho, só o "descritor" numérico do rosto é salvo localmente.
 
 async function sha256Hex(text) {
   var enc = new TextEncoder().encode('fitplan_v1_' + text);
@@ -759,7 +955,7 @@ async function sha256Hex(text) {
 }
 
 function initSecurity() {
-  var enabled = localStorage.getItem('fp_sec_enabled') === '1';
+  var enabled = localStorage.getItem(lsKey('fp_sec_enabled')) === '1';
   updateSecPillUI(enabled);
   if (enabled) {
     document.getElementById('app').style.filter = 'blur(20px)';
@@ -767,7 +963,7 @@ function initSecurity() {
     document.getElementById('app').setAttribute('aria-hidden','true');
     document.getElementById('bottomNav').style.pointerEvents = 'none';
     document.getElementById('lockScreen').classList.add('show');
-    var faceData = localStorage.getItem('fp_sec_face');
+    var faceData = localStorage.getItem(lsKey('fp_sec_face'));
     var btn = document.getElementById('btnFaceUnlock');
     if (faceData) {
       btn.disabled = false;
@@ -777,6 +973,9 @@ function initSecurity() {
       document.getElementById('faceBtnTxt').textContent = 'Rosto não cadastrado';
     }
     setTimeout(function(){ var i=document.getElementById('lockInp'); if(i) i.focus(); }, 300);
+  } else {
+    document.getElementById('lockScreen').classList.remove('show');
+    document.getElementById('bottomNav').style.display = G.rawText ? 'block' : (document.getElementById('resultSection').style.display==='none' ? 'none' : 'block');
   }
 }
 
@@ -852,7 +1051,7 @@ async function cadastrarRosto() {
     }
     if (!descritor) throw new Error('Não foi possível detectar seu rosto. Tente em um local bem iluminado.');
 
-    localStorage.setItem('fp_sec_face', JSON.stringify(descritor));
+    localStorage.setItem(lsKey('fp_sec_face'), JSON.stringify(descritor));
     status.textContent = '✅ Rosto cadastrado com sucesso!';
     ring.className = 'face-ring match';
     toast('✅ Reconhecimento facial ativado!');
@@ -876,14 +1075,14 @@ function pararCadastroRosto() {
 
 function removerRosto() {
   if (!confirm('Remover o rosto cadastrado?')) return;
-  localStorage.removeItem('fp_sec_face');
+  localStorage.removeItem(lsKey('fp_sec_face'));
   refreshSecurityModal();
   toast('🗑 Reconhecimento facial removido.');
 }
 
 // ── Desbloqueio por rosto (na tela de bloqueio) ──
 async function iniciarReconhecimentoFacial() {
-  var stored = localStorage.getItem('fp_sec_face');
+  var stored = localStorage.getItem(lsKey('fp_sec_face'));
   if (!stored) { toast('❌ Nenhum rosto cadastrado. Configure em 🔒 Segurança.'); return; }
 
   var wrap = document.getElementById('faceCamWrap');
@@ -974,7 +1173,7 @@ async function tentarSenha() {
   var inp = document.getElementById('lockInp');
   var val = (inp.value||'').trim();
   var err = document.getElementById('lockErr');
-  var storedHash = localStorage.getItem('fp_sec_hash');
+  var storedHash = localStorage.getItem(lsKey('fp_sec_hash'));
   if (!storedHash) { err.textContent = 'Nenhuma senha configurada.'; return; }
   if (!val) { err.textContent = 'Digite sua senha.'; return; }
   var h = await sha256Hex(val);
@@ -999,17 +1198,17 @@ function desbloquearApp() {
 }
 
 function refreshSecurityModal() {
-  var hasPass = !!localStorage.getItem('fp_sec_hash');
-  var hasFace = !!localStorage.getItem('fp_sec_face');
+  var hasPass = !!localStorage.getItem(lsKey('fp_sec_hash'));
+  var hasFace = !!localStorage.getItem(lsKey('fp_sec_face'));
   var dotPass = document.getElementById('secDotPass'), dotBio = document.getElementById('secDotBio');
   dotPass.className = 'sec-dot ' + (hasPass?'on':'off');
   dotBio.className = 'sec-dot ' + (hasFace?'on':'off');
-  document.getElementById('secStatusPassTxt').textContent = 'Senha: ' + (hasPass?'configurada ✓':'não configurada');
+  document.getElementById('secStatusPassTxt').textContent = 'Senha local: ' + (hasPass?'configurada ✓':'não configurada');
   document.getElementById('secStatusBioTxt').textContent = 'Reconhecimento facial: ' + (hasFace?'ativado ✓':'não configurado');
   document.getElementById('btnDisableSec').style.display = (hasPass||hasFace) ? 'block' : 'none';
   document.getElementById('btnRemoveFace').style.display = hasFace ? 'block' : 'none';
   var bioBtn = document.getElementById('btnRegBio');
-  if (!hasPass) { bioBtn.disabled = true; bioBtn.innerHTML = '📷 Salve uma senha primeiro'; }
+  if (!hasPass) { bioBtn.disabled = true; bioBtn.innerHTML = '📷 Salve uma senha local primeiro'; }
   else if (hasFace) { bioBtn.disabled = false; bioBtn.innerHTML = '🔄 Recadastrar rosto'; }
   else { bioBtn.disabled = false; bioBtn.innerHTML = '📷 Cadastrar meu rosto'; }
 }
@@ -1020,23 +1219,23 @@ async function salvarSenhaSeguranca() {
   if (!p1 || p1.length < 4) { toast('❌ A senha deve ter no mínimo 4 caracteres'); return; }
   if (p1 !== p2) { toast('❌ As senhas não coincidem'); return; }
   var hash = await sha256Hex(p1);
-  localStorage.setItem('fp_sec_hash', hash);
-  localStorage.setItem('fp_sec_enabled', '1');
+  localStorage.setItem(lsKey('fp_sec_hash'), hash);
+  localStorage.setItem(lsKey('fp_sec_enabled'), '1');
   document.getElementById('secNewPass').value = '';
   document.getElementById('secConfirmPass').value = '';
   updateSecPillUI(true);
   refreshSecurityModal();
-  toast('✅ Senha salva! Segurança ativada.');
+  toast('✅ Senha local salva! Trava extra ativada.');
 }
 
 function desativarSeguranca() {
-  if (!confirm('Tem certeza que deseja desativar a senha e o reconhecimento facial? O app ficará sem bloqueio.')) return;
-  localStorage.removeItem('fp_sec_hash');
-  localStorage.removeItem('fp_sec_face');
-  localStorage.removeItem('fp_sec_enabled');
+  if (!confirm('Tem certeza que deseja desativar a senha local e o reconhecimento facial? O app ficará sem trava extra neste aparelho (sua conta continua protegida pelo login).')) return;
+  localStorage.removeItem(lsKey('fp_sec_hash'));
+  localStorage.removeItem(lsKey('fp_sec_face'));
+  localStorage.removeItem(lsKey('fp_sec_enabled'));
   updateSecPillUI(false);
   refreshSecurityModal();
-  toast('🔓 Segurança desativada.');
+  toast('🔓 Trava local desativada.');
 }
 
 // ══════════════════════════════════════
@@ -1344,9 +1543,9 @@ function salvarCarga(nome, iId) {
   var hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
   var rec=G.weightHist.find(function(w){return w.date===hoje;});
   if(rec) rec.v+=val; else G.weightHist.push({date:hoje,v:val});
-  localStorage.setItem('fp_wh',JSON.stringify(G.weightHist));
+  localStorage.setItem(lsKey('fp_wh'),JSON.stringify(G.weightHist));
   var isPR=!G.prs[nome]||val>G.prs[nome];
-  if(isPR){ G.prs[nome]=val; localStorage.setItem('fp_pr',JSON.stringify(G.prs)); toast('🏆 Novo PR em '+nome+'! '+val+'kg!'); }
+  if(isPR){ G.prs[nome]=val; localStorage.setItem(lsKey('fp_pr'),JSON.stringify(G.prs)); toast('🏆 Novo PR em '+nome+'! '+val+'kg!'); }
   else toast('✅ '+val+'kg salvo!');
   registrarTreino(); renderChart(); renderStats(); renderTrophies();
 }
@@ -1358,11 +1557,11 @@ function registrarTreino() {
   var hoje=new Date().toDateString(); if(G.streak.last===hoje) return;
   var ontem=new Date(Date.now()-86400000).toDateString();
   G.streak={days:(G.streak.last===ontem?G.streak.days+1:1),last:hoje};
-  localStorage.setItem('fp_sk',JSON.stringify(G.streak));
+  localStorage.setItem(lsKey('fp_sk'),JSON.stringify(G.streak));
   updateStreakUI();
 }
 function updateStreakUI(){ var el=document.getElementById('streakNum'); if(el) el.textContent=G.streak.days; }
-function limparHistorico(){ if(!confirm('Limpar histórico de cargas?')) return; G.weightHist=[]; localStorage.removeItem('fp_wh'); renderChart(); renderStats(); toast('Histórico limpo.'); }
+function limparHistorico(){ if(!confirm('Limpar histórico de cargas?')) return; G.weightHist=[]; localStorage.removeItem(lsKey('fp_wh')); renderChart(); renderStats(); toast('Histórico limpo.'); }
 
 // ══════════════════════════════════════
 //  GRÁFICO (HTML puro, sem Chart.js)
