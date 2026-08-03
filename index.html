@@ -222,9 +222,54 @@ body{padding-bottom:120px;}
 .empty{text-align:center;padding:32px 16px;color:var(--muted);}
 .empty-icon{font-size:40px;margin-bottom:10px;}
 .empty p{font-size:13px;line-height:1.6;}
+
+/* ── LOCK SCREEN ── */
+.lock-screen{position:fixed;inset:0;background:var(--bg);z-index:5000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;}
+.lock-screen.show{display:flex;}
+.lock-logo{width:64px;height:64px;background:var(--green);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:18px;box-shadow:0 0 30px var(--gglow);}
+.lock-title{font-family:var(--fhead);font-size:22px;font-weight:800;margin-bottom:6px;}
+.lock-sub{font-size:13px;color:var(--muted2);margin-bottom:26px;max-width:320px;line-height:1.5;}
+.lock-box{width:100%;max-width:320px;}
+.lock-inp-wrap{position:relative;margin-bottom:12px;}
+.lock-inp{width:100%;background:var(--s1);border:1px solid var(--b2);color:var(--text);padding:15px 44px 15px 16px;border-radius:var(--r2);font-size:16px;outline:none;letter-spacing:2px;text-align:center;}
+.lock-inp:focus{border-color:var(--green);}
+.lock-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted2);font-size:16px;cursor:pointer;padding:6px;}
+.lock-err{font-size:12px;color:var(--red);margin-bottom:10px;min-height:16px;}
+.lock-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px;margin:16px 0;text-transform:uppercase;letter-spacing:1px;}
+.lock-or::before,.lock-or::after{content:'';flex:1;height:1px;background:var(--b1);}
+.btn-face{width:100%;background:var(--s1);border:1px solid var(--b2);color:var(--text);padding:15px;border-radius:var(--r2);font-size:14px;font-weight:700;font-family:var(--fhead);cursor:pointer;display:flex;justify-content:center;align-items:center;gap:9px;transition:all .2s;}
+.btn-face:active{transform:scale(.98);border-color:var(--green);}
+.btn-face:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── SECURITY MODAL EXTRAS ── */
+.sec-status{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--r3);padding:11px 14px;margin-bottom:16px;font-size:13px;}
+.sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sec-dot.on{background:var(--green);box-shadow:0 0 8px var(--gglow);}
+.sec-dot.off{background:var(--muted);}
 </style>
 </head>
 <body>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-logo">⚡</div>
+  <div class="lock-title">FitPlan AI</div>
+  <div class="lock-sub" id="lockSub">Digite sua senha ou use biometria para desbloquear.</div>
+  <div class="lock-box">
+    <div class="lock-inp-wrap">
+      <input type="password" id="lockInp" class="lock-inp" placeholder="Senha" inputmode="text"
+        onkeydown="if(event.key==='Enter')tentarSenha()">
+      <button class="lock-eye" onclick="toggleLockEye()" type="button">👁</button>
+    </div>
+    <div class="lock-err" id="lockErr"></div>
+    <button class="btn-primary" onclick="tentarSenha()" style="margin-bottom:14px;">🔓 Entrar com senha</button>
+    <div class="lock-or">ou</div>
+    <button class="btn-face" id="btnFaceUnlock" onclick="autenticarBiometria()">
+      <span id="faceBtnIcon">🧑‍💻</span> <span id="faceBtnTxt">Face ID / Biometria</span>
+    </button>
+  </div>
+</div>
+
 <div class="app" id="app">
 
   <!-- HEADER -->
@@ -235,6 +280,10 @@ body{padding-bottom:120px;}
     </div>
     <div class="hdr-right">
       <div class="streak-pill">🔥 <span id="streakNum">0</span></div>
+      <div class="ai-pill cfg" id="secPill" onclick="abrirModal('mSecurity')" style="background:var(--s2);border:1px solid var(--b2);color:var(--muted2);">
+        <div class="ai-dot" style="background:var(--muted2);"></div>
+        <span id="secPillTxt">🔒</span>
+      </div>
       <div class="ai-pill cfg" id="aiPill" onclick="toggleApiBanner()">
         <div class="ai-dot"></div>
         <span id="aiPillTxt">Configurar IA</span>
@@ -436,6 +485,41 @@ body{padding-bottom:120px;}
   </div>
 </div>
 
+<!-- MODAL SEGURANÇA -->
+<div class="modal-bg" id="mSecurity" onclick="if(event.target===this)fecharModal('mSecurity')">
+  <div class="modal">
+    <button class="modal-x" onclick="fecharModal('mSecurity')">✕</button>
+    <div class="modal-title">🔒 Segurança do App</div>
+    <div class="modal-sub">Proteja seu FitPlan com senha e/ou biometria (Face ID / Touch ID / Windows Hello, conforme seu aparelho).</div>
+
+    <div class="sec-status">
+      <div class="sec-dot off" id="secDotPass"></div>
+      <span id="secStatusPassTxt">Senha: não configurada</span>
+    </div>
+    <div class="sec-status">
+      <div class="sec-dot off" id="secDotBio"></div>
+      <span id="secStatusBioTxt">Biometria: não configurada</span>
+    </div>
+
+    <div class="field">
+      <label>Nova senha</label>
+      <input type="password" id="secNewPass" class="inp" placeholder="Mínimo 4 caracteres" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label>Confirmar senha</label>
+      <input type="password" id="secConfirmPass" class="inp" placeholder="Repita a senha" autocomplete="new-password">
+    </div>
+    <button class="btn-primary" onclick="salvarSenhaSeguranca()" style="margin-bottom:10px;">💾 Salvar senha e ativar bloqueio</button>
+    <button class="btn-face" id="btnRegBio" onclick="registrarBiometria()" style="margin-bottom:10px;">
+      🧑‍💻 Ativar Face ID / Biometria
+    </button>
+    <button class="btn-danger" id="btnDisableSec" onclick="desativarSeguranca()" style="display:none;">🗑 Desativar segurança</button>
+    <div class="api-note" style="margin-top:10px;">
+      🔒 A senha fica salva (com hash) só no seu aparelho. A biometria usa o leitor de rosto/digital do próprio celular ou computador via WebAuthn — o app nunca vê nem guarda sua imagem facial.
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════
 //  ESTADO GLOBAL
@@ -546,6 +630,7 @@ window.onload = function() {
   renderChart();
   renderStats();
   renderTrophies();
+  initSecurity();
 };
 
 // ══════════════════════════════════════
@@ -594,7 +679,7 @@ function toast(msg) {
   _toastT = setTimeout(function(){ el.classList.remove('show'); }, 3500);
 }
 
-function abrirModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function abrirModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; if(id==='mSecurity') refreshSecurityModal(); }
 function fecharModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
 
 var _tabMap = {tChat:0,tTreino:1,tDieta:2,tScanner:3,tEvolucao:4};
@@ -628,6 +713,205 @@ function addBubble(role, content) {
   box.appendChild(d);
   box.scrollTop = box.scrollHeight;
   return d;
+}
+
+// ══════════════════════════════════════
+//  SEGURANÇA — SENHA + BIOMETRIA (WebAuthn)
+// ══════════════════════════════════════
+// A "senha" fica guardada como hash SHA-256 (nunca em texto puro).
+// A "biometria" usa o padrão WebAuthn: o navegador aciona o leitor
+// biométrico nativo do aparelho (Face ID / Touch ID / Windows Hello /
+// leitor de digital do Android). O app nunca recebe nem guarda a
+// imagem do rosto — só recebe uma confirmação criptográfica de que
+// o dono do aparelho se autenticou com sucesso.
+
+async function sha256Hex(text) {
+  var enc = new TextEncoder().encode('fitplan_v1_' + text);
+  var buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+function base64url(buf) {
+  var bytes = new Uint8Array(buf);
+  var str = '';
+  for (var i=0;i<bytes.length;i++) str += String.fromCharCode(bytes[i]);
+  return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function base64urlToBuf(b64) {
+  var s = b64.replace(/-/g,'+').replace(/_/g,'/');
+  while (s.length % 4) s += '=';
+  var bin = atob(s);
+  var buf = new Uint8Array(bin.length);
+  for (var i=0;i<bin.length;i++) buf[i] = bin.charCodeAt(i);
+  return buf.buffer;
+}
+
+function webAuthnSuportado() {
+  return !!(window.PublicKeyCredential && navigator.credentials);
+}
+
+function initSecurity() {
+  var enabled = localStorage.getItem('fp_sec_enabled') === '1';
+  updateSecPillUI(enabled);
+  if (enabled) {
+    document.getElementById('app').style.filter = 'blur(20px)';
+    document.getElementById('app').style.pointerEvents = 'none';
+    document.getElementById('app').setAttribute('aria-hidden','true');
+    document.getElementById('bottomNav').style.pointerEvents = 'none';
+    document.getElementById('lockScreen').classList.add('show');
+    var credId = localStorage.getItem('fp_sec_cred_id');
+    var btn = document.getElementById('btnFaceUnlock');
+    if (credId && webAuthnSuportado()) {
+      btn.disabled = false;
+      document.getElementById('faceBtnTxt').textContent = 'Face ID / Biometria';
+    } else {
+      btn.disabled = true;
+      document.getElementById('faceBtnTxt').textContent = webAuthnSuportado() ? 'Biometria não configurada' : 'Biometria indisponível neste navegador';
+    }
+    setTimeout(function(){ var i=document.getElementById('lockInp'); if(i) i.focus(); }, 300);
+  }
+}
+
+function updateSecPillUI(enabled) {
+  var pill = document.getElementById('secPill');
+  var txt = document.getElementById('secPillTxt');
+  var dot = pill.querySelector('.ai-dot');
+  if (enabled) {
+    pill.style.background = 'var(--gdim)'; pill.style.borderColor = 'rgba(0,230,118,0.2)'; pill.style.color = 'var(--green)';
+    dot.style.background = 'var(--green)';
+    txt.textContent = '🔒 Ativa';
+  } else {
+    pill.style.background = 'var(--s2)'; pill.style.borderColor = 'var(--b2)'; pill.style.color = 'var(--muted2)';
+    dot.style.background = 'var(--muted2)';
+    txt.textContent = '🔓 Segurança';
+  }
+}
+
+function toggleLockEye() {
+  var i = document.getElementById('lockInp');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+async function tentarSenha() {
+  var inp = document.getElementById('lockInp');
+  var val = (inp.value||'').trim();
+  var err = document.getElementById('lockErr');
+  var storedHash = localStorage.getItem('fp_sec_hash');
+  if (!storedHash) { err.textContent = 'Nenhuma senha configurada.'; return; }
+  if (!val) { err.textContent = 'Digite sua senha.'; return; }
+  var h = await sha256Hex(val);
+  if (h === storedHash) {
+    err.textContent = '';
+    desbloquearApp();
+  } else {
+    err.textContent = '❌ Senha incorreta. Tente novamente.';
+    inp.value = '';
+    inp.focus();
+    if (navigator.vibrate) navigator.vibrate(200);
+  }
+}
+
+function desbloquearApp() {
+  document.getElementById('lockScreen').classList.remove('show');
+  var app = document.getElementById('app');
+  app.style.filter = ''; app.style.pointerEvents = ''; app.removeAttribute('aria-hidden');
+  document.getElementById('bottomNav').style.pointerEvents = '';
+  var inp = document.getElementById('lockInp'); if(inp) inp.value = '';
+  var errEl = document.getElementById('lockErr'); if(errEl) errEl.textContent='';
+}
+
+// Registra biometria (cria uma credencial WebAuthn com autenticador de plataforma:
+// Face ID / Touch ID / Windows Hello / digital do Android)
+async function registrarBiometria() {
+  if (!webAuthnSuportado()) { toast('❌ Este navegador/aparelho não suporta biometria.'); return; }
+  var storedHash = localStorage.getItem('fp_sec_hash');
+  if (!storedHash) { toast('⚠️ Salve uma senha primeiro para ativar a biometria.'); return; }
+  try {
+    var userId = new Uint8Array(16); crypto.getRandomValues(userId);
+    var challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
+    var cred = await navigator.credentials.create({
+      publicKey: {
+        challenge: challenge,
+        rp: { name: 'FitPlan AI' },
+        user: { id: userId, name: 'fitplan-user', displayName: 'FitPlan AI' },
+        pubKeyCredParams: [{alg:-7,type:'public-key'},{alg:-257,type:'public-key'}],
+        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
+        timeout: 60000,
+        attestation: 'none'
+      }
+    });
+    if (!cred) throw new Error('Cadastro cancelado.');
+    localStorage.setItem('fp_sec_cred_id', base64url(cred.rawId));
+    toast('✅ Biometria ativada com sucesso!');
+    refreshSecurityModal();
+  } catch(e) {
+    toast('❌ ' + (e.message || 'Não foi possível ativar a biometria.'));
+  }
+}
+
+// Autentica via biometria (WebAuthn get) — usada na tela de bloqueio
+async function autenticarBiometria() {
+  var credId = localStorage.getItem('fp_sec_cred_id');
+  if (!credId || !webAuthnSuportado()) { toast('❌ Biometria não configurada neste aparelho.'); return; }
+  var err = document.getElementById('lockErr');
+  try {
+    var challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
+    var assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge: challenge,
+        allowCredentials: [{ id: base64urlToBuf(credId), type: 'public-key' }],
+        userVerification: 'required',
+        timeout: 60000
+      }
+    });
+    if (!assertion) throw new Error('Autenticação cancelada.');
+    err.textContent = '';
+    desbloquearApp();
+    toast('✅ Desbloqueado por biometria!');
+  } catch(e) {
+    err.textContent = '❌ ' + (e.message || 'Biometria não reconhecida.');
+  }
+}
+
+function refreshSecurityModal() {
+  var hasPass = !!localStorage.getItem('fp_sec_hash');
+  var hasBio = !!localStorage.getItem('fp_sec_cred_id');
+  var dotPass = document.getElementById('secDotPass'), dotBio = document.getElementById('secDotBio');
+  dotPass.className = 'sec-dot ' + (hasPass?'on':'off');
+  dotBio.className = 'sec-dot ' + (hasBio?'on':'off');
+  document.getElementById('secStatusPassTxt').textContent = 'Senha: ' + (hasPass?'configurada ✓':'não configurada');
+  document.getElementById('secStatusBioTxt').textContent = 'Biometria: ' + (hasBio?'ativada ✓':'não configurada');
+  document.getElementById('btnDisableSec').style.display = (hasPass||hasBio) ? 'block' : 'none';
+  var bioBtn = document.getElementById('btnRegBio');
+  if (!webAuthnSuportado()) { bioBtn.disabled = true; bioBtn.querySelector ? null : null; bioBtn.innerHTML = '🧑‍💻 Biometria indisponível neste navegador'; }
+  else if (!hasPass) { bioBtn.disabled = true; bioBtn.innerHTML = '🧑‍💻 Salve uma senha primeiro'; }
+  else if (hasBio) { bioBtn.disabled = false; bioBtn.innerHTML = '🔄 Recadastrar Face ID / Biometria'; }
+  else { bioBtn.disabled = false; bioBtn.innerHTML = '🧑‍💻 Ativar Face ID / Biometria'; }
+}
+
+async function salvarSenhaSeguranca() {
+  var p1 = document.getElementById('secNewPass').value;
+  var p2 = document.getElementById('secConfirmPass').value;
+  if (!p1 || p1.length < 4) { toast('❌ A senha deve ter no mínimo 4 caracteres'); return; }
+  if (p1 !== p2) { toast('❌ As senhas não coincidem'); return; }
+  var hash = await sha256Hex(p1);
+  localStorage.setItem('fp_sec_hash', hash);
+  localStorage.setItem('fp_sec_enabled', '1');
+  document.getElementById('secNewPass').value = '';
+  document.getElementById('secConfirmPass').value = '';
+  updateSecPillUI(true);
+  refreshSecurityModal();
+  toast('✅ Senha salva! Segurança ativada.');
+}
+
+function desativarSeguranca() {
+  if (!confirm('Tem certeza que deseja desativar a senha e a biometria? O app ficará sem bloqueio.')) return;
+  localStorage.removeItem('fp_sec_hash');
+  localStorage.removeItem('fp_sec_cred_id');
+  localStorage.removeItem('fp_sec_enabled');
+  updateSecPillUI(false);
+  refreshSecurityModal();
+  toast('🔓 Segurança desativada.');
 }
 
 // ══════════════════════════════════════
