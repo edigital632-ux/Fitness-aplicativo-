@@ -246,9 +246,20 @@ body{padding-bottom:120px;}
 .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .sec-dot.on{background:var(--green);box-shadow:0 0 8px var(--gglow);}
 .sec-dot.off{background:var(--muted);}
+
+/* ── FACE RECOGNITION CAMERA ── */
+.face-cam-wrap{position:relative;width:100%;max-width:260px;aspect-ratio:1/1;margin:0 auto 14px;border-radius:var(--r2);overflow:hidden;background:#000;display:none;}
+.face-cam-wrap.show{display:block;}
+.face-video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;}
+.face-ring{position:absolute;inset:14px;border:3px solid var(--muted);border-radius:50%;pointer-events:none;transition:border-color .25s,box-shadow .25s;}
+.face-ring.detected{border-color:var(--blue);}
+.face-ring.match{border-color:var(--green);box-shadow:0 0 24px var(--gglow);}
+.face-ring.nomatch{border-color:var(--red);}
+.face-status{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);color:#fff;font-size:11.5px;text-align:center;padding:8px 6px;font-weight:600;}
 </style>
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <!-- LOCK SCREEN -->
 <div class="lock-screen" id="lockScreen">
@@ -264,9 +275,15 @@ body{padding-bottom:120px;}
     <div class="lock-err" id="lockErr"></div>
     <button class="btn-primary" onclick="tentarSenha()" style="margin-bottom:14px;">🔓 Entrar com senha</button>
     <div class="lock-or">ou</div>
-    <button class="btn-face" id="btnFaceUnlock" onclick="autenticarBiometria()">
-      <span id="faceBtnIcon">🧑‍💻</span> <span id="faceBtnTxt">Face ID / Biometria</span>
+    <button class="btn-face" id="btnFaceUnlock" onclick="iniciarReconhecimentoFacial()">
+      <span id="faceBtnIcon">🧠</span> <span id="faceBtnTxt">Reconhecimento Facial (IA)</span>
     </button>
+    <div class="face-cam-wrap" id="faceCamWrap">
+      <video id="faceVideo" class="face-video" autoplay muted playsinline></video>
+      <div class="face-ring" id="faceRing"></div>
+      <div class="face-status" id="faceStatus">Iniciando câmera...</div>
+    </div>
+    <button class="btn-ghost" id="btnFaceCancel" style="display:none;width:100%;margin-top:8px;" onclick="pararReconhecimentoFacial(false)">Cancelar</button>
   </div>
 </div>
 
@@ -498,7 +515,7 @@ body{padding-bottom:120px;}
     </div>
     <div class="sec-status">
       <div class="sec-dot off" id="secDotBio"></div>
-      <span id="secStatusBioTxt">Biometria: não configurada</span>
+      <span id="secStatusBioTxt">Reconhecimento facial: não configurado</span>
     </div>
 
     <div class="field">
@@ -509,13 +526,23 @@ body{padding-bottom:120px;}
       <label>Confirmar senha</label>
       <input type="password" id="secConfirmPass" class="inp" placeholder="Repita a senha" autocomplete="new-password">
     </div>
-    <button class="btn-primary" onclick="salvarSenhaSeguranca()" style="margin-bottom:10px;">💾 Salvar senha e ativar bloqueio</button>
-    <button class="btn-face" id="btnRegBio" onclick="registrarBiometria()" style="margin-bottom:10px;">
-      🧑‍💻 Ativar Face ID / Biometria
+    <button class="btn-primary" onclick="salvarSenhaSeguranca()" style="margin-bottom:16px;">💾 Salvar senha e ativar bloqueio</button>
+
+    <div class="sec-label">🧠 Reconhecimento Facial (IA gratuita)</div>
+    <div class="face-cam-wrap" id="faceCamWrapSetup">
+      <video id="faceVideoSetup" class="face-video" autoplay muted playsinline></video>
+      <div class="face-ring" id="faceRingSetup"></div>
+      <div class="face-status" id="faceStatusSetup">Iniciando câmera...</div>
+    </div>
+    <button class="btn-face" id="btnRegBio" onclick="cadastrarRosto()" style="margin-bottom:10px;">
+      📷 Cadastrar meu rosto
     </button>
+    <button class="btn-ghost" id="btnFaceSetupCancel" style="display:none;width:100%;margin-bottom:10px;" onclick="pararCadastroRosto()">Cancelar</button>
+    <button class="btn-ghost" id="btnRemoveFace" onclick="removerRosto()" style="display:none;width:100%;margin-bottom:10px;">🗑 Remover rosto cadastrado</button>
+
     <button class="btn-danger" id="btnDisableSec" onclick="desativarSeguranca()" style="display:none;">🗑 Desativar segurança</button>
     <div class="api-note" style="margin-top:10px;">
-      🔒 A senha fica salva (com hash) só no seu aparelho. A biometria usa o leitor de rosto/digital do próprio celular ou computador via WebAuthn — o app nunca vê nem guarda sua imagem facial.
+      🔒 A senha fica salva (com hash) só no seu aparelho. O reconhecimento facial roda 100% no seu navegador com IA gratuita e open-source (face-api.js) — a foto do seu rosto nunca sai do aparelho nem é enviada a servidor nenhum; só um conjunto de números (o "descritor" do rosto) fica salvo localmente para comparação.
     </div>
   </div>
 </div>
@@ -731,25 +758,6 @@ async function sha256Hex(text) {
   return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
 }
 
-function base64url(buf) {
-  var bytes = new Uint8Array(buf);
-  var str = '';
-  for (var i=0;i<bytes.length;i++) str += String.fromCharCode(bytes[i]);
-  return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
-function base64urlToBuf(b64) {
-  var s = b64.replace(/-/g,'+').replace(/_/g,'/');
-  while (s.length % 4) s += '=';
-  var bin = atob(s);
-  var buf = new Uint8Array(bin.length);
-  for (var i=0;i<bin.length;i++) buf[i] = bin.charCodeAt(i);
-  return buf.buffer;
-}
-
-function webAuthnSuportado() {
-  return !!(window.PublicKeyCredential && navigator.credentials);
-}
-
 function initSecurity() {
   var enabled = localStorage.getItem('fp_sec_enabled') === '1';
   updateSecPillUI(enabled);
@@ -759,17 +767,187 @@ function initSecurity() {
     document.getElementById('app').setAttribute('aria-hidden','true');
     document.getElementById('bottomNav').style.pointerEvents = 'none';
     document.getElementById('lockScreen').classList.add('show');
-    var credId = localStorage.getItem('fp_sec_cred_id');
+    var faceData = localStorage.getItem('fp_sec_face');
     var btn = document.getElementById('btnFaceUnlock');
-    if (credId && webAuthnSuportado()) {
+    if (faceData) {
       btn.disabled = false;
-      document.getElementById('faceBtnTxt').textContent = 'Face ID / Biometria';
+      document.getElementById('faceBtnTxt').textContent = 'Reconhecimento Facial (IA)';
     } else {
       btn.disabled = true;
-      document.getElementById('faceBtnTxt').textContent = webAuthnSuportado() ? 'Biometria não configurada' : 'Biometria indisponível neste navegador';
+      document.getElementById('faceBtnTxt').textContent = 'Rosto não cadastrado';
     }
     setTimeout(function(){ var i=document.getElementById('lockInp'); if(i) i.focus(); }, 300);
   }
+}
+
+// ── IA de Reconhecimento Facial — face-api.js (gratuita, open-source) ──
+// Roda 100% no navegador do usuário. Nenhuma foto ou vídeo do rosto
+// sai do aparelho ou é enviada a qualquer servidor — a IA só gera um
+// "descritor" (128 números) que fica salvo no localStorage e é usado
+// para comparar rostos localmente (distância euclidiana).
+var FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+var FACE_MATCH_THRESHOLD = 0.5;
+var faceModelsReady = false;
+var faceModelsLoading = null;
+var faceStream = null;
+var faceLoopActive = false;
+
+function loadFaceModels() {
+  if (faceModelsReady) return Promise.resolve();
+  if (faceModelsLoading) return faceModelsLoading;
+  if (typeof faceapi === 'undefined') return Promise.reject(new Error('IA de reconhecimento facial não carregou. Verifique sua internet.'));
+  faceModelsLoading = Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
+    faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
+  ]).then(function(){ faceModelsReady = true; });
+  return faceModelsLoading;
+}
+
+async function abrirCameraFacial(videoEl) {
+  var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 320 }, audio: false });
+  videoEl.srcObject = stream;
+  await new Promise(function(res){ videoEl.onloadedmetadata = function(){ res(); }; });
+  return stream;
+}
+
+function pararCameraFacial(stream) {
+  if (stream) stream.getTracks().forEach(function(t){ t.stop(); });
+}
+
+// ── Cadastro do rosto (dentro do modal Segurança) ──
+async function cadastrarRosto() {
+  var wrap = document.getElementById('faceCamWrapSetup');
+  var video = document.getElementById('faceVideoSetup');
+  var ring = document.getElementById('faceRingSetup');
+  var status = document.getElementById('faceStatusSetup');
+  var btn = document.getElementById('btnRegBio');
+  var cancelBtn = document.getElementById('btnFaceSetupCancel');
+
+  wrap.classList.add('show');
+  btn.disabled = true;
+  cancelBtn.style.display = 'block';
+  status.textContent = 'Carregando IA...';
+  ring.className = 'face-ring';
+
+  try {
+    await loadFaceModels();
+    faceStream = await abrirCameraFacial(video);
+    status.textContent = 'Posicione seu rosto no centro...';
+
+    var tentativas = 0, descritor = null;
+    while (tentativas < 50 && !descritor) {
+      tentativas++;
+      var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks().withFaceDescriptor();
+      if (det) {
+        ring.className = 'face-ring detected';
+        status.textContent = 'Rosto detectado! Capturando...';
+        descritor = Array.from(det.descriptor);
+      } else {
+        ring.className = 'face-ring';
+        status.textContent = 'Procurando rosto...';
+        await new Promise(function(r){ setTimeout(r, 250); });
+      }
+    }
+    if (!descritor) throw new Error('Não foi possível detectar seu rosto. Tente em um local bem iluminado.');
+
+    localStorage.setItem('fp_sec_face', JSON.stringify(descritor));
+    status.textContent = '✅ Rosto cadastrado com sucesso!';
+    ring.className = 'face-ring match';
+    toast('✅ Reconhecimento facial ativado!');
+    setTimeout(function(){ pararCameraFacial(faceStream); faceStream=null; wrap.classList.remove('show'); refreshSecurityModal(); }, 1200);
+  } catch(e) {
+    status.textContent = '❌ ' + (e.message || 'Erro ao cadastrar rosto.');
+    ring.className = 'face-ring nomatch';
+    toast('❌ ' + (e.message || 'Erro ao cadastrar rosto.'));
+    pararCameraFacial(faceStream); faceStream = null;
+    setTimeout(function(){ wrap.classList.remove('show'); }, 1800);
+  } finally {
+    btn.disabled = false; cancelBtn.style.display = 'none';
+  }
+}
+
+function pararCadastroRosto() {
+  pararCameraFacial(faceStream); faceStream = null;
+  document.getElementById('faceCamWrapSetup').classList.remove('show');
+  document.getElementById('btnFaceSetupCancel').style.display = 'none';
+}
+
+function removerRosto() {
+  if (!confirm('Remover o rosto cadastrado?')) return;
+  localStorage.removeItem('fp_sec_face');
+  refreshSecurityModal();
+  toast('🗑 Reconhecimento facial removido.');
+}
+
+// ── Desbloqueio por rosto (na tela de bloqueio) ──
+async function iniciarReconhecimentoFacial() {
+  var stored = localStorage.getItem('fp_sec_face');
+  if (!stored) { toast('❌ Nenhum rosto cadastrado. Configure em 🔒 Segurança.'); return; }
+
+  var wrap = document.getElementById('faceCamWrap');
+  var video = document.getElementById('faceVideo');
+  var ring = document.getElementById('faceRing');
+  var status = document.getElementById('faceStatus');
+  var cancelBtn = document.getElementById('btnFaceCancel');
+  var errEl = document.getElementById('lockErr');
+
+  wrap.classList.add('show');
+  cancelBtn.style.display = 'block';
+  status.textContent = 'Carregando IA...';
+  errEl.textContent = '';
+  ring.className = 'face-ring';
+
+  try {
+    await loadFaceModels();
+    faceStream = await abrirCameraFacial(video);
+    status.textContent = 'Procurando rosto...';
+    var descritorSalvo = new Float32Array(JSON.parse(stored));
+
+    faceLoopActive = true;
+    var tentativas = 0, maxTentativas = 80;
+    while (faceLoopActive && tentativas < maxTentativas) {
+      tentativas++;
+      var det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks().withFaceDescriptor();
+      if (!faceLoopActive) break;
+      if (det) {
+        var dist = faceapi.euclideanDistance(det.descriptor, descritorSalvo);
+        if (dist < FACE_MATCH_THRESHOLD) {
+          ring.className = 'face-ring match';
+          status.textContent = '✅ Rosto reconhecido!';
+          pararReconhecimentoFacial(true);
+          desbloquearApp();
+          toast('✅ Desbloqueado por reconhecimento facial!');
+          return;
+        } else {
+          ring.className = 'face-ring nomatch';
+          status.textContent = 'Rosto não reconhecido...';
+        }
+      } else {
+        ring.className = 'face-ring';
+        status.textContent = 'Procurando rosto...';
+      }
+      await new Promise(function(r){ setTimeout(r, 300); });
+    }
+    if (faceLoopActive) {
+      errEl.textContent = '❌ Rosto não reconhecido. Tente novamente ou use a senha.';
+      pararReconhecimentoFacial(false);
+    }
+  } catch(e) {
+    errEl.textContent = '❌ ' + (e.message || 'Erro ao acessar a câmera.');
+    pararReconhecimentoFacial(false);
+  }
+}
+
+function pararReconhecimentoFacial(silencioso) {
+  faceLoopActive = false;
+  pararCameraFacial(faceStream); faceStream = null;
+  var wrap = document.getElementById('faceCamWrap');
+  if (wrap) wrap.classList.remove('show');
+  var cancelBtn = document.getElementById('btnFaceCancel');
+  if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
 function updateSecPillUI(enabled) {
@@ -820,73 +998,20 @@ function desbloquearApp() {
   var errEl = document.getElementById('lockErr'); if(errEl) errEl.textContent='';
 }
 
-// Registra biometria (cria uma credencial WebAuthn com autenticador de plataforma:
-// Face ID / Touch ID / Windows Hello / digital do Android)
-async function registrarBiometria() {
-  if (!webAuthnSuportado()) { toast('❌ Este navegador/aparelho não suporta biometria.'); return; }
-  var storedHash = localStorage.getItem('fp_sec_hash');
-  if (!storedHash) { toast('⚠️ Salve uma senha primeiro para ativar a biometria.'); return; }
-  try {
-    var userId = new Uint8Array(16); crypto.getRandomValues(userId);
-    var challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
-    var cred = await navigator.credentials.create({
-      publicKey: {
-        challenge: challenge,
-        rp: { name: 'FitPlan AI' },
-        user: { id: userId, name: 'fitplan-user', displayName: 'FitPlan AI' },
-        pubKeyCredParams: [{alg:-7,type:'public-key'},{alg:-257,type:'public-key'}],
-        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
-        timeout: 60000,
-        attestation: 'none'
-      }
-    });
-    if (!cred) throw new Error('Cadastro cancelado.');
-    localStorage.setItem('fp_sec_cred_id', base64url(cred.rawId));
-    toast('✅ Biometria ativada com sucesso!');
-    refreshSecurityModal();
-  } catch(e) {
-    toast('❌ ' + (e.message || 'Não foi possível ativar a biometria.'));
-  }
-}
-
-// Autentica via biometria (WebAuthn get) — usada na tela de bloqueio
-async function autenticarBiometria() {
-  var credId = localStorage.getItem('fp_sec_cred_id');
-  if (!credId || !webAuthnSuportado()) { toast('❌ Biometria não configurada neste aparelho.'); return; }
-  var err = document.getElementById('lockErr');
-  try {
-    var challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
-    var assertion = await navigator.credentials.get({
-      publicKey: {
-        challenge: challenge,
-        allowCredentials: [{ id: base64urlToBuf(credId), type: 'public-key' }],
-        userVerification: 'required',
-        timeout: 60000
-      }
-    });
-    if (!assertion) throw new Error('Autenticação cancelada.');
-    err.textContent = '';
-    desbloquearApp();
-    toast('✅ Desbloqueado por biometria!');
-  } catch(e) {
-    err.textContent = '❌ ' + (e.message || 'Biometria não reconhecida.');
-  }
-}
-
 function refreshSecurityModal() {
   var hasPass = !!localStorage.getItem('fp_sec_hash');
-  var hasBio = !!localStorage.getItem('fp_sec_cred_id');
+  var hasFace = !!localStorage.getItem('fp_sec_face');
   var dotPass = document.getElementById('secDotPass'), dotBio = document.getElementById('secDotBio');
   dotPass.className = 'sec-dot ' + (hasPass?'on':'off');
-  dotBio.className = 'sec-dot ' + (hasBio?'on':'off');
+  dotBio.className = 'sec-dot ' + (hasFace?'on':'off');
   document.getElementById('secStatusPassTxt').textContent = 'Senha: ' + (hasPass?'configurada ✓':'não configurada');
-  document.getElementById('secStatusBioTxt').textContent = 'Biometria: ' + (hasBio?'ativada ✓':'não configurada');
-  document.getElementById('btnDisableSec').style.display = (hasPass||hasBio) ? 'block' : 'none';
+  document.getElementById('secStatusBioTxt').textContent = 'Reconhecimento facial: ' + (hasFace?'ativado ✓':'não configurado');
+  document.getElementById('btnDisableSec').style.display = (hasPass||hasFace) ? 'block' : 'none';
+  document.getElementById('btnRemoveFace').style.display = hasFace ? 'block' : 'none';
   var bioBtn = document.getElementById('btnRegBio');
-  if (!webAuthnSuportado()) { bioBtn.disabled = true; bioBtn.querySelector ? null : null; bioBtn.innerHTML = '🧑‍💻 Biometria indisponível neste navegador'; }
-  else if (!hasPass) { bioBtn.disabled = true; bioBtn.innerHTML = '🧑‍💻 Salve uma senha primeiro'; }
-  else if (hasBio) { bioBtn.disabled = false; bioBtn.innerHTML = '🔄 Recadastrar Face ID / Biometria'; }
-  else { bioBtn.disabled = false; bioBtn.innerHTML = '🧑‍💻 Ativar Face ID / Biometria'; }
+  if (!hasPass) { bioBtn.disabled = true; bioBtn.innerHTML = '📷 Salve uma senha primeiro'; }
+  else if (hasFace) { bioBtn.disabled = false; bioBtn.innerHTML = '🔄 Recadastrar rosto'; }
+  else { bioBtn.disabled = false; bioBtn.innerHTML = '📷 Cadastrar meu rosto'; }
 }
 
 async function salvarSenhaSeguranca() {
@@ -905,9 +1030,9 @@ async function salvarSenhaSeguranca() {
 }
 
 function desativarSeguranca() {
-  if (!confirm('Tem certeza que deseja desativar a senha e a biometria? O app ficará sem bloqueio.')) return;
+  if (!confirm('Tem certeza que deseja desativar a senha e o reconhecimento facial? O app ficará sem bloqueio.')) return;
   localStorage.removeItem('fp_sec_hash');
-  localStorage.removeItem('fp_sec_cred_id');
+  localStorage.removeItem('fp_sec_face');
   localStorage.removeItem('fp_sec_enabled');
   updateSecPillUI(false);
   refreshSecurityModal();
